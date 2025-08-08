@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
+import { redisStore } from 'cache-manager-redis-store';
 
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
@@ -51,10 +52,19 @@ import { AdminModule } from './admin/admin.module';
       inject: [ConfigService],
     }),
 
-    // 缓存模块 (暂时禁用Redis，使用内存缓存)
-    CacheModule.register({
+    // 缓存模块 (使用Redis)
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        password: configService.get('REDIS_PASSWORD'),
+        db: configService.get('REDIS_DB'),
+        ttl: 60 * 60, // 1小时
+      }),
+      inject: [ConfigService],
       isGlobal: true,
-      ttl: 60 * 60, // 1小时
     }),
 
     // 定时任务模块
