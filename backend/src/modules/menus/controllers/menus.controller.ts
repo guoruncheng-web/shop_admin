@@ -1,0 +1,358 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import { MenusService } from '../services/menus.service';
+import { CreateMenuDto } from '../dto/create-menu.dto';
+import { UpdateMenuDto } from '../dto/update-menu.dto';
+import { QueryMenuDto } from '../dto/query-menu.dto';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+
+@ApiTags('菜单管理')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@Controller('menus')
+export class MenusController {
+  constructor(private readonly menusService: MenusService) {}
+
+  @Post()
+  @ApiOperation({ summary: '创建菜单', description: '创建新的菜单项' })
+  @ApiResponse({
+    status: 201,
+    description: '创建成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            id: { type: 'number' },
+            name: { type: 'string' },
+            path: { type: 'string' },
+            component: { type: 'string' },
+            icon: { type: 'string' },
+            sort: { type: 'number' },
+            visible: { type: 'boolean' },
+            external: { type: 'boolean' },
+            cache: { type: 'boolean' },
+            permission: { type: 'string' },
+            type: { type: 'number' },
+            status: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+        },
+        msg: { type: 'string', example: '创建成功' },
+      },
+    },
+  })
+  async create(@Body() createMenuDto: CreateMenuDto) {
+    const menu = await this.menusService.create(createMenuDto);
+    return {
+      code: 200,
+      data: menu,
+      msg: '创建成功',
+    };
+  }
+
+  @Get('tree')
+  @ApiOperation({ summary: '获取菜单树', description: '获取菜单的树形结构' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              name: { type: 'string' },
+              path: { type: 'string' },
+              component: { type: 'string' },
+              icon: { type: 'string' },
+              sort: { type: 'number' },
+              visible: { type: 'boolean' },
+              external: { type: 'boolean' },
+              cache: { type: 'boolean' },
+              permission: { type: 'string' },
+              type: { type: 'number' },
+              status: { type: 'boolean' },
+              children: { type: 'array' },
+            },
+          },
+        },
+        msg: { type: 'string', example: '获取成功' },
+      },
+    },
+  })
+  async getMenuTree(@Query() query: QueryMenuDto) {
+    const menus = await this.menusService.getMenuTree(query);
+    return {
+      code: 200,
+      data: menus,
+      msg: '获取成功',
+    };
+  }
+
+  @Get()
+  @ApiOperation({ summary: '查询菜单列表', description: '查询菜单列表，支持模糊查询' })
+  @ApiResponse({
+    status: 200,
+    description: '查询成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'array' },
+        msg: { type: 'string', example: '查询成功' },
+      },
+    },
+  })
+  async getMenus(@Query() query: QueryMenuDto) {
+    const menus = await this.menusService.getMenus(query);
+    return {
+      code: 200,
+      data: menus,
+      msg: '查询成功',
+    };
+  }
+
+  @Get('user')
+  @ApiOperation({ summary: '获取用户菜单', description: '根据用户权限获取菜单' })
+  @ApiQuery({ name: 'permissions', description: '用户权限列表', required: false, type: [String] })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'array' },
+        msg: { type: 'string', example: '获取成功' },
+      },
+    },
+  })
+  async getUserMenus(@Query('permissions') permissions?: string) {
+    const userPermissions = permissions ? permissions.split(',') : [];
+    const menus = await this.menusService.getUserMenus(userPermissions);
+    return {
+      code: 200,
+      data: menus,
+      msg: '获取成功',
+    };
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: '根据用户ID获取菜单', description: '根据用户ID获取该用户角色对应的菜单列表' })
+  @ApiParam({ name: 'userId', description: '用户ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'array' },
+        msg: { type: 'string', example: '获取成功' },
+      },
+    },
+  })
+  async getUserMenusByUserId(@Param('userId') userId: string) {
+    const menus = await this.menusService.getUserMenusByUserId(+userId);
+    return {
+      code: 200,
+      data: menus,
+      msg: '获取成功',
+    };
+  }
+
+  @Get('user/:userId/buttons')
+  @ApiOperation({ summary: '获取用户按钮权限', description: '根据用户ID获取该用户的按钮权限列表' })
+  @ApiParam({ name: 'userId', description: '用户ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'array' },
+        msg: { type: 'string', example: '获取成功' },
+      },
+    },
+  })
+  async getUserButtons(@Param('userId') userId: string) {
+    const buttons = await this.menusService.getUserButtons(+userId);
+    return {
+      code: 200,
+      data: buttons,
+      msg: '获取成功',
+    };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '获取菜单详情', description: '根据ID获取菜单详细信息' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '获取成功' },
+      },
+    },
+  })
+  async getMenuById(@Param('id') id: string) {
+    const menu = await this.menusService.getMenuById(+id);
+    return {
+      code: 200,
+      data: menu,
+      msg: '获取成功',
+    };
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: '更新菜单', description: '根据ID更新菜单信息' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '更新成功' },
+      },
+    },
+  })
+  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
+    const menu = await this.menusService.update(+id, updateMenuDto);
+    return {
+      code: 200,
+      data: menu,
+      msg: '更新成功',
+    };
+  }
+
+  @Patch(':id/status')
+  @ApiOperation({ summary: '更新菜单状态', description: '启用或禁用菜单' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '状态更新成功' },
+      },
+    },
+  })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: boolean },
+  ) {
+    const menu = await this.menusService.updateStatus(+id, body.status);
+    return {
+      code: 200,
+      data: menu,
+      msg: '状态更新成功',
+    };
+  }
+
+  @Patch(':id/sort')
+  @ApiOperation({ summary: '更新菜单排序', description: '更新菜单的排序值' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '排序更新成功' },
+      },
+    },
+  })
+  async updateSort(
+    @Param('id') id: string,
+    @Body() body: { sort: number },
+  ) {
+    const menu = await this.menusService.updateSort(+id, body.sort);
+    return {
+      code: 200,
+      data: menu,
+      msg: '排序更新成功',
+    };
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '删除菜单', description: '根据ID删除菜单' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '删除成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object', example: {} },
+        msg: { type: 'string', example: '删除成功' },
+      },
+    },
+  })
+  async delete(@Param('id') id: string) {
+    await this.menusService.delete(+id);
+    return {
+      code: 200,
+      data: {},
+      msg: '删除成功',
+    };
+  }
+
+  @Post('batch-delete')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '批量删除菜单', description: '批量删除多个菜单' })
+  @ApiResponse({
+    status: 200,
+    description: '删除成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object', example: {} },
+        msg: { type: 'string', example: '批量删除成功' },
+      },
+    },
+  })
+  async batchDelete(@Body() body: { ids: number[] }) {
+    await this.menusService.batchDelete(body.ids);
+    return {
+      code: 200,
+      data: {},
+      msg: '批量删除成功',
+    };
+  }
+}

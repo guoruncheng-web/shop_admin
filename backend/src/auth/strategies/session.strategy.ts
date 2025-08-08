@@ -3,8 +3,8 @@ import { PassportStrategy } from '@nestjs/passport';
 
 @Injectable()
 export class SessionStrategy extends PassportStrategy(class {}, 'session') {
-  authenticate() {
+  async validate(payload: any) {
     // TODO: 实现Session认证策略
-    return null;
+    return payload;
   }
 }

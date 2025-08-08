@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { redisStore } from 'cache-manager-redis-store';
+import { APP_GUARD } from '@nestjs/core';
 
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
@@ -11,17 +12,10 @@ import { AppService } from './app.service';
 
 // 认证模块
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // 业务模块
-import { ProductsModule } from './modules/products/products.module';
-import { CategoriesModule } from './modules/categories/categories.module';
-import { UsersModule } from './modules/users/users.module';
-import { OrdersModule } from './modules/orders/orders.module';
-import { BannersModule } from './modules/banners/banners.module';
-import { LogsModule } from './modules/logs/logs.module';
-
-// 管理模块
-import { AdminModule } from './admin/admin.module';
+import { MenusModule } from './modules/menus/menus.module';
 
 @Module({
   imports: [
@@ -29,7 +23,7 @@ import { AdminModule } from './admin/admin.module';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
-      envFilePath: ['.env.local', '.env'],
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
 
     // 数据库模块
@@ -57,11 +51,11 @@ import { AdminModule } from './admin/admin.module';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         store: redisStore,
-        host: configService.get('REDIS_HOST'),
-        port: configService.get('REDIS_PORT'),
-        password: configService.get('REDIS_PASSWORD'),
-        db: configService.get('REDIS_DB'),
-        ttl: 60 * 60, // 1小时
+        host: configService.get('redis.host'),
+        port: configService.get('redis.port'),
+        password: configService.get('redis.password'),
+        db: configService.get('redis.db'),
+        ttl: configService.get('redis.ttl'),
       }),
       inject: [ConfigService],
       isGlobal: true,
@@ -74,17 +68,15 @@ import { AdminModule } from './admin/admin.module';
     AuthModule,
 
     // 业务模块
-    ProductsModule,
-    CategoriesModule,
-    UsersModule,
-    OrdersModule,
-    BannersModule,
-    LogsModule,
-
-    // 管理模块
-    AdminModule,
+    MenusModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

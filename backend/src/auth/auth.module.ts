@@ -1,33 +1,42 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
-import { AuthService } from './auth.service';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth.controller';
-import { LocalStrategy } from './strategies/local.strategy';
+import { AuthService } from './auth.service';
+import { MenusModule } from '../modules/menus/menus.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { SessionStrategy } from './strategies/session.strategy';
-import { Admin } from '../database/entities/admin.entity';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TokenRefreshInterceptor } from '../common/interceptors/token-refresh.interceptor';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Admin]),
-    PassportModule.register({ defaultStrategy: 'local' }),
+    MenusModule,
+    PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         secret: configService.get('jwt.secret'),
         signOptions: {
           expiresIn: configService.get('jwt.expiresIn'),
+          issuer: 'wechat-mall-api',
+          audience: 'wechat-mall-client',
         },
       }),
       inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, SessionStrategy],
-  exports: [AuthService],
+  providers: [
+    AuthService, 
+    JwtStrategy, 
+    JwtAuthGuard,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TokenRefreshInterceptor,
+    },
+  ],
+  exports: [AuthService, JwtAuthGuard, JwtModule],
 })
 export class AuthModule {}

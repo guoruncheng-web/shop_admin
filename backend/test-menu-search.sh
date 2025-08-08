@@ -1,0 +1,25 @@
+#!/bin/bash
+
+echo "测试菜单模糊查询功能"
+echo "=================="
+
+# 测试1: 获取所有菜单
+echo "测试1: 获取所有菜单"
+curl -s -X GET "http://localhost:3000/api/v1/menus" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlcyI6WyJzdXBlcl9hZG1pbiJdLCJwZXJtaXNzaW9ucyI6WyJzeXN0ZW06YWRtaW4iLCJzeXN0ZW06dXNlciIsInN5c3RlbTpyb2xlIiwic3lzdGVtOnBlcm1pc3Npb24iLCJwcm9kdWN0Omxpc3QiLCJwcm9kdWN0OmNyZWF0ZSIsInByb2R1Y3Q6dXBkYXRlIiwicHJvZHVjdDpkZWxldGUiLCJvcmRlcjpsaXN0Iiwib3JkZXI6dXBkYXRlIiwib3JkZXI6ZGVsZXRlIiwiYmFubmVyOmxpc3QiLCJiYW5uZXI6Y3JlYXRlIiwiYmFubmVyOnVwZGF0ZSIsImJhbm5lcjpkZWxldGUiXSwiaWF0IjoxNzU0NjM3NDIyLCJleHAiOjE3NTUyNDIyMjIsImF1ZCI6IndlY2hhdC1tYWxsLWNsaWVudCIsImlzcyI6IndlY2hhdC1tYWxsLWFwaSJ9.rzfZwWzxGu92ZZCjJttiQrufHEYIOtN8ytdOEwJm3hg" | jq '.data | length'
+
+echo -e "\n测试2: 搜索包含'管理'的菜单"
+curl -s -X GET "http://localhost:3000/api/v1/menus?name=管理" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlcyI6WyJzdXBlcl9hZG1pbiJdLCJwZXJtaXNzaW9ucyI6WyJzeXN0ZW06YWRtaW4iLCJzeXN0ZW06dXNlciIsInN5c3RlbTpyb2xlIiwic3lzdGVtOnBlcm1pc3Npb24iLCJwcm9kdWN0Omxpc3QiLCJwcm9kdWN0OmNyZWF0ZSIsInByb2R1Y3Q6dXBkYXRlIiwicHJvZHVjdDpkZWxldGUiLCJvcmRlcjpsaXN0Iiwib3JkZXI6dXBkYXRlIiwib3JkZXI6ZGVsZXRlIiwiYmFubmVyOmxpc3QiLCJiYW5uZXI6Y3JlYXRlIiwiYmFubmVyOnVwZGF0ZSIsImJhbm5lcjpkZWxldGUiXSwiaWF0IjoxNzU0NjM3NDIyLCJleHAiOjE3NTUyNDIyMjIsImF1ZCI6IndlY2hhdC1tYWxsLWNsaWVudCIsImlzcyI6IndlY2hhdC1tYWxsLWFwaSJ9.rzfZwWzxGu92ZZCjJttiQrufHEYIOtN8ytdOEwJm3hg" | jq '.data | length'
+
+echo -e "\n测试3: 搜索包含'用户'的菜单"
+curl -s -X GET "http://localhost:3000/api/v1/menus?name=用户" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlcyI6WyJzdXBlcl9hZG1pbiJdLCJwZXJtaXNzaW9ucyI6WyJzeXN0ZW06YWRtaW4iLCJzeXN0ZW06dXNlciIsInN5c3RlbTpyb2xlIiwic3lzdGVtOnBlcm1pc3Npb24iLCJwcm9kdWN0Omxpc3QiLCJwcm9kdWN0OmNyZWF0ZSIsInByb2R1Y3Q6dXBkYXRlIiwicHJvZHVjdDpkZWxldGUiLCJvcmRlcjpsaXN0Iiwib3JkZXI6dXBkYXRlIiwib3JkZXI6ZGVsZXRlIiwiYmFubmVyOmxpc3QiLCJiYW5uZXI6Y3JlYXRlIiwiYmFubmVyOnVwZGF0ZSIsImJhbm5lcjpkZWxldGUiXSwiaWF0IjoxNzU0NjM3NDIyLCJleHAiOjE3NTUyNDIyMjIsImF1ZCI6IndlY2hhdC1tYWxsLWNsaWVudCIsImlzcyI6IndlY2hhdC1tYWxsLWFwaSJ9.rzfZwWzxGu92ZZCjJttiQrufHEYIOtN8ytdOEwJm3hg" | jq '.data | length'
+
+echo -e "\n测试4: 搜索包含'商品'的菜单"
+curl -s -X GET "http://localhost:3000/api/v1/menus?name=商品" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlcyI6WyJzdXBlcl9hZG1pbiJdLCJwZXJtaXNzaW9ucyI6WyJzeXN0ZW06YWRtaW4iLCJzeXN0ZW06dXNlciIsInN5c3RlbTpyb2xlIiwic3lzdGVtOnBlcm1pc3Npb24iLCJwcm9kdWN0Omxpc3QiLCJwcm9kdWN0OmNyZWF0ZSIsInByb2R1Y3Q6dXBkYXRlIiwicHJvZHVjdDpkZWxldGUiLCJvcmRlcjpsaXN0Iiwib3JkZXI6dXBkYXRlIiwib3JkZXI6ZGVsZXRlIiwiYmFubmVyOmxpc3QiLCJiYW5uZXI6Y3JlYXRlIiwiYmFubmVyOnVwZGF0ZSIsImJhbm5lcjpkZWxldGUiXSwiaWF0IjoxNzU0NjM3NDIyLCJleHAiOjE3NTUyNDIyMjIsImF1ZCI6IndlY2hhdC1tYWxsLWNsaWVudCIsImlzcyI6IndlY2hhdC1tYWxsLWFwaSJ9.rzfZwWzxGu92ZZCjJttiQrufHEYIOtN8ytdOEwJm3hg" | jq '.data | length'

@@ -5,13 +5,12 @@ import { ConfigService } from '@nestjs/config';
 import session from 'express-session';
 import helmet from 'helmet';
 import compression from 'compression';
-import { createClient } from 'redis';
-import connectRedis from 'connect-redis';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { TokenRefreshInterceptor } from './common/interceptors/token-refresh.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,14 +22,14 @@ async function bootstrap() {
   
   // 跨域配置
   app.enableCors({
-    origin: configService.get('CORS_ORIGIN')?.split(',') || ['http://localhost:3000'],
+    origin: configService.get('cors.origin') || ['http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // API前缀
-  const apiPrefix = configService.get('API_PREFIX') || '/api/v1';
+  const apiPrefix = configService.get('app.apiPrefix') || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
   // 全局验证管道
@@ -54,32 +53,24 @@ async function bootstrap() {
     new ResponseInterceptor(),
   );
 
-  // Session配置
-  const redisClient = createClient({
-    url: `redis://${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
-    password: configService.get('REDIS_PASSWORD'),
-  });
-  await redisClient.connect();
-
-  const RedisStore = connectRedis(session);
+  // Session配置 (暂时使用内存存储，避免Redis连接问题)
   app.use(
     session({
-      store: new RedisStore({ client: redisClient }),
-      secret: configService.get('SESSION_SECRET') || 'default-secret',
+      secret: configService.get('session.secret') || 'default-secret',
       resave: false,
       saveUninitialized: false,
       name: 'wechat_mall_session',
       cookie: {
-        maxAge: parseInt(configService.get('SESSION_MAX_AGE')) || 86400000, // 24小时
+        maxAge: configService.get('session.maxAge') || 86400000, // 24小时
         httpOnly: true,
-        secure: configService.get('NODE_ENV') === 'production',
+        secure: configService.get('app.nodeEnv') === 'production',
         sameSite: 'lax',
       },
     }),
   );
 
   // Swagger文档配置
-  if (configService.get('API_DOCS_ENABLED') !== 'false') {
+  if (configService.get('app.apiDocsEnabled') !== false) {
     const config = new DocumentBuilder()
       .setTitle('微信小程序商城后台管理API')
       .setDescription('微信小程序商城后台管理系统API文档')
