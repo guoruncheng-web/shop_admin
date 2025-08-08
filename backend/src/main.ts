@@ -22,7 +22,7 @@ async function bootstrap() {
   
   // 跨域配置
   app.enableCors({
-    origin: configService.get('cors.origin') || ['http://localhost:3000'],
+    origin: configService.get('cors.origin') || ['http://localhost:3000', 'http://localhost:5666'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
