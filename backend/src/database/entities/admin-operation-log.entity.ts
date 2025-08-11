@@ -56,7 +56,11 @@ export class AdminOperationLog {
   @Column({ type: 'int', default: 0, comment: '执行时间(毫秒)' })
   executionTime: number;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '操作时间' })
+  @Column({ 
+    type: 'timestamp', 
+    default: () => 'CURRENT_TIMESTAMP', 
+    comment: '操作时间' 
+  })
   createdAt: Date;
 
   // 关联管理员

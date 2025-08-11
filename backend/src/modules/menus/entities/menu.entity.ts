@@ -1,8 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, Tree, TreeChildren, TreeParent, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
 
 @Entity('menus')
-@Tree("closure-table")
 export class Menu {
   @PrimaryGeneratedColumn()
   id: number;
@@ -47,15 +46,24 @@ export class Menu {
   @Column({ type: 'boolean', default: true, comment: '状态：true启用，false禁用' })
   status: boolean;
 
-  @TreeChildren()
+  @OneToMany(() => Menu, (menu) => menu.parent)
   children: Menu[];
 
-  @TreeParent()
+  @ManyToOne(() => Menu, (menu) => menu.children, { nullable: true })
+  @JoinColumn({ name: 'parent_id' })
   parent: Menu | null;
 
-  @CreateDateColumn({ comment: '创建时间' })
+  @Column({ 
+    type: 'timestamp', 
+    default: () => 'CURRENT_TIMESTAMP', 
+    comment: '创建时间' 
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ comment: '更新时间' })
+  @Column({ 
+    type: 'datetime', 
+    nullable: true, 
+    comment: '更新时间' 
+  })
   updatedAt: Date;
 }

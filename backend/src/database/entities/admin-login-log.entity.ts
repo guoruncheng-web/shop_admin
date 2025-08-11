@@ -40,7 +40,11 @@ export class AdminLoginLog {
   @Column({ type: 'varchar', length: 255, nullable: true, comment: '登录信息' })
   message?: string;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '登录时间' })
+  @Column({ 
+    type: 'timestamp', 
+    default: () => 'CURRENT_TIMESTAMP', 
+    comment: '登录时间' 
+  })
   loginTime: Date;
 
   @Column({ type: 'timestamp', nullable: true, comment: '登出时间' })
