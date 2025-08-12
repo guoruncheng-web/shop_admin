@@ -255,8 +255,14 @@ export class MenusService {
       .orderBy('menu.sort', 'ASC')
       .getMany();
 
+    console.log('🔍 后端查询到的菜单数据:', menus.map(m => ({ id: m.id, name: m.name, type: m.type, parent_id: m.parent?.id })));
+
     // 构建树形结构并去重
-    return this.buildMenuTree(menus);
+    const treeMenus = this.buildMenuTree(menus);
+    
+    console.log('🌳 后端构建的菜单树:', treeMenus.map(m => ({ id: m.id, name: m.name, type: m.type, children_count: m.children?.length })));
+    
+    return treeMenus;
   }
 
   // 构建菜单树并去重
