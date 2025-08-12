@@ -237,9 +237,10 @@ export class MenusService {
       }
     });
 
-    // 查询菜单
+    // 查询菜单（包含目录、菜单和按钮类型）
     const queryBuilder = this.menuRepository.createQueryBuilder('menu')
       .leftJoinAndSelect('menu.permission', 'permission')
+      .leftJoinAndSelect('menu.parent', 'parent')
       .where('menu.status = :status', { status: true })
       .andWhere('menu.visible = :visible', { visible: true });
 
@@ -286,6 +287,17 @@ export class MenusService {
         }
       }
     });
+
+    // 按sort排序
+    const sortMenus = (menuList: Menu[]) => {
+      menuList.sort((a, b) => a.sort - b.sort);
+      menuList.forEach(menu => {
+        if (menu.children && menu.children.length > 0) {
+          sortMenus(menu.children);
+        }
+      });
+    };
+    sortMenus(rootMenus);
 
     return rootMenus;
   }
