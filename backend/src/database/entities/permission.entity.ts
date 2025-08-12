@@ -42,7 +42,11 @@ export class Permission {
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
   status: number;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
+  @Column({ 
+    type: 'timestamp', 
+    default: () => 'CURRENT_TIMESTAMP', 
+    comment: '创建时间' 
+  })
   createdAt: Date;
 
   // 关联角色（多对多）

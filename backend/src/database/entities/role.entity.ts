@@ -30,10 +30,18 @@ export class Role {
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
   status: number;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
+  @Column({ 
+    type: 'timestamp', 
+    default: () => 'CURRENT_TIMESTAMP', 
+    comment: '创建时间' 
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
+  @Column({ 
+    type: 'datetime', 
+    nullable: true, 
+    comment: '更新时间' 
+  })
   updatedAt: Date;
 
   // 关联管理员（多对多）

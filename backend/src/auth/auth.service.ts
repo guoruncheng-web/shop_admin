@@ -15,12 +15,36 @@ export class AuthService {
     private configService: ConfigService,
     private menusService: MenusService,
   ) {
+    // 获取Redis配置
+    const redisHost = this.configService.get('redis.host') || 'localhost';
+    const redisPort = this.configService.get('redis.port') || 6379;
+    const redisPassword = this.configService.get('redis.password') || '';
+    const redisDb = this.configService.get('redis.db') || 0;
+
+    // 打印Redis连接信息
+    console.log('🔗 Redis连接配置:', {
+      host: redisHost,
+      port: redisPort,
+      password: redisPassword ? '***已设置***' : '未设置',
+      db: redisDb,
+      fullUrl: `redis://${redisHost}:${redisPort}/${redisDb}`
+    });
+
     // 初始化Redis连接
     this.redis = new Redis({
-      host: this.configService.get('redis.host') || 'localhost',
-      port: this.configService.get('redis.port') || 6379,
-      password: this.configService.get('redis.password') || '',
-      db: this.configService.get('redis.db') || 0,
+      host: redisHost,
+      port: redisPort,
+      password: redisPassword,
+      db: redisDb,
+    });
+
+    // 监听Redis连接事件
+    this.redis.on('connect', () => {
+      console.log('✅ Redis连接成功:', `redis://${redisHost}:${redisPort}/${redisDb}`);
+    });
+
+    this.redis.on('error', (err) => {
+      console.error('❌ Redis连接错误:', err.message);
     });
   }
 
