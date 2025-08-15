@@ -371,4 +371,9 @@ export class AuthService {
       throw new UnauthorizedException('令牌刷新失败');
     }
   }
+
+  // 通过用户ID获取完整用户档案（委托给 MenusService）
+  async getUserProfileByUserId(userId: number): Promise<any> {
+    return this.menusService.getFullUserProfile(userId);
+  }
 }

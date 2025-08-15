@@ -149,10 +149,15 @@ export class AuthController {
     description: '未授权 - JWT令牌无效或已过期',
   })
   async getProfile(@Request() req) {
-    const user = req.user;
+    const uid = req?.user?.userId ?? req?.user?.id;
+    if (!uid) {
+      throw new UnauthorizedException('无法识别用户ID');
+    }
+    const fullProfile = await this.authService.getUserProfileByUserId(Number(uid));
+
     return {
       code: 200,
-      data: user,
+      data: fullProfile, // 包含 基础信息 + roles + permissions + roleInfo + menus
       msg: '获取成功',
     };
   }

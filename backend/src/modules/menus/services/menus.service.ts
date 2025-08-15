@@ -394,4 +394,57 @@ export class MenusService {
     menu.sort = sort;
     return this.menuRepository.save(menu);
   }
+
+  // 通过用户ID汇总完整用户档案（基础信息 + 角色 + 权限 + 菜单）
+  async getFullUserProfile(userId: number): Promise<any> {
+    // 查询用户及其角色、权限
+    const user = await this.adminRepository.findOne({
+      where: { id: userId },
+      relations: ['roles', 'roles.permissions'],
+    });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 组装角色与权限
+    const roleInfo = (user.roles || []).map((role) => ({
+      id: role.id,
+      name: role.name,
+      code: role.code,
+      description: role.description,
+    }));
+
+    const roles = (user.roles || [])
+      .filter((r) => r.status === 1)
+      .map((r) => r.code);
+
+    const permissionSet = new Set<string>();
+    (user.roles || []).forEach((role) => {
+      if (role.status === 1) {
+        (role.permissions || []).forEach((permission) => {
+          if (permission.status === 1 && permission.code) {
+            permissionSet.add(permission.code);
+          }
+        });
+      }
+    });
+    const permissions = Array.from(permissionSet);
+
+    // 查询菜单树
+    const menus = await this.getUserMenusByUserId(userId);
+
+    // 返回完整用户档案
+    return {
+      id: user.id,
+      username: user.username,
+      realName: user.realName,
+      email: user.email,
+      phone: user.phone,
+      avatar: user.avatar,
+      roles,
+      permissions,
+      roleInfo,
+      menus,
+    };
+  }
 }
