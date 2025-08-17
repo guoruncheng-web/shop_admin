@@ -11,7 +11,14 @@ import {
   HttpStatus,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { MenusService } from '../services/menus.service';
 import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
@@ -110,7 +117,10 @@ export class MenusController {
   }
 
   @Get()
-  @ApiOperation({ summary: '查询菜单列表', description: '查询菜单列表，支持模糊查询' })
+  @ApiOperation({
+    summary: '查询菜单列表',
+    description: '查询菜单列表，支持模糊查询',
+  })
   @ApiResponse({
     status: 200,
     description: '查询成功',
@@ -133,8 +143,16 @@ export class MenusController {
   }
 
   @Get('user')
-  @ApiOperation({ summary: '获取用户菜单', description: '根据用户权限获取菜单' })
-  @ApiQuery({ name: 'permissions', description: '用户权限列表', required: false, type: [String] })
+  @ApiOperation({
+    summary: '获取用户菜单',
+    description: '根据用户权限获取菜单',
+  })
+  @ApiQuery({
+    name: 'permissions',
+    description: '用户权限列表',
+    required: false,
+    type: [String],
+  })
   @ApiResponse({
     status: 200,
     description: '获取成功',
@@ -158,7 +176,10 @@ export class MenusController {
   }
 
   @Get('user/:userId')
-  @ApiOperation({ summary: '根据用户ID获取菜单', description: '根据用户ID获取该用户角色对应的菜单列表' })
+  @ApiOperation({
+    summary: '根据用户ID获取菜单',
+    description: '根据用户ID获取该用户角色对应的菜单列表',
+  })
   @ApiParam({ name: 'userId', description: '用户ID', type: 'number' })
   @ApiResponse({
     status: 200,
@@ -182,7 +203,10 @@ export class MenusController {
   }
 
   @Get('user/:userId/buttons')
-  @ApiOperation({ summary: '获取用户按钮权限', description: '根据用户ID获取该用户的按钮权限列表' })
+  @ApiOperation({
+    summary: '获取用户按钮权限',
+    description: '根据用户ID获取该用户的按钮权限列表',
+  })
   @ApiParam({ name: 'userId', description: '用户ID', type: 'number' })
   @ApiResponse({
     status: 200,
@@ -206,7 +230,10 @@ export class MenusController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取菜单详情', description: '根据ID获取菜单详细信息' })
+  @ApiOperation({
+    summary: '获取菜单详情',
+    description: '根据ID获取菜单详细信息',
+  })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
     status: 200,
@@ -295,10 +322,7 @@ export class MenusController {
       },
     },
   })
-  async updateSort(
-    @Param('id') id: string,
-    @Body() body: { sort: number },
-  ) {
+  async updateSort(@Param('id') id: string, @Body() body: { sort: number }) {
     const menu = await this.menusService.updateSort(+id, body.sort);
     return {
       code: 200,

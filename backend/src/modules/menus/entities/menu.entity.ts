@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
 
 @Entity('menus')
@@ -40,10 +49,19 @@ export class Menu {
   @Column({ type: 'int', default: 1, comment: '菜单类型：1目录，2菜单，3按钮' })
   type: number;
 
-  @Column({ type: 'varchar', length: 100, nullable: true, comment: '按钮标识（用于前端控制显示隐藏）' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    comment: '按钮标识（用于前端控制显示隐藏）',
+  })
   buttonKey: string | null;
 
-  @Column({ type: 'boolean', default: true, comment: '状态：true启用，false禁用' })
+  @Column({
+    type: 'boolean',
+    default: true,
+    comment: '状态：true启用，false禁用',
+  })
   status: boolean;
 
   @OneToMany(() => Menu, (menu) => menu.parent)
@@ -53,17 +71,9 @@ export class Menu {
   @JoinColumn({ name: 'parent_id' })
   parent: Menu | null;
 
-  @Column({ 
-    type: 'timestamp', 
-    default: () => 'CURRENT_TIMESTAMP', 
-    comment: '创建时间' 
-  })
+  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
   createdAt: Date;
 
-  @Column({ 
-    type: 'datetime', 
-    nullable: true, 
-    comment: '更新时间' 
-  })
+  @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
   updatedAt: Date;
 }

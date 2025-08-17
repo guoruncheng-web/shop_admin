@@ -2,7 +2,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -28,7 +27,12 @@ export class AdminLoginLog {
   @Column({ type: 'varchar', length: 100, nullable: true, comment: '登录地点' })
   loginLocation?: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true, comment: '浏览器类型' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    comment: '浏览器类型',
+  })
   browser?: string;
 
   @Column({ type: 'varchar', length: 50, nullable: true, comment: '操作系统' })
@@ -40,14 +44,10 @@ export class AdminLoginLog {
   @Column({ type: 'varchar', length: 255, nullable: true, comment: '登录信息' })
   message?: string;
 
-  @Column({ 
-    type: 'timestamp', 
-    default: () => 'CURRENT_TIMESTAMP', 
-    comment: '登录时间' 
-  })
+  @Column({ type: 'datetime', comment: '登录时间', nullable: true })
   loginTime: Date;
 
-  @Column({ type: 'timestamp', nullable: true, comment: '登出时间' })
+  @Column({ type: 'datetime', nullable: true, comment: '登出时间' })
   logoutTime?: Date;
 
   // 关联管理员

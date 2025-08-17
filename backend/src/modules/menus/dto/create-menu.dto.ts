@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, IsBoolean, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsEnum,
+  Min,
+} from 'class-validator';
 
 export enum MenuType {
   DIRECTORY = 1,
@@ -17,7 +24,11 @@ export class CreateMenuDto {
   @IsString({ message: '菜单路径必须是字符串' })
   path?: string;
 
-  @ApiProperty({ description: '组件路径', example: 'system/index', required: false })
+  @ApiProperty({
+    description: '组件路径',
+    example: 'system/index',
+    required: false,
+  })
   @IsOptional()
   @IsString({ message: '组件路径必须是字符串' })
   component?: string;
@@ -53,16 +64,28 @@ export class CreateMenuDto {
   @IsNumber({}, { message: '权限ID必须是数字' })
   permissionId?: number;
 
-  @ApiProperty({ description: '菜单类型：1目录，2菜单，3按钮', example: 1, enum: MenuType })
+  @ApiProperty({
+    description: '菜单类型：1目录，2菜单，3按钮',
+    example: 1,
+    enum: MenuType,
+  })
   @IsEnum(MenuType, { message: '菜单类型必须是1、2或3' })
   type: MenuType;
 
-  @ApiProperty({ description: '按钮标识（用于前端控制显示隐藏）', example: 'user:add', required: false })
+  @ApiProperty({
+    description: '按钮标识（用于前端控制显示隐藏）',
+    example: 'user:add',
+    required: false,
+  })
   @IsOptional()
   @IsString({ message: '按钮标识必须是字符串' })
   buttonKey?: string;
 
-  @ApiProperty({ description: '状态：true启用，false禁用', example: true, required: false })
+  @ApiProperty({
+    description: '状态：true启用，false禁用',
+    example: true,
+    required: false,
+  })
   @IsOptional()
   @IsBoolean({ message: '状态必须是布尔值' })
   status?: boolean;

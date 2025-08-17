@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -38,10 +39,24 @@ import { MenusModule } from './modules/menus/menus.module';
         database: configService.get('database.database'),
         charset: configService.get('database.charset'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: configService.get('database.synchronize'),
+        synchronize: false,
         logging: configService.get('database.logging'),
         timezone: '+08:00',
         dateStrings: true,
+        supportBigNumbers: true,
+        bigNumberStrings: false,
+        extra: {
+          connectionLimit: 10,
+        },
+        // 禁用默认的 timestamp 精度
+        legacySpatialSupport: false,
+        // 设置 MySQL 版本以避免精度问题
+        version: '8.0',
+        // 禁用微秒精度
+        options: {
+          useUTC: false,
+          dateStrings: true,
+        },
       }),
       inject: [ConfigService],
     }),
@@ -79,4 +94,4 @@ import { MenusModule } from './modules/menus/menus.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

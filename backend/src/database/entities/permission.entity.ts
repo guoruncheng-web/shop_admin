@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  ManyToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Role } from './role.entity';
 
 @Entity('permissions')
@@ -18,9 +12,9 @@ export class Permission {
   @Column({ type: 'varchar', length: 100, unique: true, comment: '权限代码' })
   code: string;
 
-  @Column({ 
-    type: 'tinyint', 
-    comment: '权限类型：1-菜单权限，2-路由权限，3-按钮权限' 
+  @Column({
+    type: 'tinyint',
+    comment: '权限类型：1-菜单权限，2-路由权限，3-按钮权限',
   })
   type: number;
 
@@ -42,12 +36,11 @@ export class Permission {
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
   status: number;
 
-  @Column({ 
-    type: 'timestamp', 
-    default: () => 'CURRENT_TIMESTAMP', 
-    comment: '创建时间' 
-  })
+  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
   createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
+  updatedAt: Date;
 
   // 关联角色（多对多）
   @ManyToMany(() => Role, (role) => role.permissions)

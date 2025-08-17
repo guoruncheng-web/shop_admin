@@ -10,7 +10,6 @@ import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { TokenRefreshInterceptor } from './common/interceptors/token-refresh.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,17 +18,17 @@ async function bootstrap() {
   // 基础中间件
   app.use(helmet());
   app.use(compression());
-  
+
   // 跨域配置
   app.enableCors({
-    origin: configService.get('cors.origin') || ['http://localhost:3000', 'http://localhost:5666'],
+    origin: true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   });
 
   // API前缀
-  const apiPrefix = configService.get('app.apiPrefix') || 'api/v1';
+  const apiPrefix = configService.get<string>('app.apiPrefix') || '/api';
   app.setGlobalPrefix(apiPrefix);
 
   // 全局验证管道
@@ -56,21 +55,21 @@ async function bootstrap() {
   // Session配置 (暂时使用内存存储，避免Redis连接问题)
   app.use(
     session({
-      secret: configService.get('session.secret') || 'default-secret',
+      secret: configService.get<string>('session.secret') || 'default-secret',
       resave: false,
       saveUninitialized: false,
       name: 'wechat_mall_session',
       cookie: {
-        maxAge: configService.get('session.maxAge') || 86400000, // 24小时
+        maxAge: configService.get<number>('session.maxAge') || 86400000, // 24小时
         httpOnly: true,
-        secure: configService.get('app.nodeEnv') === 'production',
+        secure: configService.get<string>('app.nodeEnv') === 'production',
         sameSite: 'lax',
       },
     }),
   );
 
   // Swagger文档配置
-  if (configService.get('app.apiDocsEnabled') !== false) {
+  if (configService.get<boolean>('app.apiDocsEnabled') !== false) {
     const config = new DocumentBuilder()
       .setTitle('微信小程序商城后台管理API')
       .setDescription('微信小程序商城后台管理系统API文档')
@@ -86,7 +85,7 @@ async function bootstrap() {
       .addTag('Banner管理', 'Banner轮播图管理相关接口')
       .addTag('日志管理', '系统日志管理相关接口')
       .build();
-    
+
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
       swaggerOptions: {
@@ -96,13 +95,20 @@ async function bootstrap() {
   }
 
   // 启动应用
-  const port = configService.get('PORT') || 3000;
+  const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
-  
-  console.log(`🚀 Application is running on: http://localhost:${port}${apiPrefix}`);
-  if (configService.get('API_DOCS_ENABLED') !== 'false') {
-    console.log(`📚 API Documentation: http://localhost:${port}${apiPrefix}/docs`);
+
+  console.log(
+    `🚀 Application is running on: http://localhost:${port}${apiPrefix}`,
+  );
+  if (configService.get<string>('API_DOCS_ENABLED') !== 'false') {
+    console.log(
+      `📚 API Documentation: http://localhost:${port}${apiPrefix}/docs`,
+    );
   }
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});

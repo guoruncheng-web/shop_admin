@@ -12,22 +12,19 @@ import { Permission } from './permission.entity';
 
 @Entity('roles')
 export class Role {
-  @PrimaryGeneratedColumn({ type: 'bigint', comment: '角色ID' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 50, comment: '角色名称' })
+  @Column({ length: 50, unique: true, comment: '角色名称' })
   name: string;
 
-  @Column({ type: 'varchar', length: 50, unique: true, comment: '角色代码' })
+  @Column({ length: 50, unique: true, comment: '角色代码' })
   code: string;
 
-  @Column({ type: 'varchar', length: 200, nullable: true, comment: '角色描述' })
-  description?: string;
+  @Column({ length: 100, nullable: true, comment: '角色描述' })
+  description: string;
 
-  @Column({ type: 'int', default: 0, comment: '排序' })
-  sortOrder: number;
-
-  @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
+  @Column({ type: 'tinyint', default: 1, comment: '状态：1-启用，0-禁用' })
   status: number;
 
   @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
@@ -36,11 +33,11 @@ export class Role {
   @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
   updatedAt: Date;
 
-  // 关联管理员（多对多）
+  // 多对多关系：角色-管理员
   @ManyToMany(() => Admin, (admin) => admin.roles)
   admins: Admin[];
 
-  // 关联权限（多对多）
+  // 多对多关系：角色-权限
   @ManyToMany(() => Permission, (permission) => permission.roles)
   @JoinTable({
     name: 'role_permissions',
