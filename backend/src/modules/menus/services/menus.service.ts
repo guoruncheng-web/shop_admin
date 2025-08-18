@@ -13,6 +13,22 @@ import { Admin } from '../../../database/entities/admin.entity';
 import { Role } from '../../../database/entities/role.entity';
 import { Permission } from '../../../database/entities/permission.entity';
 
+// 添加缺失的类型定义
+interface RouteRecordStringComponent {
+  name: string;
+  path: string;
+  component: string;
+  meta?: {
+    icon?: string;
+    title?: string;
+    order?: number;
+    hideChildrenInMenu?: boolean;
+    keepAlive?: boolean;
+    ignoreAccess?: boolean;
+  };
+  children?: RouteRecordStringComponent[];
+}
+
 @Injectable()
 export class MenusService {
   constructor(
@@ -224,7 +240,7 @@ export class MenusService {
   }
 
   // 根据用户ID获取菜单（支持多角色，自动去重）
-  async getUserMenusByUserId(userId: number): Promise<Menu[]> {
+  async getUserMenusByUserId(userId: number): Promise<RouteRecordStringComponent[]> {
     // 获取用户及其角色和权限
     const user = await this.adminRepository.findOne({
       where: { id: userId },
@@ -249,13 +265,14 @@ export class MenusService {
       }
     });
 
-    // 查询菜单（包含目录、菜单和按钮类型）
+    // 查询菜单（只包含目录和菜单类型，排除按钮）
     const queryBuilder = this.menuRepository
       .createQueryBuilder('menu')
       .leftJoinAndSelect('menu.permission', 'permission')
       .leftJoinAndSelect('menu.parent', 'parent')
       .where('menu.status = :status', { status: true })
-      .andWhere('menu.visible = :visible', { visible: true });
+      .andWhere('menu.visible = :visible', { visible: true })
+      .andWhere('menu.type IN (:...types)', { types: [1, 2] }); // 只获取目录和菜单
 
     // 如果有权限限制，只返回有权限的菜单
     if (permissionIds.size > 0) {
@@ -268,31 +285,34 @@ export class MenusService {
     }
 
     const menus = await queryBuilder.orderBy('menu.sort', 'ASC').getMany();
-
-    console.log(
-      '🔍 后端查询到的菜单数据:',
-      menus.map((m) => ({
-        id: m.id,
-        name: m.name,
-        type: m.type,
-        parent_id: m.parent?.id,
-      })),
-    );
-
-    // 构建树形结构并去重
-    const treeMenus = this.buildMenuTree(menus);
-
-    console.log(
-      '🌳 后端构建的菜单树:',
-      treeMenus.map((m) => ({
-        id: m.id,
-        name: m.name,
-        type: m.type,
-        children_count: m.children?.length,
-      })),
-    );
-
-    return treeMenus;
+    const menuTree = this.buildMenuTree(menus);
+    
+    // 转换为前端需要的格式
+    return this.convertToRouteFormat(menuTree);
+  }
+    
+  private convertToRouteFormat(menus: Menu[]): RouteRecordStringComponent[] {
+    return menus.map(menu => {
+      const route: RouteRecordStringComponent = {
+        name: menu.name,
+        path: menu.path,
+        component: menu.component || (menu.type === 1 ? 'BasicLayout' : ''),
+        meta: {
+          icon: menu.icon,
+          title: menu.name,
+          order: menu.sort,
+          hideChildrenInMenu: !menu.visible,
+          keepAlive: menu.cache,
+          ignoreAccess: menu.type === 1, // 目录类型通常不需要权限检查
+        }
+      };
+      
+      if (menu.children && menu.children.length > 0) {
+        route.children = this.convertToRouteFormat(menu.children);
+      }
+      
+      return route;
+    });
   }
 
   // 构建菜单树并去重
