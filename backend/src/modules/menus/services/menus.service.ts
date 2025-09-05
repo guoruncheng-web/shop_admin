@@ -13,8 +13,8 @@ import { Admin } from '../../../database/entities/admin.entity';
 import { Role } from '../../../database/entities/role.entity';
 import { Permission } from '../../../database/entities/permission.entity';
 
-// 添加缺失的类型定义
-interface RouteRecordStringComponent {
+// 添加缺失的类型定义 - 导出接口供控制器使用
+export interface RouteRecordStringComponent {
   name: string;
   path: string;
   component: string;

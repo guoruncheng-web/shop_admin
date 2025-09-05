@@ -17,6 +17,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // 业务模块
 import { MenusModule } from './modules/menus/menus.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -84,6 +85,7 @@ import { MenusModule } from './modules/menus/menus.module';
 
     // 业务模块
     MenusModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

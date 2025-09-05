@@ -210,6 +210,50 @@ export class AuthController {
     };
   }
 
+  @Get('codes')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: '获取用户权限码',
+    description: '根据JWT令牌获取当前登录用户的权限码列表',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['system:admin', 'system:user', 'product:list']
+        },
+        msg: { type: 'string', example: '获取成功' },
+      }
+    }
+  })
+  async getAccessCodes(@Request() req) {
+    try {
+      const uid = req?.user?.userId ?? req?.user?.id;
+      if (!uid) {
+        throw new UnauthorizedException('无法识别用户ID');
+      }
+      
+      // 获取用户权限码
+      const accessCodes = await this.authService.getUserPermissionsByUserId(Number(uid));
+      
+      return {
+        code: 200,
+        data: accessCodes,
+        msg: '获取成功',
+      };
+    } catch (error) {
+      console.error('获取用户权限码失败:', error);
+      throw error;
+    }
+  }
+
   @Get('verify')
   @ApiOperation({
     summary: '验证JWT令牌',

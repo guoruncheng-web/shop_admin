@@ -172,3 +172,7 @@ coverage/
 
 # Storybook build outputs
 storybook-static
+
+# Sensitive local router config
+backend/.claude-code-router/
+
