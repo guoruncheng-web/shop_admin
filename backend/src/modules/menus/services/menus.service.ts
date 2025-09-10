@@ -18,13 +18,44 @@ export interface RouteRecordStringComponent {
   name: string;
   path: string;
   component: string;
+  redirect?: string;
   meta?: {
+    // 基础显示
+    title: string;
     icon?: string;
-    title?: string;
+    activeIcon?: string;
     order?: number;
+    // 显示控制
+    hideInMenu?: boolean;
     hideChildrenInMenu?: boolean;
+    hideInBreadcrumb?: boolean;
+    hideInTab?: boolean;
+    // 功能控制
     keepAlive?: boolean;
     ignoreAccess?: boolean;
+    affixTab?: boolean;
+    affixTabOrder?: number;
+    // 外链和iframe
+    link?: string;
+    iframeSrc?: string;
+    openInNewWindow?: boolean;
+    // 徽标配置
+    badge?: string;
+    badgeType?: 'dot' | 'normal';
+    badgeVariants?: string;
+    // 权限控制
+    authority?: string[];
+    menuVisibleWithForbidden?: boolean;
+    activePath?: string;
+    // 标签页控制
+    maxNumOfOpenTab?: number;
+    fullPathKey?: boolean;
+    // 布局控制
+    noBasicLayout?: boolean;
+    // 查询参数
+    query?: Record<string, any>;
+    // 其他属性
+    loaded?: boolean;
   };
   children?: RouteRecordStringComponent[];
 }
@@ -46,7 +77,15 @@ export class MenusService {
   async create(createMenuDto: CreateMenuDto): Promise<Menu> {
     const { parentId, ...menuData } = createMenuDto;
 
-    const menu = this.menuRepository.create(menuData);
+    const menu = this.menuRepository.create({
+      ...menuData,
+      title: menuData.name,
+      orderNum: menuData.sort || 0,
+      status: menuData.status ? 1 : 0,
+      hideInMenu: 0,
+      keepAlive: 0,
+      ignoreAccess: 0,
+    });
 
     // 如果有父级菜单，设置父级关系
     if (parentId && parentId > 0) {
@@ -161,7 +200,7 @@ export class MenusService {
       queryBuilder.andWhere('menu.visible = :visible', { visible });
     }
 
-    const data = await queryBuilder.orderBy('menu.sort', 'ASC').getMany();
+    const data = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
 
     return data;
   }
@@ -240,7 +279,9 @@ export class MenusService {
   }
 
   // 根据用户ID获取菜单（支持多角色，自动去重）
-  async getUserMenusByUserId(userId: number): Promise<RouteRecordStringComponent[]> {
+  async getUserMenusByUserId(
+    userId: number,
+  ): Promise<RouteRecordStringComponent[]> {
     // 获取用户及其角色和权限
     const user = await this.adminRepository.findOne({
       where: { id: userId },
@@ -284,33 +325,53 @@ export class MenusService {
       );
     }
 
-    const menus = await queryBuilder.orderBy('menu.sort', 'ASC').getMany();
+    const menus = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
     const menuTree = this.buildMenuTree(menus);
-    
+
     // 转换为前端需要的格式
     return this.convertToRouteFormat(menuTree);
   }
     
   private convertToRouteFormat(menus: Menu[]): RouteRecordStringComponent[] {
-    return menus.map(menu => {
+    return menus.map((menu) => {
       const route: RouteRecordStringComponent = {
         name: menu.name,
         path: menu.path,
         component: menu.component || (menu.type === 1 ? 'BasicLayout' : ''),
+        redirect: menu.redirect,
         meta: {
+          title: menu.title || menu.name,
           icon: menu.icon,
-          title: menu.name,
-          order: menu.sort,
-          hideChildrenInMenu: !menu.visible,
-          keepAlive: menu.cache,
-          ignoreAccess: menu.type === 1, // 目录类型通常不需要权限检查
-        }
+          activeIcon: menu.activeIcon,
+          order: menu.orderNum || 0,
+          hideInMenu: (menu.hideInMenu || 0) === 1,
+          hideChildrenInMenu: (menu.hideChildrenInMenu || 0) === 1,
+          hideInBreadcrumb: (menu.hideInBreadcrumb || 0) === 1,
+          hideInTab: (menu.hideInTab || 0) === 1,
+          keepAlive: (menu.keepAlive || 0) === 1,
+          ignoreAccess: (menu.ignoreAccess || 0) === 1,
+          affixTab: (menu.affixTab || 0) === 1,
+          affixTabOrder: menu.affixTabOrder || 0,
+          link: menu.externalLink,
+          iframeSrc: menu.iframeSrc,
+          openInNewWindow: (menu.openInNewWindow || 0) === 1,
+          badge: menu.badge,
+          badgeType: menu.badgeType || 'normal',
+          badgeVariants: menu.badgeVariants || 'default',
+          authority: menu.authority || [],
+          menuVisibleWithForbidden: (menu.menuVisibleWithForbidden || 0) === 1,
+          activePath: menu.activePath,
+          maxNumOfOpenTab: menu.maxNumOfOpenTab || -1,
+          fullPathKey: (menu.fullPathKey || 1) === 1,
+          noBasicLayout: (menu.noBasicLayout || 0) === 1,
+          query: menu.queryParams,
+        },
       };
-      
+
       if (menu.children && menu.children.length > 0) {
         route.children = this.convertToRouteFormat(menu.children);
       }
-      
+
       return route;
     });
   }
@@ -346,9 +407,9 @@ export class MenusService {
       }
     });
 
-    // 按sort排序
+    // 按orderNum排序
     const sortMenus = (menuList: Menu[]) => {
-      menuList.sort((a, b) => a.sort - b.sort);
+      menuList.sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0));
       menuList.forEach((menu) => {
         if (menu.children && menu.children.length > 0) {
           sortMenus(menu.children);
@@ -377,7 +438,7 @@ export class MenusService {
       );
     }
 
-    const menus = await queryBuilder.orderBy('menu.sort', 'ASC').getMany();
+    const menus = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
 
     return this.buildMenuTree(menus);
   }
@@ -443,14 +504,14 @@ export class MenusService {
   // 更新菜单状态
   async updateStatus(id: number, status: boolean): Promise<Menu> {
     const menu = await this.getMenuById(id);
-    menu.status = status;
+    menu.status = status ? 1 : 0;
     return this.menuRepository.save(menu);
   }
 
   // 更新菜单排序
   async updateSort(id: number, sort: number): Promise<Menu> {
     const menu = await this.getMenuById(id);
-    menu.sort = sort;
+    menu.orderNum = sort;
     return this.menuRepository.save(menu);
   }
 
