@@ -25,7 +25,12 @@ export class Admin {
   @Exclude()
   password: string;
 
-  @Column({ type: 'varchar', length: 50, comment: '真实姓名' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    name: 'real_name',
+    comment: '真实姓名',
+  })
   realName: string;
 
   @Column({ type: 'varchar', length: 100, unique: true, comment: '邮箱' })
@@ -40,21 +45,35 @@ export class Admin {
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
   status: number;
 
-  @Column({ type: 'datetime', nullable: true, comment: '最后登录时间' })
+  @Column({
+    type: 'timestamp',
+    nullable: true,
+    name: 'last_login_time',
+    comment: '最后登录时间',
+  })
   lastLoginTime?: Date;
 
   @Column({
     type: 'varchar',
     length: 50,
     nullable: true,
+    name: 'last_login_ip',
     comment: '最后登录IP',
   })
   lastLoginIp?: string;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
+  @CreateDateColumn({
+    type: 'timestamp',
+    name: 'created_at',
+    comment: '创建时间',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+    name: 'updated_at',
+    comment: '更新时间',
+  })
   updatedAt: Date;
 
   // 关联角色（多对多）

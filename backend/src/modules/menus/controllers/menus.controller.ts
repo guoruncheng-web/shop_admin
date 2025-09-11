@@ -19,7 +19,7 @@ import {
   ApiQuery,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { MenusService, RouteRecordStringComponent } from '../services/menus.service';
+import { MenusService } from '../services/menus.service';
 import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
 import { QueryMenuDto } from '../dto/query-menu.dto';

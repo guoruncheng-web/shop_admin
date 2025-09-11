@@ -153,7 +153,7 @@ export class MenusService {
 
   // 获取菜单树
   async getMenuTree(query: QueryMenuDto = {}): Promise<Menu[]> {
-    const { name, type, status, visible } = query;
+    const { name, type, status } = query;
 
     const queryBuilder = this.menuRepository.createQueryBuilder('menu');
 
@@ -169,18 +169,14 @@ export class MenusService {
       queryBuilder.andWhere('menu.status = :status', { status });
     }
 
-    if (visible !== undefined) {
-      queryBuilder.andWhere('menu.visible = :visible', { visible });
-    }
-
-    queryBuilder.orderBy('menu.sort', 'ASC');
+    queryBuilder.orderBy('menu.orderNum', 'ASC');
 
     return this.menuRepository.findTrees();
   }
 
   // 分页查询菜单
   async getMenus(query: QueryMenuDto): Promise<Menu[]> {
-    const { name, type, status, visible } = query;
+    const { name, type, status } = query;
 
     const queryBuilder = this.menuRepository.createQueryBuilder('menu');
 
@@ -194,10 +190,6 @@ export class MenusService {
 
     if (status !== undefined) {
       queryBuilder.andWhere('menu.status = :status', { status });
-    }
-
-    if (visible !== undefined) {
-      queryBuilder.andWhere('menu.visible = :visible', { visible });
     }
 
     const data = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
@@ -312,7 +304,7 @@ export class MenusService {
       .leftJoinAndSelect('menu.permission', 'permission')
       .leftJoinAndSelect('menu.parent', 'parent')
       .where('menu.status = :status', { status: true })
-      .andWhere('menu.visible = :visible', { visible: true })
+      .andWhere('menu.hideInMenu = :hideInMenu', { hideInMenu: 0 })
       .andWhere('menu.type IN (:...types)', { types: [1, 2] }); // 只获取目录和菜单
 
     // 如果有权限限制，只返回有权限的菜单
@@ -331,7 +323,7 @@ export class MenusService {
     // 转换为前端需要的格式
     return this.convertToRouteFormat(menuTree);
   }
-    
+
   private convertToRouteFormat(menus: Menu[]): RouteRecordStringComponent[] {
     return menus.map((menu) => {
       const route: RouteRecordStringComponent = {

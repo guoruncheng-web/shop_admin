@@ -103,6 +103,10 @@ END //
 DELIMITER ;
 */
 
+-- 注意：触发器在命令行执行时可能有语法问题，建议在MySQL客户端中单独执行
+-- 或者注释掉触发器部分
+
+/*
 -- 创建更新路径ID的触发器
 DELIMITER //
 
@@ -130,6 +134,7 @@ BEGIN
 END //
 
 DELIMITER ;
+*/
 
 -- 示例数据插入
 INSERT INTO `menus` (

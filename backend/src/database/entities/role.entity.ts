@@ -24,16 +24,21 @@ export class Role {
   @Column({ type: 'varchar', length: 200, nullable: true, comment: '角色描述' })
   description?: string;
 
-  @Column({ type: 'int', default: 0, comment: '排序' })
-  sortOrder: number;
-
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
   status: number;
 
-  @CreateDateColumn({ type: 'timestamp', comment: '创建时间' })
+  @CreateDateColumn({
+    type: 'timestamp',
+    name: 'created_at',
+    comment: '创建时间',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp', comment: '更新时间' })
+  @UpdateDateColumn({
+    type: 'timestamp',
+    name: 'updated_at',
+    comment: '更新时间',
+  })
   updatedAt: Date;
 
   // 关联管理员（多对多）
