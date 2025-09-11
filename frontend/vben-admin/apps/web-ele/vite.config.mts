@@ -15,10 +15,10 @@ export default defineConfig(async () => {
         proxy: {
           '/api': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
             // backend proxy target address
             target: 'http://localhost:3000',
             ws: true,
+            rewrite: (path) => path.replace(/^\/api/, '/api'),
           },
         },
       },
