@@ -17,7 +17,7 @@ export default defineConfig(async () => {
             changeOrigin: true,
             rewrite: (path) => path.replace(/^\/api/, ''),
             // backend proxy target address
-            target: 'http://localhost:3000/api',
+            target: 'http://localhost:3000',
             ws: true,
           },
         },

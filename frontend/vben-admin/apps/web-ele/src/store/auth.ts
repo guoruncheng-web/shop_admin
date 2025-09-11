@@ -11,6 +11,7 @@ import { ElNotification } from 'element-plus';
 import { defineStore } from 'pinia';
 
 import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
+import { getProfile } from '#/api/core/user';
 import { $t } from '#/locales';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -100,8 +101,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchUserInfo() {
     let userInfo: null | UserInfo = null;
-    userInfo = await getUserInfoApi();
+    // 调用getProfile获取用户详细信息
+    userInfo = await getProfile();
+    // 将用户信息保存到Pinia store中
     userStore.setUserInfo(userInfo);
+    console.log('✅ 用户信息已保存到Pinia store:', userInfo);
     return userInfo;
   }
 

@@ -1,6 +1,7 @@
 import type { RouteRecordStringComponent } from '@vben/types';
 
 import { requestClient } from '#/api/request';
+import { useUserStore } from '@vben/stores';
 
 /**
  * 获取用户所有菜单
@@ -8,73 +9,59 @@ import { requestClient } from '#/api/request';
 export async function getAllMenusApi(): Promise<RouteRecordStringComponent[]> {
   console.log('🚀 getAllMenusApi 被调用了！');
   
-  // 临时使用测试数据，验证菜单显示功能
-  const testMenus: RouteRecordStringComponent[] = [
+  // 从 Pinia store 中获取用户信息
+  const userStore = useUserStore();
+  const userInfo = userStore.userInfo;
+  console.log('👤 当前用户信息:', userInfo);
+  
+  // 基础静态路由
+  const staticMenus: RouteRecordStringComponent[] = [
     {
-      name: 'SystemManagement',
-      path: '/system',
+      name: 'Dashboard',
+      path: '/dashboard',
       component: 'BasicLayout',
       meta: {
-        title: '系统管理',
-        icon: 'lucide:settings',
-        order: 1,
+        title: '仪表盘',
+        icon: 'lucide:layout-dashboard',
+        order: -1,
       },
       children: [
         {
-          name: 'UserManagement',
-          path: '/system/user',
-          component: '#/views/_core/fallback/not-found.vue',
+          name: 'Analytics',
+          path: '/analytics',
+          component: '#/views/dashboard/analytics/index.vue',
           meta: {
-            title: '用户管理',
-            icon: 'lucide:users',
+            affixTab: true,
+            icon: 'lucide:area-chart',
+            title: '分析页',
           },
         },
         {
-          name: 'RoleManagement',
-          path: '/system/role',
-          component: '#/views/_core/fallback/not-found.vue',
+          name: 'Workspace',
+          path: '/workspace',
+          component: '#/views/dashboard/workspace/index.vue',
           meta: {
-            title: '角色管理',
-            icon: 'lucide:user-check',
+            icon: 'carbon:workspace',
+            title: '工作台',
           },
         },
       ],
-    },
-    {
-      name: 'ProductManagement',
-      path: '/product',
-      component: 'BasicLayout',
-      meta: {
-        title: '商品管理',
-        icon: 'lucide:package',
-        order: 2,
-      },
-      children: [
-        {
-          name: 'ProductList',
-          path: '/product/list',
-          component: '#/views/_core/fallback/not-found.vue',
-          meta: {
-            title: '商品列表',
-            icon: 'lucide:list',
-          },
-        },
-        {
-          name: 'CategoryManagement',
-          path: '/product/category',
-          component: '#/views/_core/fallback/not-found.vue',
-          meta: {
-            title: '分类管理',
-            icon: 'lucide:folder',
-          },
-        },
-      ],
-    },
+    }
   ];
+  
+  // 从用户信息中获取动态菜单（如果用户信息中包含菜单数据）
+  let dynamicMenus: RouteRecordStringComponent[] = [];
+  if (userInfo && userInfo.menus) {
+    dynamicMenus = userInfo.menus;
+    console.log('📋 用户动态菜单:', dynamicMenus);
+  }
+  
+  // 合并静态路由和动态菜单
+  const allMenus = [...staticMenus, ...dynamicMenus];
   
   // 模拟异步请求
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  console.log('📋 返回测试菜单数据:', testMenus);
-  return testMenus;
+  console.log('📋 返回合并后的菜单数据:', allMenus);
+  return allMenus;
 }
