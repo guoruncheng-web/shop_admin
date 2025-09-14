@@ -2,7 +2,7 @@
   <el-form
     ref="formRef"
     :model="localFormData"
-    :rules="formRules"
+    :rules="getDynamicRules()"
     label-width="100px"
   >
     <el-form-item label="菜单名称" prop="name">
@@ -11,9 +11,9 @@
     
     <el-form-item label="菜单类型" prop="type">
       <el-select v-model="localFormData.type" placeholder="请选择菜单类型">
-        <el-option label="目录" value="directory" />
-        <el-option label="菜单" value="menu" />
-        <el-option label="按钮" value="button" />
+        <el-option label="目录" :value="1" />
+        <el-option label="菜单" :value="2" />
+        <el-option label="按钮" :value="3" />
       </el-select>
     </el-form-item>
     
@@ -28,16 +28,16 @@
       />
     </el-form-item>
     
-    <el-form-item label="路由路径" prop="path" v-if="localFormData.type !== 'button'">
+    <el-form-item label="路由路径" prop="path" v-if="localFormData.type !== 3">
       <el-input v-model="localFormData.path" placeholder="请输入路由路径" />
     </el-form-item>
     
-    <el-form-item label="组件路径" prop="component" v-if="localFormData.type === 'menu'">
+    <el-form-item label="组件路径" prop="component" v-if="localFormData.type === 2">
       <el-input v-model="localFormData.component" placeholder="请输入组件路径" />
     </el-form-item>
     
-    <el-form-item label="权限标识" prop="permission">
-      <el-input v-model="localFormData.permission" placeholder="请输入权限标识" />
+    <el-form-item label="权限标识" prop="permission" v-if="localFormData.type === 3">
+      <el-input v-model="localFormData.permission" placeholder="请输入权限标识（如：user:add）" />
     </el-form-item>
     
     <el-form-item label="菜单图标" prop="icon">
@@ -58,7 +58,7 @@
       />
     </el-form-item>
     
-    <el-form-item label="是否隐藏" prop="isHidden" v-if="localFormData.type !== 'button'">
+    <el-form-item label="是否隐藏" prop="isHidden" v-if="localFormData.type !== 3">
       <el-switch
         v-model="localFormData.isHidden"
         active-text="隐藏"
@@ -68,7 +68,7 @@
       />
     </el-form-item>
     
-    <el-form-item label="是否缓存" prop="isKeepAlive" v-if="localFormData.type === 'menu'">
+    <el-form-item label="是否缓存" prop="isKeepAlive" v-if="localFormData.type === 2">
       <el-switch
         v-model="localFormData.isKeepAlive"
         active-text="缓存"
@@ -128,7 +128,7 @@ const formRef = ref<FormInstance>();
 // 本地表单数据
 const localFormData = reactive<CreateMenuDto>({
   name: '',
-  type: 'menu',
+  type: undefined as any, // 新增时不设置默认值，让用户主动选择
   parentId: null,
   path: '',
   component: '',
@@ -157,13 +157,24 @@ const formRules: FormRules = {
   component: [
     { required: true, message: '请输入组件路径', trigger: 'blur' }
   ],
-  permission: [
-    { required: true, message: '请输入权限标识', trigger: 'blur' }
-  ],
   sort: [
     { required: true, message: '请输入排序', trigger: 'blur' },
     { type: 'number', min: 0, message: '排序必须大于等于0', trigger: 'blur' }
   ]
+};
+
+// 动态验证规则（根据菜单类型变化）
+const getDynamicRules = () => {
+  const rules = { ...formRules };
+  
+  // 只有按钮类型才需要权限标识
+  if (localFormData.type === 3) {
+    rules.permission = [
+      { required: true, message: '按钮类型菜单必须输入权限标识', trigger: 'blur' }
+    ];
+  }
+  
+  return rules;
 };
 
 // 监听外部数据变化
@@ -171,26 +182,46 @@ watch(
   () => props.formData,
   (newData) => {
     if (newData) {
-      Object.assign(localFormData, {
-        name: newData.name || '',
-        type: newData.type || 'menu',
-        parentId: newData.parentId || null,
-        path: newData.path || '',
-        component: newData.component || '',
-        permission: newData.permission || '',
-        icon: newData.icon || '',
-        sort: newData.sort || 0,
-        status: newData.status !== false,
-        isHidden: newData.isHidden || false,
-        isKeepAlive: newData.isKeepAlive !== false,
-        isAffix: newData.isAffix || false,
-        remark: newData.remark || ''
-      });
+      // 编辑模式：回显所有数据
+      if (newData.id) {
+        Object.assign(localFormData, {
+          name: newData.name || '',
+          type: newData.type || undefined,
+          parentId: newData.parentId || null,
+          path: newData.path || '',
+          component: newData.component || '',
+          permission: newData.permission || '',
+          icon: newData.icon || '',
+          sort: (newData as any).sort || (newData as any).orderNum || 0,
+          status: newData.status !== false,
+          isHidden: (newData as any).isHidden || false,
+          isKeepAlive: (newData as any).isKeepAlive !== false,
+          isAffix: (newData as any).isAffix || false,
+          remark: (newData as any).remark || ''
+        });
+      } else {
+        // 新增模式：只设置父级菜单ID，其他保持默认值
+        Object.assign(localFormData, {
+          name: '',
+          type: undefined as any, // 不设置默认类型
+          parentId: newData.parentId || null,
+          path: '',
+          component: '',
+          permission: '',
+          icon: '',
+          sort: 0,
+          status: true,
+          isHidden: false,
+          isKeepAlive: true,
+          isAffix: false,
+          remark: ''
+        });
+      }
     } else {
       // 重置表单
       Object.assign(localFormData, {
         name: '',
-        type: 'menu',
+        type: undefined as any, // 新增时不设置默认值
         parentId: null,
         path: '',
         component: '',

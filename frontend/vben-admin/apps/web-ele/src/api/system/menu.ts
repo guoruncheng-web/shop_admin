@@ -15,17 +15,24 @@ export interface MenuData {
   component: string;
   icon?: string;
   orderNum: number;
+  sort?: number; // 兼容字段
   visible: boolean;
   external: boolean;
   cache: boolean;
   permission?: string;
-  type: MenuType;
+  type: MenuType | string | number; // 兼容不同类型
   status: boolean;
   parentId?: number;
   buttonKey?: string;
   children?: MenuData[];
+  hasChildren?: boolean; // 用于el-table树形表格
   createdAt: string;
   updatedAt: string;
+  // 新增创建者和更新者字段
+  createdBy?: number;
+  updatedBy?: number;
+  createdByName?: string;
+  updatedByName?: string;
 }
 
 // 创建菜单DTO
@@ -35,14 +42,19 @@ export interface CreateMenuDto {
   component?: string;
   icon?: string;
   orderNum?: number;
+  sort?: number; // 兼容字段
   visible?: boolean;
   external?: boolean;
   cache?: boolean;
   permission?: string;
-  type: MenuType;
+  type: MenuType | string | number;
   status?: boolean;
-  parentId?: number;
+  parentId?: number | null;
   buttonKey?: string;
+  isHidden?: boolean;
+  isKeepAlive?: boolean;
+  isAffix?: boolean;
+  remark?: string;
 }
 
 // 更新菜单DTO

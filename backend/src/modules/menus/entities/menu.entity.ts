@@ -274,6 +274,39 @@ export class Menu {
   })
   queryParams: Record<string, any>;
 
+  // 创建者和更新者
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    name: 'created_by',
+    comment: '创建者用户ID',
+  })
+  createdBy: number | null;
+
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    name: 'updated_by',
+    comment: '更新者用户ID',
+  })
+  updatedBy: number | null;
+
+  @Column({
+    length: 100,
+    nullable: true,
+    name: 'created_by_name',
+    comment: '创建者姓名',
+  })
+  createdByName: string | null;
+
+  @Column({
+    length: 100,
+    nullable: true,
+    name: 'updated_by_name',
+    comment: '更新者姓名',
+  })
+  updatedByName: string | null;
+
   // 关联关系
   @ManyToOne(() => Permission, { nullable: true })
   @JoinColumn({ name: 'permission_id' })

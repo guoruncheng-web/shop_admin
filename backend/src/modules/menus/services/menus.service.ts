@@ -74,17 +74,34 @@ export class MenusService {
   ) {}
 
   // 创建菜单
-  async create(createMenuDto: CreateMenuDto): Promise<Menu> {
-    const { parentId, ...menuData } = createMenuDto;
+  async create(createMenuDto: CreateMenuDto, currentUser?: any): Promise<Menu> {
+    const {
+      parentId,
+      isHidden,
+      isKeepAlive,
+      permission,
+      ...menuData
+    } = createMenuDto;
 
+    // 字段映射和转换
     const menu = this.menuRepository.create({
       ...menuData,
       title: menuData.name,
-      orderNum: menuData.sort || 0,
+      orderNum: menuData.sort || menuData.orderNum || 0,
       status: menuData.status ? 1 : 0,
-      hideInMenu: 0,
-      keepAlive: 0,
+      hideInMenu: isHidden ? 1 : 0,
+      keepAlive: isKeepAlive ? 1 : 0,
       ignoreAccess: 0,
+      // 如果是按钮类型，优先使用permission作为buttonKey
+      buttonKey:
+        menuData.type === MenuType.BUTTON
+          ? permission || menuData.buttonKey
+          : menuData.buttonKey,
+      // 自动填入创建者信息
+      createdBy: currentUser?.userId || null,
+      createdByName: currentUser?.username || null,
+      updatedBy: currentUser?.userId || null,
+      updatedByName: currentUser?.username || null,
     });
 
     // 如果有父级菜单，设置父级关系
@@ -102,17 +119,17 @@ export class MenusService {
       menu.parent = parent;
     } else {
       // 根级菜单只能是目录类型
-      if (menu.type !== 1) {
+      if (menu.type !== MenuType.DIRECTORY) {
         throw new BadRequestException('根级菜单只能是目录类型');
       }
     }
 
-    // 验证按钮类型必须有buttonKey
-    if (menu.type === 3 && !menu.buttonKey) {
-      throw new BadRequestException('按钮类型菜单必须设置按钮标识');
+    // 验证按钮类型必须有buttonKey或permission
+    if (menu.type === MenuType.BUTTON && !menu.buttonKey && !permission) {
+      throw new BadRequestException('按钮类型菜单必须设置权限标识');
     }
 
-    return this.menuRepository.save(menu);
+    return await this.menuRepository.save(menu);
   }
 
   // 验证菜单层级结构
@@ -171,7 +188,11 @@ export class MenusService {
 
     queryBuilder.orderBy('menu.orderNum', 'ASC');
 
-    return this.menuRepository.findTrees();
+    // 获取所有符合条件的菜单
+    const menus = await queryBuilder.getMany();
+
+    // 手动构建树形结构
+    return this.buildMenuTree(menus);
   }
 
   // 分页查询菜单
@@ -212,21 +233,52 @@ export class MenusService {
   }
 
   // 更新菜单
-  async update(id: number, updateMenuDto: UpdateMenuDto): Promise<Menu> {
+  async update(id: number, updateMenuDto: UpdateMenuDto, currentUser?: any): Promise<Menu> {
     const menu = await this.getMenuById(id);
-    const { parentId, ...updateData } = updateMenuDto;
+    const {
+      parentId,
+      isHidden,
+      isKeepAlive,
+      permission,
+      ...updateData
+    } = updateMenuDto;
 
     // 检查是否将菜单设置为自己的子菜单
     if (parentId === id) {
       throw new BadRequestException('不能将菜单设置为自己的子菜单');
     }
 
+    // 字段映射和转换
+    const mappedData = {
+      ...updateData,
+      title: updateData.name || menu.title,
+      orderNum: updateData.sort || updateData.orderNum || menu.orderNum,
+      status:
+        updateData.status !== undefined
+          ? updateData.status
+            ? 1
+            : 0
+          : menu.status,
+      hideInMenu: isHidden !== undefined ? (isHidden ? 1 : 0) : menu.hideInMenu,
+      keepAlive:
+        isKeepAlive !== undefined ? (isKeepAlive ? 1 : 0) : menu.keepAlive,
+      // 自动更新更新者信息
+      updatedBy: currentUser?.userId || menu.updatedBy,
+      updatedByName: currentUser?.username || menu.updatedByName,
+    };
+
+      // 如果是按钮类型，处理buttonKey
+    if (updateData.type === MenuType.BUTTON || menu.type === MenuType.BUTTON) {
+      (mappedData as any).buttonKey =
+        permission || updateData.buttonKey || menu.buttonKey;
+    }
+
     // 如果有父级菜单，设置父级关系
     if (parentId !== undefined) {
-      if (parentId === 0) {
+      if (parentId === 0 || parentId === null) {
         menu.parent = null;
         // 根级菜单只能是目录类型
-        if (updateData.type && updateData.type !== MenuType.DIRECTORY) {
+        if (mappedData.type && mappedData.type !== MenuType.DIRECTORY) {
           throw new BadRequestException('根级菜单只能是目录类型');
         }
       } else if (parentId > 0) {
@@ -238,22 +290,22 @@ export class MenusService {
         }
 
         // 验证三级菜单结构
-        this.validateMenuHierarchy(parent, updateData.type || menu.type);
+        this.validateMenuHierarchy(parent, mappedData.type || menu.type);
         menu.parent = parent;
       }
     }
 
-    // 验证按钮类型必须有buttonKey
+    // 验证按钮类型必须有buttonKey或permission
     if (
-      updateData.type === MenuType.BUTTON &&
-      !updateData.buttonKey &&
-      !menu.buttonKey
+      (mappedData.type === MenuType.BUTTON || menu.type === MenuType.BUTTON) &&
+      !(mappedData as any).buttonKey &&
+      !permission
     ) {
-      throw new BadRequestException('按钮类型菜单必须设置按钮标识');
+      throw new BadRequestException('按钮类型菜单必须设置权限标识');
     }
 
-    Object.assign(menu, updateData);
-    return this.menuRepository.save(menu);
+    Object.assign(menu, mappedData);
+    return await this.menuRepository.save(menu);
   }
 
   // 删除菜单
@@ -261,9 +313,10 @@ export class MenusService {
     const menu = await this.getMenuById(id);
 
     // 检查是否有子菜单
-    const children = await this.menuRepository.findDescendants(menu);
-    if (children.length > 1) {
-      // 包含自己，所以长度大于1表示有子菜单
+    const children = await this.menuRepository.find({
+      where: { parentId: id },
+    });
+    if (children.length > 0) {
       throw new BadRequestException('请先删除子菜单');
     }
 
@@ -373,17 +426,22 @@ export class MenusService {
     const menuMap = new Map<number, Menu>();
     const rootMenus: Menu[] = [];
 
-    // 创建菜单映射
+    // 创建菜单映射，转换数据格式
     menus.forEach((menu) => {
-      menuMap.set(menu.id, { ...menu, children: [] });
+      const transformedMenu: Menu = {
+        ...menu,
+        children: [],
+      };
+      menuMap.set(menu.id, transformedMenu);
     });
 
     // 构建树形结构
     menus.forEach((menu) => {
       const menuNode = menuMap.get(menu.id);
       if (menuNode) {
-        if (menu.parent) {
-          const parent = menuMap.get(menu.parent.id);
+        // 检查是否有父级菜单（通过parentId判断）
+        if (menu.parentId && menu.parentId > 0) {
+          const parent = menuMap.get(menu.parentId);
           if (parent) {
             // 检查是否已经存在相同的子菜单（去重）
             const existingChild = parent.children.find(
@@ -394,6 +452,7 @@ export class MenusService {
             }
           }
         } else {
+          // 没有父级ID或parentId为0的是根菜单
           rootMenus.push(menuNode);
         }
       }
@@ -497,14 +556,14 @@ export class MenusService {
   async updateStatus(id: number, status: boolean): Promise<Menu> {
     const menu = await this.getMenuById(id);
     menu.status = status ? 1 : 0;
-    return this.menuRepository.save(menu);
+    return await this.menuRepository.save(menu);
   }
 
   // 更新菜单排序
   async updateSort(id: number, sort: number): Promise<Menu> {
     const menu = await this.getMenuById(id);
     menu.orderNum = sort;
-    return this.menuRepository.save(menu);
+    return await this.menuRepository.save(menu);
   }
 
   // 通过用户ID汇总完整用户档案（基础信息 + 角色 + 权限 + 菜单）

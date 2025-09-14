@@ -44,6 +44,12 @@ export class CreateMenuDto {
   @Min(0, { message: '排序不能小于0' })
   sort?: number;
 
+  @ApiProperty({ description: '排序（兼容字段）', example: 1, required: false })
+  @IsOptional()
+  @IsNumber({}, { message: '排序必须是数字' })
+  @Min(0, { message: '排序不能小于0' })
+  orderNum?: number;
+
   @ApiProperty({ description: '是否显示', example: true, required: false })
   @IsOptional()
   @IsBoolean({ message: '是否显示必须是布尔值' })
@@ -58,6 +64,15 @@ export class CreateMenuDto {
   @IsOptional()
   @IsBoolean({ message: '是否缓存必须是布尔值' })
   cache?: boolean;
+
+  @ApiProperty({
+    description: '权限标识',
+    example: 'user:add',
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: '权限标识必须是字符串' })
+  permission?: string;
 
   @ApiProperty({ description: '权限ID', example: 1, required: false })
   @IsOptional()
@@ -95,4 +110,46 @@ export class CreateMenuDto {
   @IsNumber({}, { message: '父级菜单ID必须是数字' })
   @Min(0, { message: '父级菜单ID不能小于0' })
   parentId?: number;
+
+  // 前端额外字段（后端忽略）
+  @ApiProperty({ description: '是否隐藏', required: false })
+  @IsOptional()
+  @IsBoolean({ message: '是否隐藏必须是布尔值' })
+  isHidden?: boolean;
+
+  @ApiProperty({ description: '是否缓存', required: false })
+  @IsOptional()
+  @IsBoolean({ message: '是否缓存必须是布尔值' })
+  isKeepAlive?: boolean;
+
+  @ApiProperty({ description: '是否固定', required: false })
+  @IsOptional()
+  @IsBoolean({ message: '是否固定必须是布尔值' })
+  isAffix?: boolean;
+
+  @ApiProperty({ description: '备注', required: false })
+  @IsOptional()
+  @IsString({ message: '备注必须是字符串' })
+  remark?: string;
+
+  // 创建者和更新者信息（由系统自动填入）
+  @ApiProperty({ description: '创建者用户ID', required: false })
+  @IsOptional()
+  @IsNumber({}, { message: '创建者用户ID必须是数字' })
+  createdBy?: number;
+
+  @ApiProperty({ description: '更新者用户ID', required: false })
+  @IsOptional()
+  @IsNumber({}, { message: '更新者用户ID必须是数字' })
+  updatedBy?: number;
+
+  @ApiProperty({ description: '创建者姓名', required: false })
+  @IsOptional()
+  @IsString({ message: '创建者姓名必须是字符串' })
+  createdByName?: string;
+
+  @ApiProperty({ description: '更新者姓名', required: false })
+  @IsOptional()
+  @IsString({ message: '更新者姓名必须是字符串' })
+  updatedByName?: string;
 }

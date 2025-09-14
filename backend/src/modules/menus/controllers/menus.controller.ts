@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   Query,
@@ -24,6 +25,7 @@ import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
 import { QueryMenuDto } from '../dto/query-menu.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 
 @ApiTags('菜单管理')
 @ApiBearerAuth()
@@ -64,8 +66,8 @@ export class MenusController {
       },
     },
   })
-  async create(@Body() createMenuDto: CreateMenuDto) {
-    const menu = await this.menusService.create(createMenuDto);
+  async create(@Body() createMenuDto: CreateMenuDto, @CurrentUser() user: any) {
+    const menu = await this.menusService.create(createMenuDto, user);
     return {
       code: 200,
       data: menu,
@@ -271,8 +273,32 @@ export class MenusController {
       },
     },
   })
-  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto) {
-    const menu = await this.menusService.update(+id, updateMenuDto);
+  async update(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto, @CurrentUser() user: any) {
+    const menu = await this.menusService.update(+id, updateMenuDto, user);
+    return {
+      code: 200,
+      data: menu,
+      msg: '更新成功',
+    };
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: '更新菜单 (PUT)', description: '根据ID更新菜单信息 (PUT方法)' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '更新成功' },
+      },
+    },
+  })
+  async updatePut(@Param('id') id: string, @Body() updateMenuDto: UpdateMenuDto, @CurrentUser() user: any) {
+    const menu = await this.menusService.update(+id, updateMenuDto, user);
     return {
       code: 200,
       data: menu,
@@ -281,6 +307,7 @@ export class MenusController {
   }
 
   @Patch(':id/status')
+  @Put(':id/status')
   @ApiOperation({ summary: '更新菜单状态', description: '启用或禁用菜单' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
@@ -308,6 +335,7 @@ export class MenusController {
   }
 
   @Patch(':id/sort')
+  @Put(':id/sort')
   @ApiOperation({ summary: '更新菜单排序', description: '更新菜单的排序值' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
