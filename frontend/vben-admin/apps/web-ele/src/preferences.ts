@@ -12,4 +12,7 @@ export const overridesPreferences = defineOverridesPreferences({
     accessMode: 'backend', // 改为纯后端模式，确保菜单接口被调用
     defaultHomePath: '/analytics', // 恢复默认首页为analytics
   },
+  navigation: {
+    split: false, // 禁用菜单分割，确保显示完整菜单
+  },
 });

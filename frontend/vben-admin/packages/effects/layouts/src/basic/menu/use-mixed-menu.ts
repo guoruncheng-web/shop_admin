@@ -34,7 +34,15 @@ function useMixedMenu() {
     }
     return enableSidebar;
   });
-  const menus = computed(() => accessStore.accessMenus);
+  const menus = computed(() => {
+    const accessMenus = accessStore.accessMenus;
+    console.log('🎯 [useMixedMenu] accessStore.accessMenus:', accessMenus);
+    console.log('🎯 [useMixedMenu] accessMenus 长度:', accessMenus?.length || 0);
+    if (accessMenus && accessMenus.length > 0) {
+      console.log('🎯 [useMixedMenu] 菜单详情:', JSON.stringify(accessMenus, null, 2));
+    }
+    return accessMenus || [];
+  });
 
   /**
    * 头部菜单
@@ -55,7 +63,22 @@ function useMixedMenu() {
    * 侧边菜单
    */
   const sidebarMenus = computed(() => {
-    return needSplit.value ? splitSideMenus.value : menus.value;
+    const result = needSplit.value ? splitSideMenus.value : menus.value;
+    console.log('🔍 [useMixedMenu] sidebarMenus 计算结果:', {
+      needSplit: needSplit.value,
+      splitSideMenus: splitSideMenus.value,
+      menus: menus.value,
+      result: result,
+      resultLength: result?.length || 0
+    });
+    
+    // 如果需要分割但 splitSideMenus 为空，且 menus 有数据，则直接返回 menus
+    if (needSplit.value && (!result || result.length === 0) && menus.value && menus.value.length > 0) {
+      console.log('🔧 [useMixedMenu] splitSideMenus 为空，使用 menus 作为备选');
+      return menus.value;
+    }
+    
+    return result;
   });
 
   const mixHeaderMenus = computed(() => {

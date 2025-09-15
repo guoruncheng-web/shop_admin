@@ -76,6 +76,12 @@
       <el-descriptions-item label="更新时间">
         {{ formatDate(props.menuInfo?.updatedAt) }}
       </el-descriptions-item>
+      <el-descriptions-item label="创建者">
+        {{ getCreatorInfo(props.menuInfo) }}
+      </el-descriptions-item>
+      <el-descriptions-item label="更新者">
+        {{ getUpdaterInfo(props.menuInfo) }}
+      </el-descriptions-item>
     </el-descriptions>
   </div>
 </template>
@@ -211,6 +217,30 @@ function getStatusText(status?: boolean | number | string) {
 function formatDate(date?: string | Date) {
   if (!date) return '-';
   return new Date(date).toLocaleString('zh-CN');
+}
+
+// 获取创建者信息
+function getCreatorInfo(menuInfo?: MenuData | null) {
+  if (!menuInfo) return '-';
+  const createdByName = (menuInfo as any).createdByName;
+  const createdBy = (menuInfo as any).createdBy;
+  
+  if (createdByName) {
+    return createdBy ? `${createdByName} (ID: ${createdBy})` : createdByName;
+  }
+  return createdBy ? `用户ID: ${createdBy}` : '-';
+}
+
+// 获取更新者信息
+function getUpdaterInfo(menuInfo?: MenuData | null) {
+  if (!menuInfo) return '-';
+  const updatedByName = (menuInfo as any).updatedByName;
+  const updatedBy = (menuInfo as any).updatedBy;
+  
+  if (updatedByName) {
+    return updatedBy ? `${updatedByName} (ID: ${updatedBy})` : updatedByName;
+  }
+  return updatedBy ? `用户ID: ${updatedBy}` : '-';
 }
 </script>
 

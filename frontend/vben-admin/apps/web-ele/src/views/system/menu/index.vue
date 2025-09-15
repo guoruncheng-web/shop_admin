@@ -49,6 +49,36 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column prop="createdByName" label="创建者" width="100">
+        <template #default="{ row }">
+          <span v-if="row.createdByName" :title="`用户ID: ${row.createdBy}`">
+            {{ row.createdByName }}
+          </span>
+          <span v-else-if="row.createdBy" style="color: #999;">
+            ID: {{ row.createdBy }}
+          </span>
+          <span v-else style="color: #999;">-</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="updatedByName" label="更新者" width="100">
+        <template #default="{ row }">
+          <span v-if="row.updatedByName" :title="`用户ID: ${row.updatedBy}`">
+            {{ row.updatedByName }}
+          </span>
+          <span v-else-if="row.updatedBy" style="color: #999;">
+            ID: {{ row.updatedBy }}
+          </span>
+          <span v-else style="color: #999;">-</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" width="160">
+        <template #default="{ row }">
+          <span v-if="row.updatedAt" :title="`创建时间: ${formatDateTime(row.createdAt)}`">
+            {{ formatDateTime(row.updatedAt) }}
+          </span>
+          <span v-else style="color: #999;">-</span>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="280" fixed="right">
         <template #default="{ row }">
           <div class="flex space-x-2">
@@ -192,6 +222,27 @@ const getPermissionText = (row: MenuData) => {
   // 兼容不同字段名：permission 或 buttonKey
   const permission = (row as any).permission || (row as any).buttonKey;
   return permission || '-';
+};
+
+// 格式化日期时间
+const formatDateTime = (dateTime?: string | Date) => {
+  if (!dateTime) return '-';
+  const date = new Date(dateTime);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  
+  // 如果是今天，只显示时间
+  if (diff < 24 * 60 * 60 * 1000 && date.toDateString() === now.toDateString()) {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  }
+  
+  // 否则显示日期
+  return date.toLocaleDateString('zh-CN', { 
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
 };
 
 // 加载菜单数据

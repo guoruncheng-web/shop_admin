@@ -8,11 +8,11 @@ import { preferences } from '@vben/preferences';
 
 import { ElMessage } from 'element-plus';
 
-import { getAllMenusApi } from '#/api';
+import { getAllMenusApiDebug } from '#/api/core/menu-debug';
 import { BasicLayout, IFrameView } from '#/layouts';
 import { $t } from '#/locales';
 
-const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue');
+const forbiddenComponent = () => import('#/views/_core/fallback/forbidden.vue').catch(() => null);
 
 async function generateAccess(options: GenerateMenuAndRoutesOptions) {
   const pageMap: ComponentRecordType = import.meta.glob('../views/**/*.vue');
@@ -30,7 +30,7 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         duration: 1500,
         message: `${$t('common.loadingMenu')}...`,
       });
-      const result = await getAllMenusApi();
+      const result = await getAllMenusApiDebug();
       console.log('🎯 fetchMenuListAsync 返回结果:', result);
       return result;
     },
