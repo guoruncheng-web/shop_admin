@@ -1,520 +1,535 @@
 <template>
-  <div class="menu-management">
-    <!-- 工具栏 -->
-    <div class="toolbar">
-      <el-button type="primary" @click="() => handleAdd()">新增菜单</el-button>
-      <el-button @click="loadMenuData">刷新</el-button>
+  <Page
+    description="管理系统菜单权限，支持三级权限控制：菜单权限、路由权限、按钮权限"
+    title="菜单权限管理"
+  >
+    <!-- 操作栏 -->
+    <div class="header-actions">
+      <ElButton type="primary" @click="handleAdd">
+        <Icon icon="lucide:plus" class="mr-1" />
+        新增菜单
+      </ElButton>
+      <ElButton @click="expandAll">
+        <Icon icon="lucide:expand" class="mr-1" />
+        展开全部
+      </ElButton>
+      <ElButton @click="collapseAll">
+        <Icon icon="lucide:fold" class="mr-1" />
+        收起全部
+      </ElButton>
+      <ElButton @click="refreshData">
+        <Icon icon="lucide:refresh-cw" class="mr-1" />
+        刷新
+      </ElButton>
     </div>
 
+    <!-- 搜索筛选区域 -->
+    <ElCard class="search-card">
+      <ElForm :model="searchForm" inline class="search-form">
+        <ElFormItem label="菜单名称">
+          <ElInput
+            v-model="searchForm.name"
+            placeholder="请输入菜单名称"
+            clearable
+            @keyup.enter="handleSearch"
+          />
+        </ElFormItem>
+        <ElFormItem label="权限类型">
+          <ElSelect v-model="searchForm.type" placeholder="请选择权限类型" clearable>
+            <ElOption label="菜单权限" :value="1" />
+            <ElOption label="路由权限" :value="2" />
+            <ElOption label="按钮权限" :value="3" />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem label="状态">
+          <ElSelect v-model="searchForm.status" placeholder="请选择状态" clearable>
+            <ElOption label="启用" :value="true" />
+            <ElOption label="禁用" :value="false" />
+          </ElSelect>
+        </ElFormItem>
+        <ElFormItem>
+          <ElButton type="primary" @click="handleSearch">
+            <Icon icon="lucide:search" class="mr-1" />
+            搜索
+          </ElButton>
+          <ElButton @click="resetSearch">
+            <Icon icon="lucide:rotate-ccw" class="mr-1" />
+            重置
+          </ElButton>
+        </ElFormItem>
+      </ElForm>
+    </ElCard>
+
     <!-- 菜单树形表格 -->
-    <el-table
-      v-loading="loading"
-      :data="menuData"
-      row-key="id"
-      :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
-      :default-expand-all="false"
-      border
-      style="width: 100%; margin-top: 20px"
-    >
-      <el-table-column prop="name" label="菜单名称" width="200" />
-      <el-table-column label="类型" width="80">
-        <template #default="{ row }">
-          <el-tag
-            :type="getTypeTag(String(row.type)) as any"
-            size="small"
-          >
-            {{ getTypeText(String(row.type)) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="path" label="路由路径" width="200" />
-      <el-table-column prop="component" label="组件路径" width="200" />
-      <el-table-column label="权限标识" width="150">
-        <template #default="{ row }">
-          <span v-if="row.type === 3 || row.type === 'button'">
-            {{ getPermissionText(row) }}
-          </span>
-          <span v-else style="color: #999;">-</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="icon" label="图标" width="100" />
-      <el-table-column prop="sort" label="排序" width="80" />
-      <el-table-column prop="status" label="状态" width="80">
-        <template #default="{ row }">
-          <el-tag
-            :type="row.status ? 'success' : 'danger'"
-            size="small"
-          >
-            {{ row.status ? '启用' : '禁用' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="createdByName" label="创建者" width="100">
-        <template #default="{ row }">
-          <span v-if="row.createdByName" :title="`用户ID: ${row.createdBy}`">
-            {{ row.createdByName }}
-          </span>
-          <span v-else-if="row.createdBy" style="color: #999;">
-            ID: {{ row.createdBy }}
-          </span>
-          <span v-else style="color: #999;">-</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="updatedByName" label="更新者" width="100">
-        <template #default="{ row }">
-          <span v-if="row.updatedByName" :title="`用户ID: ${row.updatedBy}`">
-            {{ row.updatedByName }}
-          </span>
-          <span v-else-if="row.updatedBy" style="color: #999;">
-            ID: {{ row.updatedBy }}
-          </span>
-          <span v-else style="color: #999;">-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="更新时间" width="160">
-        <template #default="{ row }">
-          <span v-if="row.updatedAt" :title="`创建时间: ${formatDateTime(row.createdAt)}`">
-            {{ formatDateTime(row.updatedAt) }}
-          </span>
-          <span v-else style="color: #999;">-</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="280" fixed="right">
-        <template #default="{ row }">
-          <div class="flex space-x-2">
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleDetail(row)"
-            >
-              详情
-            </el-button>
-            <el-button
-              type="warning"
-              size="small"
-              @click="handleEdit(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              v-if="row.type !== 3 && row.type !== 'button'"
-              type="success"
-              size="small"
-              @click="handleAdd(row)"
-            >
-              新增
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
-          </div>
-        </template>
-      </el-table-column>
-    </el-table>
+    <ElCard class="table-card">
+      <ElTable
+        ref="tableRef"
+        v-loading="loading"
+        :data="menuList"
+        row-key="id"
+        :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+        :default-expand-all="false"
+        border
+        stripe
+        class="menu-table"
+      >
+        <ElTableColumn prop="name" label="菜单名称" min-width="200">
+          <template #default="{ row }">
+            <div class="menu-name-cell">
+              <Icon v-if="row.icon" :icon="row.icon" class="menu-icon" />
+              <span class="menu-name">{{ row.name }}</span>
+              <ElTag v-if="row.type === 1" type="primary" size="small">菜单</ElTag>
+              <ElTag v-else-if="row.type === 2" type="success" size="small">路由</ElTag>
+              <ElTag v-else-if="row.type === 3" type="warning" size="small">按钮</ElTag>
+            </div>
+          </template>
+        </ElTableColumn>
 
-    <!-- 表单弹窗 -->
-    <el-dialog
-      v-model="modalVisible"
-      :title="modalTitle"
-      width="600px"
-      @close="handleCancel"
-    >
-      <MenuForm
-        ref="menuFormRef"
-        :form-data="formData"
-        :menu-options="menuOptions"
-        @submit="handleFormSubmit"
-      />
-      <template #footer>
-        <el-button @click="handleCancel">取消</el-button>
-        <el-button
-          type="primary"
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+        <ElTableColumn prop="code" label="权限标识" min-width="150">
+          <template #default="{ row }">
+            <ElTag type="info" size="small">{{ row.code }}</ElTag>
+          </template>
+        </ElTableColumn>
 
-    <!-- 详情弹窗 -->
-    <el-dialog
-      v-model="detailVisible"
-      title="菜单详情"
-      width="600px"
-    >
-      <MenuDetail :menu-info="currentMenu || undefined" />
-    </el-dialog>
-  </div>
+        <ElTableColumn prop="path" label="路由路径" min-width="150">
+          <template #default="{ row }">
+            <span class="path-text">{{ row.path || '-' }}</span>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn prop="component" label="组件路径" min-width="150">
+          <template #default="{ row }">
+            <span class="component-text">{{ row.component || '-' }}</span>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn prop="sort_order" label="排序" width="80" align="center">
+          <template #default="{ row }">
+            <span class="sort-number">{{ row.sort_order }}</span>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn prop="status" label="状态" width="80" align="center">
+          <template #default="{ row }">
+            <ElSwitch
+              v-model="row.status"
+              :active-value="true"
+              :inactive-value="false"
+              @change="handleStatusChange(row)"
+            />
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn prop="created_at" label="创建时间" width="160">
+          <template #default="{ row }">
+            <span class="time-text">{{ formatTime(row.created_at) }}</span>
+          </template>
+        </ElTableColumn>
+
+        <ElTableColumn label="操作" width="200" fixed="right">
+          <template #default="{ row }">
+            <ElSpace>
+              <ElButton
+                type="primary"
+                size="small"
+                @click="handleAdd(row)"
+                v-if="row.type !== 3"
+              >
+                <Icon icon="lucide:plus" class="mr-1" />
+                新增
+              </ElButton>
+              <ElButton
+                type="success"
+                size="small"
+                @click="handleEdit(row)"
+              >
+                <Icon icon="lucide:edit" class="mr-1" />
+                编辑
+              </ElButton>
+              <ElButton
+                type="danger"
+                size="small"
+                @click="handleDelete(row)"
+              >
+                <Icon icon="lucide:trash-2" class="mr-1" />
+                删除
+              </ElButton>
+            </ElSpace>
+          </template>
+        </ElTableColumn>
+      </ElTable>
+    </ElCard>
+
+    <!-- 菜单表单对话框 -->
+    <MenuForm
+      v-model:visible="formVisible"
+      :menu-data="currentMenuData"
+      :menu-tree-options="menuTreeOptions"
+      @success="handleFormSuccess"
+    />
+  </Page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
+import { Page } from '@vben/common-ui';
+import { Icon } from '@iconify/vue';
 import {
   ElButton,
+  ElCard,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElMessage,
+  ElMessageBox,
+  ElOption,
+  ElSelect,
+  ElSpace,
+  ElSwitch,
   ElTable,
   ElTableColumn,
   ElTag,
-  ElDialog,
-  ElMessage,
-  ElMessageBox
 } from 'element-plus';
-import MenuForm from './components/MenuForm.vue';
-import MenuDetail from './components/MenuDetail.vue';
-import {
-  getMenuTreeApi,
-  createMenuApi,
-  updateMenuApi,
-  deleteMenuApi,
-  type MenuData,
-  type CreateMenuDto,
-  type UpdateMenuDto
+import type { MenuPermission, MenuSearchParams } from '#/api/system/menu';
+import { 
+  getMenuListApi, 
+  deleteMenuApi, 
+  updateMenuStatusApi 
 } from '#/api/system/menu';
+import MenuForm from './components/MenuForm.vue';
+
+// 页面标题
+defineOptions({
+  name: 'SystemMenu',
+});
 
 // 响应式数据
 const loading = ref(false);
-const menuData = ref<MenuData[]>([]);
-const modalVisible = ref(false);
-const detailVisible = ref(false);
-const modalTitle = ref('');
-const submitLoading = ref(false);
-const currentMenu = ref<MenuData | null>(null);
-const formData = ref<MenuData | null>(null);
-const menuFormRef = ref();
+const formVisible = ref(false);
+const tableRef = ref<InstanceType<typeof ElTable>>();
+const currentMenuData = ref<MenuPermission | null>(null);
 
-// 菜单选项（用于父级菜单选择）
-const menuOptions = ref<MenuData[]>([]);
+// 搜索表单
+const searchForm = reactive<MenuSearchParams>({
+  name: '',
+  type: undefined,
+  status: undefined,
+});
 
-// 获取类型标签
-const getTypeTag = (type: string | number) => {
-  const typeValue = String(type);
-  const typeMap: Record<string, string> = {
-    '1': 'primary',    // 目录
-    'directory': 'primary',
-    '2': 'success',    // 菜单
-    'menu': 'success',
-    '3': 'warning',    // 按钮
-    'button': 'warning'
+// 菜单列表数据
+const menuList = ref<MenuPermission[]>([]);
+const originalMenuList = ref<MenuPermission[]>([]);
+
+// 计算属性
+const menuTreeOptions = computed(() => {
+  const buildTree = (list: MenuPermission[], excludeId?: number): any[] => {
+    if (!list || !Array.isArray(list)) return [];
+    return list
+      .filter(item => item.id !== excludeId && item.type !== 3) // 排除按钮权限和当前编辑的项
+      .map(item => ({
+        id: item.id,
+        name: item.name,
+        children: item.children ? buildTree(item.children, excludeId) : [],
+      }));
   };
-  return typeMap[typeValue] || 'primary';
+  return [
+    { id: 0, name: '顶级菜单', children: buildTree(originalMenuList.value || [], currentMenuData.value?.id) }
+  ];
+});
+
+// 方法定义
+const formatTime = (time: string) => {
+  if (!time) return '-';
+  return new Date(time).toLocaleString('zh-CN');
 };
 
-// 获取类型文本
-const getTypeText = (type: string | number) => {
-  const typeValue = String(type);
-  const typeMap: Record<string, string> = {
-    '1': '目录',
-    'directory': '目录',
-    '2': '菜单',
-    'menu': '菜单',
-    '3': '按钮',
-    'button': '按钮'
-  };
-  return typeMap[typeValue] || '未知';
-};
-
-// 获取权限标识文本
-const getPermissionText = (row: MenuData) => {
-  // 兼容不同字段名：permission 或 buttonKey
-  const permission = (row as any).permission || (row as any).buttonKey;
-  return permission || '-';
-};
-
-// 格式化日期时间
-const formatDateTime = (dateTime?: string | Date) => {
-  if (!dateTime) return '-';
-  const date = new Date(dateTime);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  
-  // 如果是今天，只显示时间
-  if (diff < 24 * 60 * 60 * 1000 && date.toDateString() === now.toDateString()) {
-    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-  }
-  
-  // 否则显示日期
-  return date.toLocaleDateString('zh-CN', { 
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
-};
-
-// 加载菜单数据
-const loadMenuData = async () => {
+// 获取菜单列表
+const fetchMenuList = async () => {
+  loading.value = true;
   try {
-    loading.value = true;
-    const response = await getMenuTreeApi();
-    console.log('菜单API原始响应:', response);
+    console.log('🚀 开始获取菜单列表...');
+    console.log('📋 搜索参数:', searchForm);
     
-    // 标准化响应数据格式
-    let actualData: MenuData[] = [];
-    if (Array.isArray(response)) {
-      actualData = response;
-    } else if (response && typeof response === 'object') {
-      if ('data' in response && Array.isArray(response.data)) {
-        actualData = response.data;
-      } else if ('list' in response && Array.isArray(response.list)) {
-        actualData = response.list;
-      } else if ('result' in response && Array.isArray(response.result)) {
-        actualData = response.result;
-      }
-    }
+    const data = await getMenuListApi(searchForm);
+    console.log('✅ 菜单数据获取成功:', data);
+    console.log('📊 数据类型:', typeof data, '是否为数组:', Array.isArray(data));
+    console.log('📈 数据长度:', data?.length);
     
-    console.log('实际菜单数据:', actualData);
-    
-    // 如果后端返回的是扁平数据，需要手动构建树形结构
-    if (actualData.length > 0 && !actualData.some(item => item.children && item.children.length > 0)) {
-      // 数据是扁平的，需要构建树形结构
-      menuData.value = buildTreeFromFlatData(actualData);
+    if (Array.isArray(data)) {
+      originalMenuList.value = data;
+      menuList.value = data;
+      ElMessage.success(`菜单列表加载成功，共 ${data.length} 条记录`);
     } else {
-      // 数据已经是树形结构
-      menuData.value = actualData || [];
+      console.warn('⚠️ 返回的数据不是数组格式:', data);
+      originalMenuList.value = [];
+      menuList.value = [];
+      ElMessage.warning('菜单数据格式异常');
+    }
+  } catch (error: any) {
+    console.error('❌ 获取菜单列表失败:', error);
+    console.error('❌ 错误详情:', {
+      message: error.message,
+      status: error.status,
+      response: error.response?.data,
+      stack: error.stack
+    });
+    
+    // 根据错误类型显示不同的提示
+    if (error.status === 401 || error.message?.includes('Unauthorized')) {
+      ElMessage.error('未授权访问，请重新登录');
+    } else if (error.status === 403) {
+      ElMessage.error('权限不足，无法访问菜单数据');
+    } else {
+      ElMessage.error(error.message || '获取菜单列表失败');
     }
     
-    // 构建菜单选项（排除按钮类型）
-    menuOptions.value = buildMenuOptions(flattenMenuTree(menuData.value));
-    console.log("menuOptions.value", menuOptions.value);
-  } catch (error) {
-    console.error('加载菜单数据失败:', error);
-    ElMessage.error('加载菜单数据失败');
+    // 设置空数据
+    originalMenuList.value = [];
+    menuList.value = [];
   } finally {
     loading.value = false;
   }
 };
 
-// 从扁平数据构建树形结构
-function buildTreeFromFlatData(flatData: MenuData[]): MenuData[] {
-  const menuMap = new Map<number, MenuData>();
-  const rootMenus: MenuData[] = [];
-
-  // 创建菜单映射
-  flatData.forEach(menu => {
-    const menuNode = { 
-      ...menu, 
-      children: [],
-      hasChildren: false // 初始化为false，后面会更新
-    };
-    menuMap.set(menu.id, menuNode);
-  });
-
-  // 构建树形结构
-  flatData.forEach(menu => {
-    const menuNode = menuMap.get(menu.id);
-    if (menuNode) {
-      if (menu.parentId && menu.parentId !== 0) {
-        const parent = menuMap.get(menu.parentId);
-        if (parent && parent.children) {
-          parent.children.push(menuNode);
-          parent.hasChildren = true; // 设置父节点有子节点
-        }
-      } else {
-        rootMenus.push(menuNode);
-      }
-    }
-  });
-
-  // 按orderNum排序
-  const sortMenus = (menuList: MenuData[]) => {
-    menuList.sort((a, b) => {
-      const sortA = (a.sort ?? a.orderNum ?? 0);
-      const sortB = (b.sort ?? b.orderNum ?? 0);
-      return sortA - sortB;
-    });
-    menuList.forEach(menu => {
-      if (menu.children && menu.children.length > 0) {
-        menu.hasChildren = true; // 确保有子节点的菜单设置hasChildren
-        sortMenus(menu.children);
-      }
-    });
-  };
-  sortMenus(rootMenus);
-
-  return rootMenus;
-}
-
-// 将树形结构扁平化为一维数组
-function flattenMenuTree(treeData: MenuData[]): MenuData[] {
-  const result: MenuData[] = [];
+// 搜索功能
+const handleSearch = () => {
+  let filteredList = [...originalMenuList.value];
   
-  function traverse(menus: MenuData[]) {
-    menus.forEach(menu => {
-      result.push(menu);
-      if (menu.children && menu.children.length > 0) {
-        traverse(menu.children);
-      }
-    });
+  if (searchForm.name) {
+    filteredList = filterByName(filteredList, searchForm.name);
   }
   
-  traverse(treeData);
-  return result;
-}
+  if (searchForm.type !== undefined) {
+    filteredList = filterByType(filteredList, searchForm.type);
+  }
+  
+  if (searchForm.status !== undefined) {
+    filteredList = filterByStatus(filteredList, searchForm.status);
+  }
+  
+  menuList.value = filteredList;
+};
 
-// 构建菜单选项（树型结构，用于选择器）
-function buildMenuOptions(menus: MenuData[]): MenuData[] {
-  // 过滤掉按钮类型的菜单，从扩平数据构建树形结构
-  const menuMap = new Map<number, MenuData>();
-  const rootMenus: MenuData[] = [];
-
-  // 首先过滤掉按钮类型的菜单（兼容不同后端数据格式）
-  const validMenus = menus.filter(menu => {
-    const menuType = menu.type;
-    return menuType !== 3 && menuType !== 'button';
-  });
-
-  // 创建菜单映射，确保每个菜单都有children数组
-  validMenus.forEach(menu => {
-    menuMap.set(menu.id, { ...menu, children: [] });
-  });
-
-  // 构建树形结构
-  validMenus.forEach(menu => {
-    const menuNode = menuMap.get(menu.id);
-    if (menuNode) {
-      if (menu.parentId && menu.parentId !== 0) {
-        // 如果有父级ID，找到父级菜单并添加到children中
-        const parent = menuMap.get(menu.parentId);
-        if (parent && parent.children) {
-          parent.children.push(menuNode);
-        }
-      } else {
-        // 没有父级ID或parentId为0，作为根菜单
-        rootMenus.push(menuNode);
+const filterByName = (list: MenuPermission[], name: string): MenuPermission[] => {
+  if (!list || !Array.isArray(list)) return [];
+  const result: MenuPermission[] = [];
+  
+  for (const item of list) {
+    if (item.name && item.name.includes(name)) {
+      result.push({ ...item });
+    } else if (item.children && Array.isArray(item.children)) {
+      const filteredChildren = filterByName(item.children, name);
+      if (filteredChildren.length > 0) {
+        result.push({ ...item, children: filteredChildren });
       }
     }
-  });
+  }
+  
+  return result;
+};
 
-  // 按sort或orderNum排序（兼容不同后端字段名）
-  const sortMenus = (menuList: MenuData[]) => {
-    menuList.sort((a, b) => {
-      const sortA = (a.sort ?? a.orderNum ?? 0);
-      const sortB = (b.sort ?? b.orderNum ?? 0);
-      return sortA - sortB;
-    });
-    menuList.forEach(menu => {
-      if (menu.children && menu.children.length > 0) {
-        sortMenus(menu.children);
+const filterByType = (list: MenuPermission[], type: number): MenuPermission[] => {
+  if (!list || !Array.isArray(list)) return [];
+  const result: MenuPermission[] = [];
+  
+  for (const item of list) {
+    const newItem = { ...item };
+    
+    if (item.children && Array.isArray(item.children)) {
+      newItem.children = filterByType(item.children, type);
+    }
+    
+    if (item.type === type || (newItem.children && newItem.children.length > 0)) {
+      result.push(newItem);
+    }
+  }
+  
+  return result;
+};
+
+const filterByStatus = (list: MenuPermission[], status: boolean): MenuPermission[] => {
+  if (!list || !Array.isArray(list)) return [];
+  const result: MenuPermission[] = [];
+  
+  for (const item of list) {
+    const newItem = { ...item };
+    
+    if (item.children && Array.isArray(item.children)) {
+      newItem.children = filterByStatus(item.children, status);
+    }
+    
+    if (item.status === status || (newItem.children && newItem.children.length > 0)) {
+      result.push(newItem);
+    }
+  }
+  
+  return result;
+};
+
+const resetSearch = () => {
+  searchForm.name = '';
+  searchForm.type = undefined;
+  searchForm.status = undefined;
+  menuList.value = [...originalMenuList.value];
+};
+
+// 表格操作
+const expandAll = () => {
+  const expandAllRows = (data: MenuPermission[]) => {
+    if (!data || !Array.isArray(data)) return;
+    data.forEach(row => {
+      tableRef.value?.toggleRowExpansion(row, true);
+      if (row.children && Array.isArray(row.children)) {
+        expandAllRows(row.children);
       }
     });
   };
-  sortMenus(rootMenus);
-
-  return rootMenus;
-}
-
-// 新增菜单
-const handleAdd = (parent?: MenuData) => {
-  modalTitle.value = '新增菜单';
-  formData.value = parent ? { parentId: parent.id } as MenuData : null;
-  modalVisible.value = true;
+  expandAllRows(menuList.value || []);
 };
 
-// 编辑菜单
-const handleEdit = (menu: MenuData) => {
-  modalTitle.value = '编辑菜单';
-  formData.value = { ...menu };
-  modalVisible.value = true;
+const collapseAll = () => {
+  const collapseAllRows = (data: MenuPermission[]) => {
+    if (!data || !Array.isArray(data)) return;
+    data.forEach(row => {
+      tableRef.value?.toggleRowExpansion(row, false);
+      if (row.children && Array.isArray(row.children)) {
+        collapseAllRows(row.children);
+      }
+    });
+  };
+  collapseAllRows(menuList.value || []);
 };
 
-// 查看详情
-const handleDetail = (menu: MenuData) => {
-  currentMenu.value = menu;
-  detailVisible.value = true;
+const refreshData = () => {
+  resetSearch();
+  fetchMenuList();
 };
 
-// 处理删除
-const handleDelete = async (menu: MenuData) => {
+// CRUD操作
+const handleAdd = (parent?: MenuPermission) => {
+  if (parent) {
+    // 新增子菜单
+    currentMenuData.value = {
+      parent_id: parent.id,
+      name: '',
+      code: '',
+      type: parent.type === 1 ? 2 : 3, // 菜单下默认添加路由，路由下默认添加按钮
+      path: '',
+      component: '',
+      icon: '',
+      sort_order: 0,
+      status: true,
+    } as MenuPermission;
+  } else {
+    // 新增顶级菜单
+    currentMenuData.value = null;
+  }
+  formVisible.value = true;
+};
+
+const handleEdit = (row: MenuPermission) => {
+  currentMenuData.value = { ...row };
+  formVisible.value = true;
+};
+
+const handleDelete = async (row: MenuPermission) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除菜单 "${menu.name}" 吗？`,
-      '确认删除',
+      `确定要删除菜单"${row.name}"吗？删除后不可恢复！`,
+      '删除确认',
       {
-        confirmButtonText: '确定',
+        confirmButtonText: '确定删除',
         cancelButtonText: '取消',
-        type: 'warning'
+        type: 'warning',
       }
     );
     
-    await deleteMenuApi(menu.id!);
+    await deleteMenuApi(row.id);
     ElMessage.success('删除成功');
-    await loadMenuData();
-  } catch (error) {
+    await fetchMenuList();
+  } catch (error: any) {
     if (error !== 'cancel') {
-      console.error('删除菜单失败:', error);
-      ElMessage.error('删除菜单失败');
+      console.error('删除失败:', error);
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };
 
-// 取消操作
-const handleCancel = () => {
-  modalVisible.value = false;
-  formData.value = null;
-  submitLoading.value = false;
-};
-
-// 提交表单
-const handleSubmit = async () => {
-  if (!menuFormRef.value) return;
-  
+const handleStatusChange = async (row: MenuPermission) => {
   try {
-    await menuFormRef.value.handleSubmit();
-  } catch (error) {
-    console.error('提交失败:', error);
+    await updateMenuStatusApi(row.id, row.status);
+    ElMessage.success(`${row.status ? '启用' : '禁用'}成功`);
+  } catch (error: any) {
+    console.error('状态更新失败:', error);
+    row.status = !row.status; // 回滚状态
+    ElMessage.error(error.message || '状态更新失败');
   }
 };
 
-// 处理表单提交
-const handleFormSubmit = async (data: CreateMenuDto | UpdateMenuDto) => {
-  try {
-    submitLoading.value = true;
-    
-    let response;
-    if (formData.value?.id) {
-      // 编辑
-      response = await updateMenuApi(formData.value.id, data as UpdateMenuDto);
-    } else {
-      // 新增
-      response = await createMenuApi(data as CreateMenuDto);
-    }
-    
-    // requestClient 已经通过拦截器处理，成功时直接返回 data 部分
-    // 失败时会被错误拦截器捕获并抛出异常
-    if (response) {
-      ElMessage.success(formData.value?.id ? '更新成功' : '创建成功');
-      handleCancel();
-      await loadMenuData();
-    }
-  } catch (error) {
-    console.error('提交失败:', error);
-    // 错误信息已经在 errorMessageResponseInterceptor 中处理
-    // 这里不需要重复显示错误消息
-  } finally {
-    submitLoading.value = false;
-  }
+const handleFormSuccess = () => {
+  fetchMenuList();
 };
 
-// 初始化
+// 生命周期
 onMounted(() => {
-  loadMenuData();
+  fetchMenuList();
 });
 </script>
 
-<style scoped>
-.menu-management {
-  padding: 20px;
+<style scoped lang="scss">
+.header-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.toolbar {
-  margin-bottom: 20px;
+.search-card {
+  margin-bottom: 16px;
+  
+  .search-form {
+    .el-form-item {
+      margin-bottom: 0;
+    }
+  }
 }
 
-.toolbar .el-button {
-  margin-right: 10px;
+.table-card {
+  .menu-table {
+    .menu-name-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .menu-icon {
+        font-size: 16px;
+        color: #3b82f6;
+      }
+
+      .menu-name {
+        font-weight: 500;
+      }
+    }
+
+    .path-text,
+    .component-text {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .sort-number {
+      font-weight: 600;
+      color: #3b82f6;
+    }
+
+    .time-text {
+      font-size: 12px;
+      color: #6b7280;
+    }
+  }
+}
+
+.mr-1 {
+  margin-right: 4px;
 }
 </style>

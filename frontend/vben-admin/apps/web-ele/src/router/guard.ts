@@ -46,15 +46,12 @@ function setupCommonGuard(router: Router) {
  */
 function setupAccessGuard(router: Router) {
   router.beforeEach(async (to, from) => {
-    console.log('🚨 [DEBUG] 路由守卫被触发:', to.path, 'from:', from.path);
     const accessStore = useAccessStore();
     const userStore = useUserStore();
     const authStore = useAuthStore();
 
     // 基本路由，这些路由不需要进入权限拦截
-    console.log('🔍 [DEBUG] 检查是否为核心路由:', to.name, 'coreRouteNames:', coreRouteNames);
     if (coreRouteNames.includes(to.name as string)) {
-      console.log('✅ [DEBUG] 是核心路由，跳过权限检查');
       if (to.path === LOGIN_PATH && accessStore.accessToken) {
         return decodeURIComponent(
           (to.query?.redirect as string) ||
@@ -65,10 +62,8 @@ function setupAccessGuard(router: Router) {
       return true;
     }
 
-    console.log('🔑 [DEBUG] 检查accessToken:', !!accessStore.accessToken);
     // accessToken 检查
     if (!accessStore.accessToken) {
-      console.log('❌ [DEBUG] 没有accessToken，跳转登录页');
       // 明确声明忽略权限访问权限，则可以访问
       if (to.meta.ignoreAccess) {
         return true;
@@ -90,31 +85,23 @@ function setupAccessGuard(router: Router) {
       return to;
     }
 
-    console.log('🔄 [DEBUG] 检查是否已生成动态路由:', accessStore.isAccessChecked);
     // 是否已经生成过动态路由
     if (accessStore.isAccessChecked) {
-      console.log('✅ [DEBUG] 动态路由已生成，直接通过');
       return true;
     }
 
     // 生成路由表
-    console.log('🚨 开始生成路由和菜单...');
     // 当前登录用户拥有的角色标识列表
     const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
     const userRoles = userInfo.roles ?? [];
-    console.log('👤 用户信息:', userInfo);
-    console.log('🎭 用户角色:', userRoles);
 
     // 生成菜单和路由
-    console.log('⚙️ 调用 generateAccess...');
     const { accessibleMenus, accessibleRoutes } = await generateAccess({
       roles: userRoles,
       router,
       // 则会在菜单中显示，但是访问会被重定向到403
       routes: accessRoutes,
     });
-    console.log('📋 生成的菜单:', accessibleMenus);
-    console.log('🛣️ 生成的路由:', accessibleRoutes);
 
     // 保存菜单信息和路由信息
     accessStore.setAccessMenus(accessibleMenus);

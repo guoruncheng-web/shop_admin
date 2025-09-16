@@ -12,7 +12,7 @@ const dynamicRouteFiles = import.meta.glob('./modules/**/*.ts', {
 // const externalRouteFiles = import.meta.glob('./external/**/*.ts', { eager: true });
 // const staticRouteFiles = import.meta.glob('./static/**/*.ts', { eager: true });
 
-/** 动态路由 - 恢复静态路由加载 */
+/** 动态路由 */
 const dynamicRoutes: RouteRecordRaw[] = mergeRouteModules(dynamicRouteFiles);
 
 /** 外部路由列表，访问这些页面可以不需要Layout，可能用于内嵌在别的系统(不会显示在菜单中) */
