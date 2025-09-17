@@ -73,15 +73,30 @@
         stripe
         class="menu-table"
       >
+        <!-- 名称列放在最前：展开箭头会贴在该列左侧 -->
         <ElTableColumn prop="name" label="菜单名称" min-width="200">
           <template #default="{ row }">
             <div class="menu-name-cell">
-              <Icon v-if="row.icon" :icon="row.icon" class="menu-icon" />
-              <span class="menu-name">{{ row.name }}</span>
-              <ElTag v-if="row.type === 1" type="primary" size="small">菜单</ElTag>
-              <ElTag v-else-if="row.type === 2" type="success" size="small">路由</ElTag>
-              <ElTag v-else-if="row.type === 3" type="warning" size="small">按钮</ElTag>
+              <span class="menu-name">{{ row.title ?? row.name }}</span>
             </div>
+          </template>
+        </ElTableColumn>
+
+        <!-- 图标列移到名称列之后，实现与展开箭头分离 -->
+        <ElTableColumn prop="icon" label="图标" width="56" align="center">
+          <template #default="{ row }">
+            <Icon v-if="row.icon" :icon="row.icon" class="menu-icon" />
+            <span v-else class="menu-icon-empty"></span>
+          </template>
+        </ElTableColumn>
+
+        <!-- 新增：权限类型列 -->
+        <ElTableColumn prop="type" label="菜单类型" width="120" align="center">
+          <template #default="{ row }">
+            <ElTag v-if="row.type === 1" type="primary" size="small">菜单</ElTag>
+            <ElTag v-else-if="row.type === 2" type="success" size="small">路由</ElTag>
+            <ElTag v-else-if="row.type === 3" type="warning" size="small">按钮</ElTag>
+            <ElTag v-else type="info" size="small">未知</ElTag>
           </template>
         </ElTableColumn>
 
@@ -103,9 +118,9 @@
           </template>
         </ElTableColumn>
 
-        <ElTableColumn prop="sort_order" label="排序" width="80" align="center">
+        <ElTableColumn prop="orderNum" label="排序" width="80" align="center">
           <template #default="{ row }">
-            <span class="sort-number">{{ row.sort_order }}</span>
+            <span class="sort-number">{{ row.orderNum }}</span>
           </template>
         </ElTableColumn>
 
@@ -121,9 +136,9 @@
           </template>
         </ElTableColumn>
 
-        <ElTableColumn prop="created_at" label="创建时间" width="160">
+        <ElTableColumn prop="createdAt" label="创建时间" width="160">
           <template #default="{ row }">
-            <span class="time-text">{{ formatTime(row.created_at) }}</span>
+            <span class="time-text">{{ formatTime(row.createdAt) }}</span>
           </template>
         </ElTableColumn>
 
@@ -193,7 +208,7 @@ import {
 } from 'element-plus';
 import type { MenuPermission, MenuSearchParams } from '#/api/system/menu';
 import { 
-  getMenuListApi, 
+  getMenuTreeApi, 
   deleteMenuApi, 
   updateMenuStatusApi 
 } from '#/api/system/menu';
@@ -244,24 +259,70 @@ const formatTime = (time: string) => {
   return new Date(time).toLocaleString('zh-CN');
 };
 
+/** 规范化菜单树，保证前端渲染字段一致且健壮 */
+const normalizeMenuTree = (list: any[]): MenuPermission[] => {
+  if (!Array.isArray(list)) return [];
+  const toBool = (v: any) => (v === true || v === 1 || v === '1');
+  const toNum = (v: any, d = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : d;
+  };
+  const normalizeNode = (item: any): MenuPermission => {
+    const children = Array.isArray(item?.children) ? item.children : [];
+    const normalizedChildren = normalizeMenuTree(children);
+
+    // 名称优先使用 title，回退 name，保留原始 name 以便搜索
+    const displayName = item?.title ?? item?.name ?? '';
+
+    return {
+      // 必要字段
+      id: toNum(item?.id, undefined as any),
+      name: displayName,
+      // 保留原字段用于显示或编辑
+      title: item?.title,
+      path: item?.path || '',
+      component: item?.component || '',
+      icon: item?.icon || '',
+      orderNum: toNum(item?.orderNum, 0),
+      type: toNum(item?.type, 1),
+      status: toBool(item?.status),
+      createdAt: item?.createdAt || item?.created_at || '',
+      // 非空数组
+      children: normalizedChildren,
+      // 兼容历史表单字段（避免表单/接口依赖）
+      code: item?.code ?? '',
+      parent_id: item?.parentId ?? item?.parent_id,
+      // 其它可能字段按需透传
+      ...item,
+    } as unknown as MenuPermission;
+  };
+  return list.map(normalizeNode);
+};
+
 // 获取菜单列表
 const fetchMenuList = async () => {
   loading.value = true;
   try {
     console.log('🚀 开始获取菜单列表...');
     console.log('📋 搜索参数:', searchForm);
-    
-    const data = await getMenuListApi(searchForm);
-    console.log('✅ 菜单数据获取成功:', data);
-    console.log('📊 数据类型:', typeof data, '是否为数组:', Array.isArray(data));
-    console.log('📈 数据长度:', data?.length);
-    
-    if (Array.isArray(data)) {
-      originalMenuList.value = data;
-      menuList.value = data;
-      ElMessage.success(`菜单列表加载成功，共 ${data.length} 条记录`);
+
+    const res = await getMenuTreeApi(searchForm);
+    console.log('✅ 菜单数据获取成功 raw:', res);
+
+    // 解包：兼容 { code, data } 或直接数组返回
+    const list = Array.isArray((res as any)?.data)
+      ? (res as any).data
+      : (Array.isArray(res) ? (res as any) : null);
+
+    console.log('📊 解包后的列表是否数组:', Array.isArray(list), '长度:', list?.length);
+
+    if (Array.isArray(list)) {
+      const normalized = normalizeMenuTree(list);
+      originalMenuList.value = normalized;
+      menuList.value = normalized;
+      ElMessage.success(`菜单列表加载成功，共 ${normalized.length} 条记录`);
     } else {
-      console.warn('⚠️ 返回的数据不是数组格式:', data);
+      console.warn('⚠️ 返回的数据不是数组格式，raw:', res);
       originalMenuList.value = [];
       menuList.value = [];
       ElMessage.warning('菜单数据格式异常');
@@ -274,8 +335,7 @@ const fetchMenuList = async () => {
       response: error.response?.data,
       stack: error.stack
     });
-    
-    // 根据错误类型显示不同的提示
+
     if (error.status === 401 || error.message?.includes('Unauthorized')) {
       ElMessage.error('未授权访问，请重新登录');
     } else if (error.status === 403) {
@@ -283,8 +343,7 @@ const fetchMenuList = async () => {
     } else {
       ElMessage.error(error.message || '获取菜单列表失败');
     }
-    
-    // 设置空数据
+
     originalMenuList.value = [];
     menuList.value = [];
   } finally {
@@ -521,19 +580,28 @@ onMounted(() => {
 
 .table-card {
   .menu-table {
+    /* 名称列：仅文本，去多余间距，便于与树展开箭头对齐 */
     .menu-name-cell {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 0; /* 移除多余空隙 */
+    }
+    .menu-name {
+      font-weight: 500;
+    }
 
-      .menu-icon {
-        font-size: 16px;
-        color: #3b82f6;
-      }
+    /* 图标列样式保持 */
+    .menu-icon {
+      font-size: 18px;
+      color: #3b82f6;
+      line-height: 1;
+      display: inline-block;
+    }
 
-      .menu-name {
-        font-weight: 500;
-      }
+    .menu-icon-empty {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
     }
 
     .path-text,
@@ -551,6 +619,27 @@ onMounted(() => {
     .time-text {
       font-size: 12px;
       color: #6b7280;
+    }
+
+    /* 对齐优化：第一列（名称列）留出更舒适的左侧内边距 */
+    :deep(.el-table__row) > td:first-child .cell {
+      display: inline-flex;
+      align-items: center;
+      padding-left: 12px; /* 原 0 → 12，更不贴边 */
+    }
+
+    /* 调整树缩进与展开图标间距 */
+    :deep(.el-table__indent) {
+      margin-right: 6px; /* 原 4 → 6 */
+    }
+    :deep(.el-table__expand-icon) {
+      margin-right: 8px;  /* 原 6 → 8，箭头与文本更不拥挤 */
+      line-height: 1;
+      align-items: center;
+      display: inline-flex;
+    }
+    :deep(.el-table__expand-icon .el-icon) {
+      font-size: 14px; /* 稍微小一点更贴合文字 */
     }
   }
 }

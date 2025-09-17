@@ -188,8 +188,19 @@ function transformUserMenusToMenuPermissions(menus: any[]): MenuPermission[] {
  * 获取菜单树
  */
 export async function getMenuTreeApi(params?: MenuSearchParams): Promise<MenuPermission[]> {
-  const response = await requestClient.get<ApiResponse<MenuPermission[]>>('/menus/tree', { params });
-  return response.data;
+  const res = await requestClient.get<ApiResponse<MenuPermission[]>>('/menus/tree', { params });
+  // 兼容拦截器已将返回值变为数组，或保留为 { code, data, msg }
+  if (Array.isArray(res as any)) {
+    return res as unknown as MenuPermission[];
+  }
+  if (res && Array.isArray((res as any).data)) {
+    return (res as any).data as MenuPermission[];
+  }
+  if (res && Array.isArray((res as any).result)) {
+    return (res as any).result as MenuPermission[];
+  }
+  console.warn('[getMenuTreeApi] 非预期响应结构:', res);
+  return [];
 }
 
 /**
