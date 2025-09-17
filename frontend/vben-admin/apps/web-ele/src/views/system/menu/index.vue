@@ -43,8 +43,8 @@
         </ElFormItem>
         <ElFormItem label="状态">
           <ElSelect v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <ElOption label="启用" :value="true" />
-            <ElOption label="禁用" :value="false" />
+            <ElOption label="启用" :value="0" />
+            <ElOption label="禁用" :value="1" />
           </ElSelect>
         </ElFormItem>
         <ElFormItem>
@@ -128,10 +128,10 @@
           <template #default="{ row }">
             <ElSwitch
               v-model="row.status"
-              :active-value="true"
-              :inactive-value="false"
+              :active-value="1"
+              :inactive-value="0"
               :disabled="statusUpdateMap.has(row.id)"
-              @click="handleStatusToggle(row)"
+              @change="handleStatusToggle(row, $event)"
             />
           </template>
         </ElTableColumn>
@@ -187,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, nextTick } from 'vue';
 import { Page } from '@vben/common-ui';
 import { Icon } from '@iconify/vue';
 import {
@@ -235,6 +235,7 @@ const searchForm = reactive<MenuSearchParams>({
 // 菜单列表数据
 const menuList = ref<MenuPermission[]>([]);
 const originalMenuList = ref<MenuPermission[]>([]);
+const inited = ref(false); // 防止初始化时触发 @change
 
 // 计算属性
 const menuTreeOptions = computed(() => {
@@ -250,7 +251,7 @@ const menuTreeOptions = computed(() => {
   };
   return [
     { id: 0, name: '顶级菜单', children: buildTree(originalMenuList.value || [], currentMenuData.value?.id) }
-  ];
+  ] as any[];
 });
 
 // 方法定义
@@ -320,6 +321,9 @@ const fetchMenuList = async () => {
       const normalized = normalizeMenuTree(list);
       originalMenuList.value = normalized;
       menuList.value = normalized;
+      // 等待渲染完成后再开放开关的变更事件，避免初始化触发
+      await nextTick();
+      inited.value = true;
       ElMessage.success(`菜单列表加载成功，共 ${normalized.length} 条记录`);
     } else {
       console.warn('⚠️ 返回的数据不是数组格式，raw:', res);
@@ -518,28 +522,45 @@ const handleDelete = async (row: MenuPermission) => {
 // 状态更新防抖和请求管理
 const statusUpdateMap = new Map<number, boolean>(); // 记录正在更新状态的菜单ID
 
-const handleStatusToggle = async (row: MenuPermission) => {
+const handleStatusToggle = async (row: MenuPermission, newStatus: boolean) => {
+  // 初始化阶段不触发服务端更新
+  if (!inited.value) {
+    return;
+  }
   // 防止重复请求
   if (statusUpdateMap.has(row.id!)) {
     console.log(`🔄 菜单 ${row.id} 正在更新状态，跳过重复请求`);
     return;
   }
 
-  const originalStatus = row.status; // 记录原始状态
-  const newStatus = !originalStatus; // 切换状态
-  
-  console.log(`🔄 用户点击：切换菜单 ${row.id} 状态: ${originalStatus} -> ${newStatus}`);
-  
+  const originalStatus = !!row.status; // 记录原始状态
+  const targetStatus = !!newStatus;    // 来自 @change 的新值
+
+  console.log(`🔄 切换菜单 ${row.id} 状态: ${originalStatus} -> ${targetStatus}`);
+
   try {
     // 标记正在更新
     statusUpdateMap.set(row.id!, true);
-    
-    // 先更新本地状态
-    row.status = newStatus;
-    
-    await updateMenuStatusApi(row.id!, newStatus);
-    console.log(`✅ 菜单 ${row.id} 状态更新成功`);
-    ElMessage.success(`${newStatus ? '启用' : '禁用'}成功`);
+
+    // v-model 已把本地状态改为 targetStatus，这里确保一致
+    row.status = targetStatus;
+
+    // 发送请求（API 内部已做 0/1 → boolean 兼容）
+    const updated = await updateMenuStatusApi(row.id!, targetStatus);
+
+    // 服务端可能返回 0/1 或 boolean，统一布尔化
+    const serverStatusRaw = (updated as any)?.status;
+    const serverStatus =
+      typeof serverStatusRaw === 'boolean'
+        ? serverStatusRaw
+        : serverStatusRaw === 1;
+
+    if (typeof serverStatusRaw !== 'undefined') {
+      row.status = !!serverStatus;
+    }
+
+    console.log(`✅ 菜单 ${row.id} 状态更新成功，服务端状态:`, serverStatusRaw);
+    ElMessage.success(`${row.status ? '启用' : '禁用'}成功`);
   } catch (error: any) {
     console.error(`❌ 菜单 ${row.id} 状态更新失败:`, error);
     // 回滚状态

@@ -1,21 +1,20 @@
 <template>
-  <el-dialog
-    :model-value="visible"
+  <ElDialog
+    v-model="dialogVisible"
     :title="isEdit ? '编辑菜单' : '新增菜单'"
     width="600px"
     :close-on-click-modal="false"
-    @update:model-value="handleClose"
     @close="handleClose"
   >
-    <el-form
+    <ElForm
       ref="formRef"
       :model="formData"
       :rules="formRules"
       label-width="100px"
       class="menu-form"
     >
-      <el-form-item label="上级菜单" prop="parent_id">
-        <el-tree-select
+      <ElFormItem label="上级菜单" prop="parent_id">
+        <ElTreeSelect
           v-model="formData.parent_id"
           :data="menuTreeOptions"
           :props="{ label: 'name', value: 'id', children: 'children' }"
@@ -24,68 +23,70 @@
           :render-after-expand="false"
           style="width: 100%"
         />
-      </el-form-item>
+      </ElFormItem>
 
-      <el-form-item label="权限类型" prop="type">
-        <el-radio-group v-model="formData.type">
-          <el-radio :label="1">菜单权限</el-radio>
-          <el-radio :label="2">路由权限</el-radio>
-          <el-radio :label="3">按钮权限</el-radio>
-        </el-radio-group>
-      </el-form-item>
+      <ElFormItem label="权限类型" prop="type">
+        <ElRadioGroup v-model="formData.type" :disabled="isEdit">
+          <ElRadio :label="1">菜单权限</ElRadio>
+          <ElRadio :label="2">路由权限</ElRadio>
+          <ElRadio :label="3">按钮权限</ElRadio>
+        </ElRadioGroup>
+        <div v-if="isEdit" class="form-tip">
+          编辑模式下不允许修改权限类型
+        </div>
+      </ElFormItem>
 
-      <el-form-item label="权限名称" prop="name">
-        <el-input
+      <ElFormItem label="权限名称" prop="name">
+        <ElInput
           v-model="formData.name"
           placeholder="请输入权限名称"
           maxlength="50"
           show-word-limit
         />
-      </el-form-item>
+      </ElFormItem>
 
-      <el-form-item label="权限标识" prop="code">
-        <el-input
+      <ElFormItem label="权限标识" prop="code">
+        <ElInput
           v-model="formData.code"
           placeholder="请输入权限标识，如：system:menu:list"
           maxlength="100"
           show-word-limit
         />
-      </el-form-item>
+      </ElFormItem>
 
-      <el-form-item
+      <ElFormItem
         v-if="formData.type === 1 || formData.type === 2"
         label="路由路径"
         prop="path"
       >
-        <el-input
+        <ElInput
           v-model="formData.path"
           placeholder="请输入路由路径，如：/system/menu"
           maxlength="200"
           show-word-limit
         />
-      </el-form-item>
+      </ElFormItem>
 
-      <el-form-item
+      <ElFormItem
         v-if="formData.type === 1 || formData.type === 2"
         label="组件路径"
         prop="component"
       >
-        <el-input
+        <ElInput
           v-model="formData.component"
           placeholder="请输入组件路径，如：system/menu/index"
           maxlength="200"
           show-word-limit
         />
+      </ElFormItem>
 
-      </el-form-item>
-
-      <el-form-item
+      <ElFormItem
         v-if="formData.type === 1"
         label="菜单图标"
         prop="icon"
       >
         <div class="icon-input-wrapper">
-          <el-input
+          <ElInput
             v-model="formData.icon"
             placeholder="请输入图标名称，如：lucide:menu"
             maxlength="50"
@@ -103,48 +104,59 @@
                 class="icon-preview"
               />
             </template>
-          </el-input>
+          </ElInput>
         </div>
+      </ElFormItem>
 
-      </el-form-item>
-
-      <el-form-item label="排序" prop="sort_order">
-        <el-input-number
+      <ElFormItem label="排序" prop="sort_order">
+        <ElInputNumber
           v-model="formData.sort_order"
           :min="0"
           :max="9999"
           placeholder="排序值"
           style="width: 200px"
         />
+      </ElFormItem>
 
-      </el-form-item>
-
-      <el-form-item label="状态" prop="status">
-        <el-radio-group v-model="formData.status">
-          <el-radio :label="true">启用</el-radio>
-          <el-radio :label="false">禁用</el-radio>
-        </el-radio-group>
-      </el-form-item>
-    </el-form>
+      <ElFormItem label="状态" prop="status">
+        <ElRadioGroup v-model="formData.status">
+          <ElRadio :label="true">启用</ElRadio>
+          <ElRadio :label="false">禁用</ElRadio>
+        </ElRadioGroup>
+      </ElFormItem>
+    </ElForm>
 
     <template #footer>
       <div class="dialog-footer">
-        <el-button @click="handleClose">取消</el-button>
-        <el-button
+        <ElButton @click="handleClose">取消</ElButton>
+        <ElButton
           type="primary"
           :loading="loading"
           @click="handleSubmit"
         >
           {{ isEdit ? '更新' : '创建' }}
-        </el-button>
+        </ElButton>
       </div>
     </template>
-  </el-dialog>
+  </ElDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, nextTick } from 'vue';
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
+import { 
+  ElDialog,
+  ElForm,
+  ElFormItem,
+  ElTreeSelect,
+  ElRadioGroup,
+  ElRadio,
+  ElInput,
+  ElInputNumber,
+  ElButton,
+  ElMessage,
+  type FormInstance, 
+  type FormRules 
+} from 'element-plus';
 import { Icon } from '@iconify/vue';
 import type { MenuPermission, MenuFormData } from '#/api/system/menu';
 import { createMenuApi, updateMenuApi, checkMenuCodeApi } from '#/api/system/menu';
@@ -167,6 +179,12 @@ const emit = defineEmits<{
   'update:visible': [value: boolean];
   'success': [];
 }>();
+
+/** v-model:visible 双向绑定封装 */
+const dialogVisible = computed({
+  get: () => props.visible,
+  set: (val: boolean) => emit('update:visible', val),
+});
 
 // Refs
 const formRef = ref<FormInstance>();
@@ -199,19 +217,26 @@ const formRules: FormRules = {
     { min: 2, max: 100, message: '权限标识长度在 2 到 100 个字符', trigger: 'blur' },
     { pattern: /^[a-zA-Z][a-zA-Z0-9_:]*$/, message: '权限标识只能包含字母、数字、下划线和冒号，且以字母开头', trigger: 'blur' },
     {
-      validator: async (rule, value, callback) => {
-        if (!value) return callback();
-        try {
-          const isUnique = await checkMenuCodeApi(value, formData.id);
-          if (!isUnique) {
-            callback(new Error('权限标识已存在'));
-          } else {
+      // Element Plus 自定义校验器需同步返回 void，使用 callback 风格
+      validator: (rule, value, callback) => {
+        if (!value) {
+          callback();
+          return;
+        }
+        (async () => {
+          try {
+            const isUnique = await checkMenuCodeApi(value, formData.id);
+            if (!isUnique) {
+              callback(new Error('权限标识已存在'));
+            } else {
+              callback();
+            }
+          } catch (error) {
+            console.warn('权限标识验证失败:', error);
+            // 验证失败不阻止提交
             callback();
           }
-        } catch (error) {
-          console.warn('权限标识验证失败:', error);
-          callback(); // 验证失败时不阻止提交
-        }
+        })();
       },
       trigger: 'blur',
     },

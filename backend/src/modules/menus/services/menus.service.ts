@@ -62,6 +62,24 @@ export interface RouteRecordStringComponent {
 
 @Injectable()
 export class MenusService {
+  // 将对外输出的菜单节点 status 规范为 0(启用)/1(禁用)，并保证 children 为数组
+  private normalizeStatusForOutput<T extends { status?: any; children?: any[] }>(node: T): T {
+    const raw = node?.status;
+    let num: number;
+    if (typeof raw === 'boolean') {
+      num = raw ? 1 : 0;
+    } else if (raw === null || raw === undefined || raw === '') {
+      num = 0;
+    } else {
+      const n = Number(raw);
+      num = Number.isNaN(n) ? 0 : n;
+    }
+    const normalized = { ...(node as any) };
+    normalized.status = num === 1 ? 1 : 0;
+    const children = Array.isArray(node?.children) ? node.children : [];
+    normalized.children = children.map((c: any) => this.normalizeStatusForOutput(c));
+    return normalized as T;
+  }
   constructor(
     @InjectRepository(Menu)
     private menuRepository: TreeRepository<Menu>,
@@ -192,7 +210,9 @@ export class MenusService {
     const menus = await queryBuilder.getMany();
 
     // 手动构建树形结构
-    return this.buildMenuTree(menus);
+    const tree = this.buildMenuTree(menus);
+    // 对外输出前统一规范 status/children
+    return tree.map((n) => this.normalizeStatusForOutput(n));
   }
 
   // 分页查询菜单
@@ -214,8 +234,8 @@ export class MenusService {
     }
 
     const data = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
-
-    return data;
+    // 扁平列表也做统一规范（children 归一为空数组）
+    return data.map((n) => this.normalizeStatusForOutput({ ...n, children: [] } as any));
   }
 
   // 根据ID获取菜单
