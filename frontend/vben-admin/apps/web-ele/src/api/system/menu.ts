@@ -252,7 +252,7 @@ export async function updateMenuApi(id: number, data: MenuFormData): Promise<Men
     remark: data.remark,
   };
   
-  const response = await requestClient.patch<ApiResponse<MenuPermission>>(`/menus/${id}`, backendData);
+  const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}`, backendData);
   return response.data;
 }
 
@@ -274,7 +274,7 @@ export async function batchDeleteMenuApi(ids: number[]): Promise<void> {
  * 更新菜单状态
  */
 export async function updateMenuStatusApi(id: number, status: number | boolean): Promise<MenuPermission> {
-  const response = await requestClient.patch<ApiResponse<MenuPermission>>(`/menus/${id}/status`, { 
+  const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}/status`, { 
     status: typeof status === 'number' ? status === 1 : status
   });
   return response.data;
@@ -284,7 +284,7 @@ export async function updateMenuStatusApi(id: number, status: number | boolean):
  * 更新菜单排序
  */
 export async function updateMenuSortApi(id: number, sort: number): Promise<MenuPermission> {
-  const response = await requestClient.patch<ApiResponse<MenuPermission>>(`/menus/${id}/sort`, { sort });
+  const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}/sort`, { sort });
   return response.data;
 }
 

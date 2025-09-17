@@ -115,7 +115,8 @@
               v-model="row.status"
               :active-value="true"
               :inactive-value="false"
-              @change="handleStatusChange(row)"
+              :disabled="statusUpdateMap.has(row.id)"
+              @click="handleStatusToggle(row)"
             />
           </template>
         </ElTableColumn>
@@ -455,14 +456,39 @@ const handleDelete = async (row: MenuPermission) => {
   }
 };
 
-const handleStatusChange = async (row: MenuPermission) => {
+// 状态更新防抖和请求管理
+const statusUpdateMap = new Map<number, boolean>(); // 记录正在更新状态的菜单ID
+
+const handleStatusToggle = async (row: MenuPermission) => {
+  // 防止重复请求
+  if (statusUpdateMap.has(row.id!)) {
+    console.log(`🔄 菜单 ${row.id} 正在更新状态，跳过重复请求`);
+    return;
+  }
+
+  const originalStatus = row.status; // 记录原始状态
+  const newStatus = !originalStatus; // 切换状态
+  
+  console.log(`🔄 用户点击：切换菜单 ${row.id} 状态: ${originalStatus} -> ${newStatus}`);
+  
   try {
-    await updateMenuStatusApi(row.id, row.status);
-    ElMessage.success(`${row.status ? '启用' : '禁用'}成功`);
+    // 标记正在更新
+    statusUpdateMap.set(row.id!, true);
+    
+    // 先更新本地状态
+    row.status = newStatus;
+    
+    await updateMenuStatusApi(row.id!, newStatus);
+    console.log(`✅ 菜单 ${row.id} 状态更新成功`);
+    ElMessage.success(`${newStatus ? '启用' : '禁用'}成功`);
   } catch (error: any) {
-    console.error('状态更新失败:', error);
-    row.status = !row.status; // 回滚状态
+    console.error(`❌ 菜单 ${row.id} 状态更新失败:`, error);
+    // 回滚状态
+    row.status = originalStatus;
     ElMessage.error(error.message || '状态更新失败');
+  } finally {
+    // 清除更新标记
+    statusUpdateMap.delete(row.id!);
   }
 };
 

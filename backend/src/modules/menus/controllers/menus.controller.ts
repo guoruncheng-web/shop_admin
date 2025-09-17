@@ -307,8 +307,7 @@ export class MenusController {
   }
 
   @Patch(':id/status')
-  @Put(':id/status')
-  @ApiOperation({ summary: '更新菜单状态', description: '启用或禁用菜单' })
+  @ApiOperation({ summary: '更新菜单状态 (PATCH)', description: '启用或禁用菜单' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
     status: 200,
@@ -323,6 +322,33 @@ export class MenusController {
     },
   })
   async updateStatus(
+    @Param('id') id: string,
+    @Body() body: { status: boolean },
+  ) {
+    const menu = await this.menusService.updateStatus(+id, body.status);
+    return {
+      code: 200,
+      data: menu,
+      msg: '状态更新成功',
+    };
+  }
+
+  @Put(':id/status')
+  @ApiOperation({ summary: '更新菜单状态 (PUT)', description: '启用或禁用菜单' })
+  @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object' },
+        msg: { type: 'string', example: '状态更新成功' },
+      },
+    },
+  })
+  async updateStatusPut(
     @Param('id') id: string,
     @Body() body: { status: boolean },
   ) {
