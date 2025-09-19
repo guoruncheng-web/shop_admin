@@ -73,7 +73,7 @@ export default () => {
     // 验证码配置
     captcha: {
       length: parseInt(process.env.CAPTCHA_LENGTH || '4', 10),
-      expires: parseInt(process.env.CAPTCHA_EXPIRES || '300', 10),
+      expires: parseInt(process.env.CAPTCHA_EXPIRES || '60', 10),
     },
 
     // 文件上传配置
@@ -135,6 +135,15 @@ export default () => {
       enabled: process.env.BACKUP_ENABLED === 'true',
       schedule: process.env.BACKUP_SCHEDULE || '0 2 * * *',
       retentionDays: parseInt(process.env.BACKUP_RETENTION_DAYS || '30', 10),
+    },
+
+    // 腾讯云COS配置
+    cos: {
+      secretId: process.env.COS_SECRET_ID || '',
+      secretKey: process.env.COS_SECRET_KEY || '',
+      bucket: process.env.COS_BUCKET || '',
+      region: process.env.COS_REGION || 'ap-beijing',
+      baseUrl: process.env.COS_BASE_URL || '',
     },
   };
 };

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证状态调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 用户管理认证状态调试</h1>
+    
+    <div class="debug-section">
+        <h3>📋 当前认证状态</h3>
+        <div id="auth-status">检查中...</div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>🔧 操作面板</h3>
+        <button onclick="checkAuthStatus()">🔄 刷新认证状态</button>
+        <button onclick="testUserAPI()">🧪 测试用户API</button>
+        <button onclick="clearTokens()">🗑️ 清除所有Token</button>
+        <button onclick="goToLogin()">🔑 前往登录页面</button>
+    </div>
+    
+    <div class="debug-section">
+        <h3>📊 API测试结果</h3>
+        <div id="api-results">暂无测试结果</div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>💾 本地存储信息</h3>
+        <pre id="storage-info">加载中...</pre>
+    </div>
+
+    <script>
+        // 检查认证状态
+        function checkAuthStatus() {
+            const authStatus = document.getElementById('auth-status');
+            const storageInfo = document.getElementById('storage-info');
+            
+            // 检查各种可能的token存储位置
+            const tokens = {
+                localStorage_accessToken: localStorage.getItem('accessToken'),
+                sessionStorage_accessToken: sessionStorage.getItem('accessToken'),
+                localStorage_vben_access: localStorage.getItem('vben-access-store'),
+                localStorage_vben_auth: localStorage.getItem('vben-auth-store'),
+                localStorage_token: localStorage.getItem('token'),
+                sessionStorage_token: sessionStorage.getItem('token')
+            };
+            
+            let hasValidToken = false;
+            let statusHtml = '';
+            
+            // 检查Vben框架的token存储
+            try {
+                const vbenAccess = JSON.parse(tokens.localStorage_vben_access || '{}');
+                if (vbenAccess.accessToken) {
+                    hasValidToken = true;
+                    statusHtml += `<div class="success">✅ 发现Vben Access Token: ${vbenAccess.accessToken.substring(0, 50)}...</div>`;
+                }
+            } catch (e) {
+                statusHtml += `<div class="warning">⚠️ Vben Access Store解析失败</div>`;
+            }
+            
+            // 检查其他token
+            Object.entries(tokens).forEach(([key, value]) => {
+                if (value && key !== 'localStorage_vben_access') {
+                    statusHtml += `<div class="success">✅ 发现Token (${key}): ${value.substring(0, 50)}...</div>`;
+                    hasValidToken = true;
+                }
+            });
+            
+            if (!hasValidToken) {
+                statusHtml += `<div class="error">❌ 未发现有效的认证Token</div>`;
+            }
+            
+            authStatus.innerHTML = statusHtml;
+            
+            // 显示存储信息
+            storageInfo.textContent = JSON.stringify(tokens, null, 2);
+        }
+        
+        // 测试用户API
+        async function testUserAPI() {
+            const resultsDiv = document.getElementById('api-results');
+            resultsDiv.innerHTML = '<div>🧪 正在测试API...</div>';
+            
+            try {
+                // 获取token
+                const vbenAccess = JSON.parse(localStorage.getItem('vben-access-store') || '{}');
+                const token = vbenAccess.accessToken || localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
+                
+                if (!token) {
+                    resultsDiv.innerHTML = '<div class="error">❌ 未找到认证Token，请先登录</div>';
+                    return;
+                }
+                
+                // 测试用户列表API
+                const response = await fetch('http://localhost:3000/api/users?page=1&pageSize=10', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">✅ API调用成功</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">❌ API调用失败 (${response.status})</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">❌ 网络错误: ${error.message}</div>
+                `;
+            }
+        }
+        
+        // 清除所有tokens
+        function clearTokens() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('token');
+            localStorage.removeItem('vben-access-store');
+            localStorage.removeItem('vben-auth-store');
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('token');
+            
+            alert('🗑️ 所有Token已清除，请重新登录');
+            checkAuthStatus();
+        }
+        
+        // 前往登录页面
+        function goToLogin() {
+            window.location.href = '/login';
+        }
+        
+        // 页面加载时检查状态
+        window.onload = function() {
+            checkAuthStatus();
+        };
+    </script>
+</body>
+</html>

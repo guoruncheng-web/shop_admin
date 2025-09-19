@@ -4,6 +4,13 @@ import type { RouteRecordStringComponent } from '@vben/types';
 import { requestClient } from '#/api/request';
 import { useUserStore } from '@vben/stores';
 
+// API 响应包装类型
+interface ApiResponse<T = any> {
+  code: number;
+  data: T;
+  msg: string;
+}
+
 // 扩展用户信息接口，包含菜单字段
 interface ExtendedUserInfo extends UserInfo {
   menus?: any[]; // 菜单数据
@@ -16,6 +23,10 @@ interface ExtendedUserInfo extends UserInfo {
  */
 export async function getProfile(): Promise<ExtendedUserInfo> {
   const userInfo = await requestClient.get<ExtendedUserInfo>('/auth/profile');
+  
+  if (!userInfo) {
+    throw new Error('获取用户信息失败');
+  }
   
   console.log('📋 获取到的用户信息:', userInfo);
   console.log('📋 用户菜单数据:', userInfo.menus);

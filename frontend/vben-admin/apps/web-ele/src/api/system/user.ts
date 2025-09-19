@@ -75,70 +75,71 @@ export interface ChangePasswordParams {
 // API 函数
 /**
  * 获取用户列表
+ * responseReturn: 'data' 直接返回后端 data 字段内容
  */
 export function getUserListApi(params?: QueryUserParams) {
-  return requestClient.get<ApiResponse<UserListResult>>('/users', { params });
+  return requestClient.get<UserListResult>('/users', { params });
 }
 
 /**
  * 获取用户详情
  */
 export function getUserDetailApi(id: number) {
-  return requestClient.get<ApiResponse<User>>(`/users/${id}`);
+  return requestClient.get<User>(`/users/${id}`);
 }
 
 /**
  * 创建用户
  */
 export function createUserApi(data: CreateUserParams) {
-  return requestClient.post<ApiResponse<User>>('/users', data);
+  return requestClient.post<User>('/users', data);
 }
 
 /**
  * 更新用户
  */
 export function updateUserApi(id: number, data: UpdateUserParams) {
-  return requestClient.put<ApiResponse<User>>(`/users/${id}`, data);
+  return requestClient.put<User>(`/users/${id}`, data);
 }
 
 /**
  * 删除用户
  */
 export function deleteUserApi(id: number) {
-  return requestClient.delete<ApiResponse>(`/users/${id}`);
+  return requestClient.delete<void>(`/users/${id}`);
 }
 
 /**
  * 批量删除用户
  */
 export function batchDeleteUserApi(ids: number[]) {
-  return requestClient.post<ApiResponse>('/users/batch-delete', { ids });
+  return requestClient.post<void>('/users/batch-delete', { ids });
 }
 
 /**
  * 修改密码
  */
 export function changePasswordApi(id: number, data: ChangePasswordParams) {
-  return requestClient.put<ApiResponse>(`/users/${id}/change-password`, data);
+  return requestClient.put<void>(`/users/${id}/change-password`, data);
 }
 
 /**
  * 重置密码
  */
 export function resetPasswordApi(id: number, newPassword: string) {
-  return requestClient.put<ApiResponse>(`/users/${id}/reset-password`, { newPassword });
+  return requestClient.put<void>(`/users/${id}/reset-password`, { newPassword });
 }
 
 /**
  * 切换用户状态
  */
 export function toggleUserStatusApi(id: number) {
-  return requestClient.put<ApiResponse<User>>(`/users/${id}/toggle-status`);
+  return requestClient.put<User>(`/users/${id}/toggle-status`);
 }
 
 /**
  * 获取当前用户信息
  */
 export function getCurrentUserInfoApi() {
-  return requestClient.get<ApiResponse<User>>('/users/info');
+  return requestClient.get<User>('/users/info');
 }

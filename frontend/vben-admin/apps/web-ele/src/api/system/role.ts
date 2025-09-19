@@ -1,5 +1,12 @@
 import { requestClient } from '#/api/request';
 
+// API 响应包装类型
+interface ApiResponse<T = any> {
+  code: number;
+  data: T;
+  msg: string;
+}
+
 // 角色相关的类型定义
 export interface Role {
   id: number;
@@ -91,14 +98,14 @@ export function updateRoleApi(id: number, data: UpdateRoleParams) {
  * 删除角色
  */
 export function deleteRoleApi(id: number) {
-  return requestClient.delete(`/roles/${id}`);
+  return requestClient.delete<void>(`/roles/${id}`);
 }
 
 /**
  * 批量删除角色
  */
 export function batchDeleteRoleApi(ids: number[]) {
-  return requestClient.post('/roles/batch-delete', { ids });
+  return requestClient.post<void>('/roles/batch-delete', { ids });
 }
 
 /**

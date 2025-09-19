@@ -323,8 +323,8 @@ const fetchRoles = async () => {
   rolesLoading.value = true;
   try {
     const response = await getAllRolesApi();
-    if (response && response.code === 200 && Array.isArray(response.data)) {
-      roleOptions.value = response.data;
+    if (response && Array.isArray(response)) {
+      roleOptions.value = response;
       console.log('角色列表加载完成:', roleOptions.value);
     } else {
       console.warn('角色API响应异常:', response);

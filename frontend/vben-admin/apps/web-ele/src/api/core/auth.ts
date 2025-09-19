@@ -1,5 +1,12 @@
 import { baseRequestClient, requestClient } from '#/api/request';
 
+// API 响应包装类型
+interface ApiResponse<T = any> {
+  code: number;
+  data: T;
+  msg: string;
+}
+
 export namespace AuthApi {
   /** 登录接口参数 */
   export interface LoginParams {
@@ -37,7 +44,6 @@ export async function loginApi(data: AuthApi.LoginParams) {
  * 获取验证码
  */
 export async function getCaptchaApi() {
-  // 直接返回后端 data 部分（CaptchaResult）
   return requestClient.get<AuthApi.CaptchaResult>('/auth/captcha');
 }
 

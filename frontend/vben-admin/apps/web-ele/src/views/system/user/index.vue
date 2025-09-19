@@ -1,4 +1,4 @@
-<template>
+3其他<template>
   <Page
     description="管理系统用户信息，支持用户的增删改查、状态管理、密码重置等功能"
     title="用户管理"
@@ -304,23 +304,17 @@ const fetchUserList = async () => {
     const response = await getUserListApi(params);
     console.log('✅ 用户数据获取成功:', response);
 
-    if (response && response.code === 200 && response.data) {
-      const { list, total } = response.data;
-      if (Array.isArray(list)) {
-        userList.value = list;
-        pagination.total = total || 0;
-        ElMessage.success(`用户列表加载成功，共 ${list.length} 条记录`);
-      } else {
-        console.warn('⚠️ 返回的数据格式异常:', response);
-        userList.value = [];
-        pagination.total = 0;
-        ElMessage.warning('用户数据格式异常');
-      }
+    // responseReturn: 'data' 直接返回后端 data 字段内容
+    if (response && response.list && Array.isArray(response.list)) {
+      const { list, total } = response;
+      userList.value = list;
+      pagination.total = total || 0;
+      ElMessage.success(`用户列表加载成功，共 ${list.length} 条记录`);
     } else {
-      console.warn('⚠️ API响应异常:', response);
+      console.warn('⚠️ 返回的数据格式异常:', response);
       userList.value = [];
       pagination.total = 0;
-      ElMessage.error(response?.msg || '获取用户列表失败');
+      ElMessage.warning('用户数据格式异常');
     }
   } catch (error: any) {
     console.error('❌ 获取用户列表失败:', error);
@@ -407,12 +401,10 @@ const handleDelete = async (row: User) => {
     );
     
     const response = await deleteUserApi(row.id);
-    if (response && response.code === 200) {
-      ElMessage.success(response.msg || '删除成功');
-      await fetchUserList();
-    } else {
-      ElMessage.error(response?.msg || '删除失败');
-    }
+    // requestClient 的 defaultResponseInterceptor 会在成功时直接返回 data
+    // 失败时会抛出异常，所以能执行到这里说明删除成功
+    ElMessage.success('删除成功');
+    await fetchUserList();
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除失败:', error);
@@ -439,13 +431,11 @@ const handleBatchDelete = async () => {
     );
     
     const response = await batchDeleteUserApi(selectedIds.value);
-    if (response && response.code === 200) {
-      ElMessage.success(response.msg || '批量删除成功');
-      selectedIds.value = [];
-      await fetchUserList();
-    } else {
-      ElMessage.error(response?.msg || '批量删除失败');
-    }
+    // requestClient 的 defaultResponseInterceptor 会在成功时直接返回 data
+    // 失败时会抛出异常，所以能执行到这里说明批量删除成功
+    ElMessage.success('批量删除成功');
+    selectedIds.value = [];
+    await fetchUserList();
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('批量删除失败:', error);
@@ -478,14 +468,16 @@ const handleStatusToggle = async (row: User, newStatus: number) => {
     const response = await toggleUserStatusApi(row.id);
 
     // 更新本地状态
-    if (response && response.code === 200 && response.data) {
-      row.status = response.data.status;
+    // requestClient 的 defaultResponseInterceptor 会在成功时直接返回 data
+    // response 就是后端返回的 data 部分，包含更新后的用户信息
+    if (response && response.status !== undefined) {
+      row.status = response.status;
       console.log(`✅ 用户 ${row.id} 状态更新成功`);
-      ElMessage.success(response.msg || `${row.status === 1 ? '启用' : '禁用'}成功`);
+      ElMessage.success(`${row.status === 1 ? '启用' : '禁用'}成功`);
     } else {
       // 回滚状态
       row.status = originalStatus;
-      ElMessage.error(response?.msg || '状态更新失败');
+      ElMessage.error('状态更新失败');
       return;
     }
   } catch (error: any) {

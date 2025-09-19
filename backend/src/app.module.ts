@@ -13,6 +13,7 @@ import { AppService } from './app.service';
 
 // 认证模块
 import { AuthModule } from './auth/auth.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // 业务模块
@@ -83,6 +84,9 @@ import { RolesModule } from './modules/roles/roles.module';
 
     // 认证模块
     AuthModule,
+
+    // 文件上传模块
+    UploadModule,
 
     // 业务模块
     MenusModule,

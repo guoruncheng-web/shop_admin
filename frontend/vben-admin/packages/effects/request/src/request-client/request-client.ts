@@ -67,7 +67,10 @@ class RequestClient {
     requestConfig.paramsSerializer = getParamsSerializer(
       requestConfig.paramsSerializer,
     );
+    
+    // 保存 responseReturn 配置到实例
     this.instance = axios.create(requestConfig);
+    (this.instance.defaults as any).responseReturn = requestConfig.responseReturn;
 
     bindMethods(this);
 
@@ -133,13 +136,20 @@ class RequestClient {
     config: RequestClientConfig,
   ): Promise<T> {
     try {
-      const response: AxiosResponse<T> = await this.instance({
+      // 合并实例默认配置和请求配置
+      const mergedConfig = {
         url,
         ...config,
+        // 确保 responseReturn 配置传递到请求中
+        responseReturn: config.responseReturn || (this.instance.defaults as any).responseReturn || 'raw',
         ...(config.paramsSerializer
           ? { paramsSerializer: getParamsSerializer(config.paramsSerializer) }
           : {}),
-      });
+      };
+
+      const response: AxiosResponse<T> = await this.instance(mergedConfig);
+      
+      // 响应拦截器已经根据 responseReturn 配置处理了响应
       return response as T;
     } catch (error: any) {
       throw error.response ? error.response.data : error;

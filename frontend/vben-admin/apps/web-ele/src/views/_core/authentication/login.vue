@@ -21,6 +21,7 @@ async function fetchCaptcha() {
   try {
     loadingCaptcha.value = true;
     const res = await getCaptchaApi();
+    console.log("getCaptchaApi",res)
     if (res) {
       captchaId.value = res.captchaId;
       captchaImage.value = res.captchaImage;
