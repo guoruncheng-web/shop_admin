@@ -64,18 +64,24 @@
       </ElFormItem>
 
       <ElFormItem label="头像" prop="avatar">
-        <div class="avatar-upload">
-          <ElInput
+        <div class="avatar-form-item">
+          <AvatarUpload
             v-model="formData.avatar"
-            placeholder="请输入头像URL或上传头像"
-            maxlength="500"
-          >
-            <template #prepend>
-              <ElAvatar :size="32" :src="formData.avatar">
-                {{ formData.realName?.charAt(0) || formData.username?.charAt(0) || 'U' }}
-              </ElAvatar>
-            </template>
-          </ElInput>
+            :max-size="2"
+            @change="handleAvatarChange"
+          />
+          <div v-if="formData.avatar" class="avatar-url-display">
+            <el-input
+              :model-value="formData.avatar"
+              readonly
+              placeholder="头像URL将在此显示"
+              size="small"
+            >
+              <template #prepend>
+                <span>URL</span>
+              </template>
+            </el-input>
+          </div>
         </div>
       </ElFormItem>
 
@@ -140,6 +146,7 @@ import type { User, CreateUserParams, UpdateUserParams } from '#/api/system/user
 import { createUserApi, updateUserApi } from '#/api/system/user';
 import type { Role } from '#/api/system/role';
 import { getAllRolesApi } from '#/api/system/role';
+import AvatarUpload from '#/components/Upload/AvatarUpload.vue';
 
 // Props
 interface Props {
@@ -318,6 +325,12 @@ const handleClose = () => {
   emit('update:visible', false);
 };
 
+// 头像变更处理
+const handleAvatarChange = (url: string) => {
+  formData.avatar = url;
+  console.log('头像已更新:', url);
+};
+
 // 获取角色列表
 const fetchRoles = async () => {
   rolesLoading.value = true;
@@ -368,8 +381,18 @@ onMounted(() => {
   line-height: 1.4;
 }
 
-.avatar-upload {
+.avatar-form-item {
   width: 100%;
+}
+
+.avatar-url-display {
+  margin-top: 15px;
+}
+
+.avatar-url-display :deep(.el-input-group__prepend) {
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 12px;
 }
 
 .dialog-footer {

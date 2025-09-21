@@ -22,11 +22,14 @@ interface ExtendedUserInfo extends UserInfo {
  * 获取用户详细信息
  */
 export async function getProfile(): Promise<ExtendedUserInfo> {
-  const userInfo = await requestClient.get<ExtendedUserInfo>('/auth/profile');
+  const response = await requestClient.get<ApiResponse<ExtendedUserInfo>>('/auth/profile');
   
-  if (!userInfo) {
-    throw new Error('获取用户信息失败');
+  // 现在拦截器返回完整的响应格式: { code: 200, data: {...用户信息}, msg: "成功" }
+  if (!response || response.code !== 200 || !response.data) {
+    throw new Error(response?.msg || '获取用户信息失败');
   }
+  
+  const userInfo = response.data;
   
   console.log('📋 获取到的用户信息:', userInfo);
   console.log('📋 用户菜单数据:', userInfo.menus);

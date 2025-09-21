@@ -19,6 +19,10 @@ export class CreateMenuDto {
   @IsString({ message: '菜单名称必须是字符串' })
   name: string;
 
+  @ApiProperty({ description: '菜单标题（显示名称）', example: '系统管理' })
+  @IsString({ message: '菜单标题必须是字符串' })
+  title: string;
+
   @ApiProperty({ description: '菜单路径', example: '/system', required: false })
   @IsOptional()
   @IsString({ message: '菜单路径必须是字符串' })

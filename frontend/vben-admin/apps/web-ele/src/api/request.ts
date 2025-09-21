@@ -71,14 +71,31 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     },
   });
 
-  // 处理返回的响应数据格式
-  client.addResponseInterceptor(
-    defaultResponseInterceptor({
-      codeField: 'code',
-      dataField: 'data',
-      successCode: 200,
-    }),
-  );
+  // 处理返回的响应数据格式 - 保持完整的响应格式 {code, data, msg}
+  client.addResponseInterceptor({
+    fulfilled: (response) => {
+      const { config, data: responseData, status } = response;
+
+      // 如果配置了返回原始响应，直接返回
+      if (config.responseReturn === 'raw') {
+        return response;
+      }
+
+      // 如果状态码正常，返回完整的响应数据格式 {code, data, msg}
+      if (status >= 200 && status < 400) {
+        // 检查是否配置了返回body，如果是则返回完整响应数据
+        if (config.responseReturn === 'body') {
+          // 直接返回响应体，保持 {code, data, msg} 格式
+          return responseData;
+        }
+        // 否则返回响应体
+        return responseData;
+      }
+
+      // 如果状态码异常，抛出错误
+      throw Object.assign({}, response, { response });
+    },
+  });
 
   // token过期的处理
   client.addResponseInterceptor(
@@ -107,7 +124,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
 }
 
 export const requestClient = createRequestClient(apiURL, {
-  responseReturn: 'data',
+  responseReturn: 'body',
 });
 
 export const baseRequestClient = new RequestClient({ baseURL: apiURL });

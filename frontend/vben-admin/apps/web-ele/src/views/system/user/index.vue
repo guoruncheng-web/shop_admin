@@ -87,8 +87,12 @@
         <ElTableColumn prop="username" label="用户名" min-width="120">
           <template #default="{ row }">
             <div class="user-info">
-              <ElAvatar :size="32" class="user-avatar">
-                {{ row.username.charAt(0).toUpperCase() }}
+              <ElAvatar 
+                :size="32" 
+                :src="row.avatar" 
+                class="user-avatar"
+              >
+                {{ row.realName?.charAt(0) || row.username.charAt(0).toUpperCase() }}
               </ElAvatar>
               <span class="username">{{ row.username }}</span>
             </div>
@@ -131,9 +135,7 @@
         <ElTableColumn prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <ElSwitch
-              v-model="row.status"
-              :active-value="1"
-              :inactive-value="0"
+              :model-value="row.status === 1"
               :disabled="statusUpdateMap.has(row.id)"
               @change="handleStatusToggle(row, $event)"
             />
@@ -304,12 +306,12 @@ const fetchUserList = async () => {
     const response = await getUserListApi(params);
     console.log('✅ 用户数据获取成功:', response);
 
-    // responseReturn: 'data' 直接返回后端 data 字段内容
-    if (response && response.list && Array.isArray(response.list)) {
-      const { list, total } = response;
-      userList.value = list;
+    // 现在返回完整的响应格式: { code: 200, data: { list: [...], total: 10 }, msg: "成功" }
+    if (response && response.code === 200 && response.data) {
+      const { list, total } = response.data;
+      userList.value = list || [];
       pagination.total = total || 0;
-      ElMessage.success(`用户列表加载成功，共 ${list.length} 条记录`);
+      ElMessage.success(`用户列表加载成功，共 ${list?.length || 0} 条记录`);
     } else {
       console.warn('⚠️ 返回的数据格式异常:', response);
       userList.value = [];
@@ -468,10 +470,9 @@ const handleStatusToggle = async (row: User, newStatus: number) => {
     const response = await toggleUserStatusApi(row.id);
 
     // 更新本地状态
-    // requestClient 的 defaultResponseInterceptor 会在成功时直接返回 data
-    // response 就是后端返回的 data 部分，包含更新后的用户信息
-    if (response && response.status !== undefined) {
-      row.status = response.status;
+    // 现在返回完整的响应格式: { code: 200, data: { ...用户信息 }, msg: "成功" }
+    if (response && response.code === 200 && response.data && response.data.status !== undefined) {
+      row.status = response.data.status;
       console.log(`✅ 用户 ${row.id} 状态更新成功`);
       ElMessage.success(`${row.status === 1 ? '启用' : '禁用'}成功`);
     } else {

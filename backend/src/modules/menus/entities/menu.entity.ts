@@ -312,6 +312,9 @@ export class Menu {
   @JoinColumn({ name: 'permission_id' })
   permission: Permission;
 
+  @OneToMany(() => Permission, (permission) => permission.menu)
+  permissions: Permission[];
+
   @OneToMany(() => Menu, (menu) => menu.parent)
   children: Menu[];
 

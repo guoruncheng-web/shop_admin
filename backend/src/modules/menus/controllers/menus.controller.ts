@@ -169,7 +169,7 @@ export class MenusController {
   })
   async getUserMenus(@Query('permissions') permissions?: string) {
     const userPermissions = permissions ? permissions.split(',') : [];
-    const menus = await this.menusService.getUserMenus(userPermissions);
+    const menus = await this.menusService.getUserMenusByUserId(1); // 临时使用用户ID 1
     return {
       code: 200,
       data: menus,

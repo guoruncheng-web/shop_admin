@@ -1,160 +1,174 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import COS from 'cos-nodejs-sdk-v5';
-import { v4 as uuidv4 } from 'uuid';
+const COS = require('cos-nodejs-sdk-v5');
+import * as fs from 'fs';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+
+export interface UploadResult {
+  url: string;
+  key: string;
+  size: number;
+  originalName: string;
+  mimeType: string;
+}
 
 @Injectable()
 export class UploadService {
-  private cos: COS;
+  private cos: any;
+  private bucket: string;
+  private region: string;
 
   constructor(private configService: ConfigService) {
-    // 初始化腾讯云COS客户端
+    // 初始化腾讯云COS配置
     this.cos = new COS({
       SecretId: this.configService.get('cos.secretId'),
       SecretKey: this.configService.get('cos.secretKey'),
     });
+    
+    this.bucket = this.configService.get('cos.bucket');
+    this.region = this.configService.get('cos.region');
   }
 
   /**
    * 上传图片到腾讯云COS
-   * @param file 上传的文件
-   * @param folder 存储文件夹（可选）
-   * @returns 上传结果
    */
-  async uploadImage(file: Express.Multer.File, folder?: string): Promise<{
-    url: string;
-    key: string;
-    size: number;
-    originalName: string;
-  }> {
+  async uploadImage(file: Express.Multer.File): Promise<UploadResult> {
+    // 验证文件类型
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedImageTypes.includes(file.mimetype)) {
+      throw new BadRequestException('只支持上传 JPEG、PNG、GIF、WebP 格式的图片');
+    }
+
+    // 验证文件大小 (5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('图片文件大小不能超过 5MB');
+    }
+
+    return this.uploadToCOS(file, 'images');
+  }
+
+  /**
+   * 上传视频到腾讯云COS
+   */
+  async uploadVideo(file: Express.Multer.File): Promise<UploadResult> {
+    // 验证文件类型
+    const allowedVideoTypes = [
+      'video/mp4', 
+      'video/avi', 
+      'video/mov', 
+      'video/wmv', 
+      'video/flv', 
+      'video/webm',
+      'video/mkv'
+    ];
+    if (!allowedVideoTypes.includes(file.mimetype)) {
+      throw new BadRequestException('只支持上传 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式的视频');
+    }
+
+    // 验证文件大小 (100MB)
+    const maxSize = 100 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new BadRequestException('视频文件大小不能超过 100MB');
+    }
+
+    return this.uploadToCOS(file, 'videos');
+  }
+
+  /**
+   * 通用上传到COS的方法
+   */
+  private async uploadToCOS(file: Express.Multer.File, folder: string): Promise<UploadResult> {
     try {
-      // 验证文件类型
-      const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new BadRequestException('只支持上传图片文件 (jpg, jpeg, png, gif, webp)');
-      }
-
-      // 验证文件大小 (默认5MB)
-      const maxSize = this.configService.get('upload.maxSize') || 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        throw new BadRequestException(`文件大小不能超过 ${Math.round(maxSize / 1024 / 1024)}MB`);
-      }
-
       // 生成唯一文件名
       const fileExtension = path.extname(file.originalname);
       const fileName = `${uuidv4()}${fileExtension}`;
-      
-      // 构建存储路径
-      const folderPath = folder ? `${folder}/` : 'images/';
-      const key = `${folderPath}${fileName}`;
+      const key = `${folder}/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${fileName}`;
 
       // 上传到腾讯云COS
       const result = await this.cos.putObject({
-        Bucket: this.configService.get('cos.bucket'),
-        Region: this.configService.get('cos.region'),
+        Bucket: this.bucket,
+        Region: this.region,
         Key: key,
-        Body: file.buffer,
+        Body: fs.createReadStream(file.path),
+        ContentLength: file.size,
         ContentType: file.mimetype,
       });
 
+      // 删除临时文件
+      fs.unlinkSync(file.path);
+
       // 构建访问URL
-      const baseUrl = this.configService.get('cos.baseUrl');
-      const url = baseUrl ? `${baseUrl}/${key}` : `https://${result.Location}`;
+      const url = `https://${this.bucket}.cos.${this.region}.myqcloud.com/${key}`;
 
       return {
         url,
         key,
         size: file.size,
         originalName: file.originalname,
+        mimeType: file.mimetype,
       };
     } catch (error) {
-      console.error('上传图片失败:', error);
-      if (error instanceof BadRequestException) {
-        throw error;
+      // 删除临时文件
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
       }
-      throw new BadRequestException('图片上传失败，请稍后重试');
+      
+      console.error('上传到腾讯云COS失败:', error);
+      throw new BadRequestException('文件上传失败，请稍后重试');
     }
-  }
-
-  /**
-   * 批量上传图片
-   * @param files 上传的文件数组
-   * @param folder 存储文件夹（可选）
-   * @returns 上传结果数组
-   */
-  async uploadImages(files: Express.Multer.File[], folder?: string): Promise<Array<{
-    url: string;
-    key: string;
-    size: number;
-    originalName: string;
-  }>> {
-    const uploadPromises = files.map(file => this.uploadImage(file, folder));
-    return Promise.all(uploadPromises);
   }
 
   /**
    * 删除COS中的文件
-   * @param key 文件的key
-   * @returns 删除结果
    */
-  async deleteFile(key: string): Promise<boolean> {
+  async deleteFile(key: string): Promise<void> {
     try {
       await this.cos.deleteObject({
-        Bucket: this.configService.get('cos.bucket'),
-        Region: this.configService.get('cos.region'),
+        Bucket: this.bucket,
+        Region: this.region,
         Key: key,
       });
-      return true;
     } catch (error) {
-      console.error('删除文件失败:', error);
-      return false;
+      console.error('删除COS文件失败:', error);
+      throw new BadRequestException('文件删除失败');
     }
   }
 
   /**
-   * 批量删除文件
-   * @param keys 文件key数组
-   * @returns 删除结果
+   * 批量删除COS中的文件
    */
-  async deleteFiles(keys: string[]): Promise<{
-    success: string[];
-    failed: string[];
-  }> {
-    const results = await Promise.allSettled(
-      keys.map(key => this.deleteFile(key).then(success => ({ key, success })))
-    );
-
-    const success: string[] = [];
-    const failed: string[] = [];
-
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled' && result.value.success) {
-        success.push(keys[index]);
-      } else {
-        failed.push(keys[index]);
-      }
-    });
-
-    return { success, failed };
+  async deleteFiles(keys: string[]): Promise<void> {
+    try {
+      const objects = keys.map(key => ({ Key: key }));
+      await this.cos.deleteMultipleObject({
+        Bucket: this.bucket,
+        Region: this.region,
+        Objects: objects,
+      });
+    } catch (error) {
+      console.error('批量删除COS文件失败:', error);
+      throw new BadRequestException('批量删除文件失败');
+    }
   }
 
   /**
-   * 获取文件信息
-   * @param key 文件的key
-   * @returns 文件信息
+   * 获取文件的临时访问URL（用于私有文件）
    */
-  async getFileInfo(key: string): Promise<any> {
+  async getSignedUrl(key: string, expires: number = 3600): Promise<string> {
     try {
-      const result = await this.cos.headObject({
-        Bucket: this.configService.get('cos.bucket'),
-        Region: this.configService.get('cos.region'),
+      const url = this.cos.getObjectUrl({
+        Bucket: this.bucket,
+        Region: this.region,
         Key: key,
+        Sign: true,
+        Expires: expires, // 过期时间（秒）
       });
-      return result;
+      return url;
     } catch (error) {
-      console.error('获取文件信息失败:', error);
-      return null;
+      console.error('生成签名URL失败:', error);
+      throw new BadRequestException('生成访问链接失败');
     }
   }
 }

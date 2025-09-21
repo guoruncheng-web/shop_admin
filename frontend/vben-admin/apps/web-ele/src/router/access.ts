@@ -23,26 +23,43 @@ function transformMenusToRoutes(menus: any[]): RouteRecordStringComponent[] {
   }
 
   console.log('🔄 开始转换菜单数据为路由格式...');
+  console.log('📋 原始菜单数据:', JSON.stringify(menus, null, 2));
   
   const routes: RouteRecordStringComponent[] = menus.map((menu) => {
-    console.log(`📝 处理菜单: ${menu.title || menu.name}`, menu);
+    console.log(`📝 处理菜单:`, menu);
+    
+    // 🔧 正确提取菜单字段（后端将 title/icon 等放在 meta 中）
+    const menuTitle = menu.meta?.title || menu.title || menu.name;
+    const menuIcon = menu.meta?.icon || menu.icon || 'lucide:folder';
+    const menuOrder = menu.meta?.order || menu.order || 0;
+    const menuHideInMenu = menu.meta?.hideInMenu || menu.hidden === true;
+    const menuHideChildrenInMenu = menu.meta?.hideChildrenInMenu || menu.hideChildrenInMenu === true;
     
     // 处理子菜单
     const children: RouteRecordStringComponent[] = [];
     if (menu.children && Array.isArray(menu.children)) {
       menu.children.forEach((child: any) => {
-        console.log(`  📝 处理子菜单: ${child.title || child.name}`, child);
+        console.log(`  📝 处理子菜单:`, child);
+        
+        // 🔧 正确提取子菜单字段
+        const childTitle = child.meta?.title || child.title || child.name;
+        const childIcon = child.meta?.icon || child.icon || 'lucide:file';
+        const childOrder = child.meta?.order || child.order || 0;
+        const childHideInMenu = child.meta?.hideInMenu || child.hidden === true;
+        const childKeepAlive = child.meta?.keepAlive !== false;
         
         children.push({
-          name: child.name || child.title,
+          name: child.name || childTitle,
           path: child.path,
           component: child.component || 'BasicLayout',
           meta: {
-            title: child.title || child.name,
-            icon: child.icon || 'lucide:file',
-            order: child.order || 0,
-            hideInMenu: child.hidden === true,
-            keepAlive: child.keepAlive !== false,
+            title: childTitle,
+            icon: childIcon,
+            order: childOrder,
+            hideInMenu: childHideInMenu,
+            keepAlive: childKeepAlive,
+            // 传递其他 meta 属性
+            ...child.meta,
           },
         });
       });
@@ -50,15 +67,17 @@ function transformMenusToRoutes(menus: any[]): RouteRecordStringComponent[] {
 
     // 构建主菜单路由
     const route: RouteRecordStringComponent = {
-      name: menu.name || menu.title,
+      name: menu.name || menuTitle,
       path: menu.path,
       component: menu.component || 'BasicLayout',
       meta: {
-        title: menu.title || menu.name,
-        icon: menu.icon || 'lucide:folder',
-        order: menu.order || 0,
-        hideInMenu: menu.hidden === true,
-        hideChildrenInMenu: menu.hideChildrenInMenu === true,
+        title: menuTitle,
+        icon: menuIcon,
+        order: menuOrder,
+        hideInMenu: menuHideInMenu,
+        hideChildrenInMenu: menuHideChildrenInMenu,
+        // 传递其他 meta 属性
+        ...menu.meta,
       },
       children: children.length > 0 ? children : undefined,
     };
@@ -68,6 +87,7 @@ function transformMenusToRoutes(menus: any[]): RouteRecordStringComponent[] {
   });
 
   console.log(`🎉 菜单转换完成，共生成 ${routes.length} 个路由`);
+  console.log('📋 最终路由数据:', JSON.stringify(routes, null, 2));
   return routes;
 }
 
@@ -93,6 +113,8 @@ function convertStaticRoutesToStringComponent(routes: any[]): RouteRecordStringC
 }
 
 async function generateAccess(options: GenerateMenuAndRoutesOptions) {
+  console.log('🎯 generateAccess 函数被调用了！');
+  
   const pageMap: ComponentRecordType = import.meta.glob('../views/**/*.vue');
 
   const layoutMap: ComponentRecordType = {
@@ -100,10 +122,19 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
     IFrameView,
   };
 
-  return await generateAccessible(preferences.app.accessMode, {
+  // 🔍 调试：检查当前访问模式
+  console.log('🔍 当前访问模式 (preferences.app.accessMode):', preferences.app.accessMode);
+  console.log('🔍 完整的 preferences.app 配置:', preferences.app);
+
+  // 🔧 确保使用 backend 模式
+  const accessMode = preferences.app.accessMode === 'backend' ? 'backend' : 'backend';
+  console.log('🔧 使用访问模式:', accessMode);
+
+  return await generateAccessible(accessMode, {
     ...options,
     fetchMenuListAsync: async () => {
       try {
+        console.log('🚀 fetchMenuListAsync 函数被调用了！');
         console.log('🚀 开始获取路由数据...');
         
         // 1. 获取静态路由（框架内置路由）
@@ -115,12 +146,24 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
         let dynamicRoutes: RouteRecordStringComponent[] = [];
         try {
           console.log('🌐 开始获取用户资料和菜单数据...');
-          const userProfile = await getProfile();
-          console.log('✅ 成功获取用户资料:', userProfile);
+          
+          // 🔄 复用已经获取的用户信息，避免重复调用 /auth/profile 接口
+          const { useUserStore } = await import('@vben/stores');
+          const userStore = useUserStore();
+          
+          let userProfile = userStore.userInfo;
+          
+          // 如果 store 中没有用户信息，才调用 API
+          if (!userProfile) {
+            console.log('📞 用户信息不存在，调用 getProfile API...');
+            userProfile = await getProfile();
+          } else {
+            console.log('✅ 复用已存在的用户信息:', userProfile);
+          }
           
           // 提取菜单数据
           const menus = userProfile.menus || [];
-          console.log('📋 提取到的菜单数据:', menus);
+          console.log('📋 从 profile 提取到的菜单数据:', menus);
           
           // 转换菜单数据为路由格式
           dynamicRoutes = transformMenusToRoutes(menus);

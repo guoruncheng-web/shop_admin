@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { MulterModule } from '@nestjs/platform-express';
 import { UploadController } from './controllers/upload.controller';
 import { UploadService } from './services/upload.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [
+    MulterModule.register({
+      dest: './uploads', // 临时存储目录
+    }),
+  ],
   controllers: [UploadController],
   providers: [UploadService],
   exports: [UploadService],

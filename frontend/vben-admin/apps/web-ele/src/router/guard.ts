@@ -92,7 +92,16 @@ function setupAccessGuard(router: Router) {
 
     // 生成路由表
     // 当前登录用户拥有的角色标识列表
-    const userInfo = userStore.userInfo || (await authStore.fetchUserInfo());
+    let userInfo = userStore.userInfo;
+    
+    // 只有当 store 中没有用户信息时才调用 fetchUserInfo
+    if (!userInfo) {
+      console.log('📞 路由守卫：用户信息不存在，调用 fetchUserInfo...');
+      userInfo = await authStore.fetchUserInfo();
+    } else {
+      console.log('✅ 路由守卫：复用已存在的用户信息');
+    }
+    
     const userRoles = userInfo.roles ?? [];
 
     // 生成菜单和路由

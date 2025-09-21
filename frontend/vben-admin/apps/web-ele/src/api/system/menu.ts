@@ -187,20 +187,14 @@ function transformUserMenusToMenuPermissions(menus: any[]): MenuPermission[] {
 /**
  * 获取菜单树
  */
-export async function getMenuTreeApi(params?: MenuSearchParams): Promise<MenuPermission[]> {
-  const res = await requestClient.get<ApiResponse<MenuPermission[]>>('/menus/tree', { params });
-  // 兼容拦截器已将返回值变为数组，或保留为 { code, data, msg }
-  if (Array.isArray(res as any)) {
-    return res as unknown as MenuPermission[];
+export async function getMenuTreeApi(params?: MenuSearchParams): Promise<any> {
+  const response = await requestClient.get<ApiResponse<MenuPermission[]>>('/menus/tree', { params });
+  
+  if (response && response.code === 200 && Array.isArray(response.data)) {
+    return response;
   }
-  if (res && Array.isArray((res as any).data)) {
-    return (res as any).data as MenuPermission[];
-  }
-  if (res && Array.isArray((res as any).result)) {
-    return (res as any).result as MenuPermission[];
-  }
-  console.warn('[getMenuTreeApi] 非预期响应结构:', res);
-  return [];
+  
+  throw new Error(response?.msg || '获取菜单树失败');
 }
 
 /**
@@ -208,7 +202,12 @@ export async function getMenuTreeApi(params?: MenuSearchParams): Promise<MenuPer
  */
 export async function getMenuByIdApi(id: number): Promise<MenuPermission> {
   const response = await requestClient.get<ApiResponse<MenuPermission>>(`/menus/${id}`);
-  return response.data;
+  
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+  
+  throw new Error(response?.msg || '获取菜单详情失败');
 }
 
 /**
@@ -236,7 +235,12 @@ export async function createMenuApi(data: MenuFormData): Promise<MenuPermission>
   };
   
   const response = await requestClient.post<ApiResponse<MenuPermission>>('/menus', backendData);
-  return response.data;
+  
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+  
+  throw new Error(response?.msg || '创建菜单失败');
 }
 
 /**
@@ -264,21 +268,38 @@ export async function updateMenuApi(id: number, data: MenuFormData): Promise<Men
   };
   
   const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}`, backendData);
-  return response.data;
+  
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+  
+  throw new Error(response?.msg || '更新菜单失败');
 }
 
 /**
  * 删除菜单
  */
 export async function deleteMenuApi(id: number): Promise<void> {
-  await requestClient.delete(`/menus/${id}`);
+  const response = await requestClient.delete<ApiResponse<void>>(`/menus/${id}`);
+  
+  if (response && response.code === 200) {
+    return;
+  }
+  
+  throw new Error(response?.msg || '删除菜单失败');
 }
 
 /**
  * 批量删除菜单
  */
 export async function batchDeleteMenuApi(ids: number[]): Promise<void> {
-  await requestClient.post('/menus/batch-delete', { ids });
+  const response = await requestClient.post<ApiResponse<void>>('/menus/batch-delete', { ids });
+  
+  if (response && response.code === 200) {
+    return;
+  }
+  
+  throw new Error(response?.msg || '批量删除菜单失败');
 }
 
 /**
@@ -288,7 +309,12 @@ export async function updateMenuStatusApi(id: number, status: number | boolean):
   const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}/status`, { 
     status: typeof status === 'number' ? status === 1 : status
   });
-  return response.data;
+  
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+  
+  throw new Error(response?.msg || '更新菜单状态失败');
 }
 
 /**
@@ -296,7 +322,12 @@ export async function updateMenuStatusApi(id: number, status: number | boolean):
  */
 export async function updateMenuSortApi(id: number, sort: number): Promise<MenuPermission> {
   const response = await requestClient.put<ApiResponse<MenuPermission>>(`/menus/${id}/sort`, { sort });
-  return response.data;
+  
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+  
+  throw new Error(response?.msg || '更新菜单排序失败');
 }
 
 /**
@@ -309,7 +340,12 @@ export async function checkMenuCodeApi(code: string, excludeId?: number): Promis
       params.excludeId = excludeId;
     }
     const response = await requestClient.get<ApiResponse<{ isUnique: boolean }>>('/menus/check-code', { params });
-    return response.data.isUnique;
+    
+    if (response && response.code === 200 && response.data) {
+      return response.data.isUnique;
+    }
+    
+    return true; // 验证失败时默认通过
   } catch (error) {
     console.warn('权限标识验证失败:', error);
     return true; // 验证失败时默认通过
@@ -322,7 +358,12 @@ export async function checkMenuCodeApi(code: string, excludeId?: number): Promis
 export async function getUserMenusApi(permissions?: string[]): Promise<MenuPermission[]> {
   const params = permissions ? { permissions: permissions.join(',') } : {};
   const response = await requestClient.get<ApiResponse<MenuPermission[]>>('/menus/user', { params });
-  return response.data;
+  
+  if (response && response.code === 200 && Array.isArray(response.data)) {
+    return response.data;
+  }
+  
+  return [];
 }
 
 /**
@@ -330,7 +371,12 @@ export async function getUserMenusApi(permissions?: string[]): Promise<MenuPermi
  */
 export async function getUserMenusByUserIdApi(userId: number): Promise<MenuPermission[]> {
   const response = await requestClient.get<ApiResponse<MenuPermission[]>>(`/menus/user/${userId}`);
-  return response.data;
+  
+  if (response && response.code === 200 && Array.isArray(response.data)) {
+    return response.data;
+  }
+  
+  return [];
 }
 
 /**
@@ -338,5 +384,10 @@ export async function getUserMenusByUserIdApi(userId: number): Promise<MenuPermi
  */
 export async function getUserButtonsApi(userId: number): Promise<string[]> {
   const response = await requestClient.get<ApiResponse<string[]>>(`/menus/user/${userId}/buttons`);
-  return response.data;
+  
+  if (response && response.code === 200 && Array.isArray(response.data)) {
+    return response.data;
+  }
+  
+  return [];
 }

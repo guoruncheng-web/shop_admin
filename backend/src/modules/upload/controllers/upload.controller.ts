@@ -1,29 +1,22 @@
 import {
   Controller,
   Post,
+  Delete,
   UseInterceptors,
   UploadedFile,
-  UploadedFiles,
   Body,
-  BadRequestException,
   UseGuards,
-  Delete,
+  BadRequestException,
   Param,
-  Get,
+  Query,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiConsumes,
-  ApiBearerAuth,
-  ApiBody,
-  ApiParam,
-} from '@nestjs/swagger';
-import { UploadService } from '../services/upload.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
-import { UploadImageDto, UploadImagesDto, DeleteFileDto } from '../dto/upload.dto';
+import { UploadService, UploadResult } from '../services/upload.service';
+import { diskStorage } from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import * as path from 'path';
 
 @ApiTags('文件上传')
 @Controller('upload')
@@ -33,12 +26,11 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
-  @ApiOperation({ summary: '上传单张图片' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: '上传图片文件',
-    type: UploadImageDto,
+  @ApiOperation({
+    summary: '上传图片',
+    description: '上传图片到腾讯云COS，支持 JPEG、PNG、GIF、WebP 格式，最大 5MB',
   })
+  @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 200,
     description: '上传成功',
@@ -49,94 +41,114 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            url: { type: 'string', example: 'https://example.cos.ap-beijing.myqcloud.com/images/uuid.jpg' },
-            key: { type: 'string', example: 'images/uuid.jpg' },
+            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/images/2024/01/uuid.jpg' },
+            key: { type: 'string', example: 'images/2024/01/uuid.jpg' },
             size: { type: 'number', example: 1024000 },
-            originalName: { type: 'string', example: 'photo.jpg' },
+            originalName: { type: 'string', example: 'avatar.jpg' },
+            mimeType: { type: 'string', example: 'image/jpeg' },
           },
         },
-        msg: { type: 'string', example: '上传成功' },
+        msg: { type: 'string', example: '图片上传成功' },
       },
     },
   })
-  @ApiResponse({ status: 400, description: '文件格式不支持或文件过大' })
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() uploadImageDto: UploadImageDto,
-  ) {
+  @ApiResponse({
+    status: 400,
+    description: '上传失败 - 文件格式不支持或文件过大',
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = uuidv4();
+          const ext = path.extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB
+      },
+    }),
+  )
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
       throw new BadRequestException('请选择要上传的图片文件');
     }
 
-    const result = await this.uploadService.uploadImage(file, uploadImageDto.folder);
-
+    const result = await this.uploadService.uploadImage(file);
+    
     return {
       code: 200,
       data: result,
-      msg: '上传成功',
+      msg: '图片上传成功',
     };
   }
 
-  @Post('images')
-  @ApiOperation({ summary: '批量上传图片' })
-  @ApiConsumes('multipart/form-data')
-  @ApiBody({
-    description: '批量上传图片文件',
-    type: UploadImagesDto,
+  @Post('video')
+  @ApiOperation({
+    summary: '上传视频',
+    description: '上传视频到腾讯云COS，支持 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式，最大 100MB',
   })
+  @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 200,
-    description: '批量上传成功',
+    description: '上传成功',
     schema: {
       type: 'object',
       properties: {
         code: { type: 'number', example: 200 },
         data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              url: { type: 'string', example: 'https://example.cos.ap-beijing.myqcloud.com/images/uuid.jpg' },
-              key: { type: 'string', example: 'images/uuid.jpg' },
-              size: { type: 'number', example: 1024000 },
-              originalName: { type: 'string', example: 'photo.jpg' },
-            },
+          type: 'object',
+          properties: {
+            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/videos/2024/01/uuid.mp4' },
+            key: { type: 'string', example: 'videos/2024/01/uuid.mp4' },
+            size: { type: 'number', example: 50240000 },
+            originalName: { type: 'string', example: 'demo.mp4' },
+            mimeType: { type: 'string', example: 'video/mp4' },
           },
         },
-        msg: { type: 'string', example: '批量上传成功' },
+        msg: { type: 'string', example: '视频上传成功' },
       },
     },
   })
-  @ApiResponse({ status: 400, description: '文件格式不支持或文件过大' })
-  @UseInterceptors(FilesInterceptor('files', 10)) // 最多10个文件
-  async uploadImages(
-    @UploadedFiles() files: Express.Multer.File[],
-    @Body() uploadImagesDto: UploadImagesDto,
-  ) {
-    if (!files || files.length === 0) {
-      throw new BadRequestException('请选择要上传的图片文件');
+  @ApiResponse({
+    status: 400,
+    description: '上传失败 - 文件格式不支持或文件过大',
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = uuidv4();
+          const ext = path.extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
+        },
+      }),
+      limits: {
+        fileSize: 100 * 1024 * 1024, // 100MB
+      },
+    }),
+  )
+  async uploadVideo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('请选择要上传的视频文件');
     }
 
-    if (files.length > 10) {
-      throw new BadRequestException('最多只能同时上传10张图片');
-    }
-
-    const results = await this.uploadService.uploadImages(files, uploadImagesDto.folder);
-
+    const result = await this.uploadService.uploadVideo(file);
+    
     return {
       code: 200,
-      data: results,
-      msg: '批量上传成功',
+      data: result,
+      msg: '视频上传成功',
     };
   }
 
   @Delete('file/:key')
-  @ApiOperation({ summary: '删除文件' })
-  @ApiParam({
-    name: 'key',
-    description: '文件的key（需要URL编码）',
-    example: 'images%2Fuuid.jpg',
+  @ApiOperation({
+    summary: '删除文件',
+    description: '从腾讯云COS删除指定的文件',
   })
   @ApiResponse({
     status: 200,
@@ -145,32 +157,64 @@ export class UploadController {
       type: 'object',
       properties: {
         code: { type: 'number', example: 200 },
-        data: { type: 'boolean', example: true },
-        msg: { type: 'string', example: '删除成功' },
+        data: { type: 'object', example: {} },
+        msg: { type: 'string', example: '文件删除成功' },
       },
     },
   })
   async deleteFile(@Param('key') key: string) {
-    // URL解码
+    // URL解码key参数
     const decodedKey = decodeURIComponent(key);
-    const result = await this.uploadService.deleteFile(decodedKey);
-
+    await this.uploadService.deleteFile(decodedKey);
+    
     return {
       code: 200,
-      data: result,
-      msg: result ? '删除成功' : '删除失败',
+      data: {},
+      msg: '文件删除成功',
     };
   }
 
-  @Post('delete-files')
-  @ApiOperation({ summary: '批量删除文件' })
-  @ApiBody({
-    description: '要删除的文件key数组',
-    type: DeleteFileDto,
+  @Post('batch-delete')
+  @ApiOperation({
+    summary: '批量删除文件',
+    description: '从腾讯云COS批量删除多个文件',
   })
   @ApiResponse({
     status: 200,
-    description: '批量删除结果',
+    description: '批量删除成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object', example: {} },
+        msg: { type: 'string', example: '批量删除成功' },
+      },
+    },
+  })
+  async batchDeleteFiles(@Body() body: { keys: string[] }) {
+    const { keys } = body;
+    
+    if (!keys || !Array.isArray(keys) || keys.length === 0) {
+      throw new BadRequestException('请提供要删除的文件key列表');
+    }
+
+    await this.uploadService.deleteFiles(keys);
+    
+    return {
+      code: 200,
+      data: {},
+      msg: '批量删除成功',
+    };
+  }
+
+  @Post('signed-url')
+  @ApiOperation({
+    summary: '获取文件临时访问链接',
+    description: '获取腾讯云COS文件的临时访问链接（用于私有文件）',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
     schema: {
       type: 'object',
       properties: {
@@ -178,63 +222,34 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            success: {
-              type: 'array',
-              items: { type: 'string' },
-              example: ['images/uuid1.jpg', 'images/uuid2.jpg'],
-            },
-            failed: {
-              type: 'array',
-              items: { type: 'string' },
-              example: ['images/uuid3.jpg'],
-            },
+            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/file.jpg?sign=xxx' },
+            expires: { type: 'number', example: 3600 },
           },
         },
-        msg: { type: 'string', example: '批量删除完成' },
+        msg: { type: 'string', example: '获取临时链接成功' },
       },
     },
   })
-  async deleteFiles(@Body() deleteFileDto: DeleteFileDto) {
-    const result = await this.uploadService.deleteFiles(deleteFileDto.keys);
+  async getSignedUrl(
+    @Body() body: { key: string },
+    @Query('expires') expires?: number,
+  ) {
+    const { key } = body;
+    
+    if (!key) {
+      throw new BadRequestException('请提供文件key');
+    }
 
+    const expiresIn = expires || 3600; // 默认1小时
+    const url = await this.uploadService.getSignedUrl(key, expiresIn);
+    
     return {
       code: 200,
-      data: result,
-      msg: '批量删除完成',
-    };
-  }
-
-  @Get('file-info/:key')
-  @ApiOperation({ summary: '获取文件信息' })
-  @ApiParam({
-    name: 'key',
-    description: '文件的key（需要URL编码）',
-    example: 'images%2Fuuid.jpg',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '获取文件信息成功',
-    schema: {
-      type: 'object',
-      properties: {
-        code: { type: 'number', example: 200 },
-        data: {
-          type: 'object',
-          description: '文件信息对象',
-        },
-        msg: { type: 'string', example: '获取成功' },
+      data: {
+        url,
+        expires: expiresIn,
       },
-    },
-  })
-  async getFileInfo(@Param('key') key: string) {
-    // URL解码
-    const decodedKey = decodeURIComponent(key);
-    const result = await this.uploadService.getFileInfo(decodedKey);
-
-    return {
-      code: 200,
-      data: result,
-      msg: result ? '获取成功' : '文件不存在',
+      msg: '获取临时链接成功',
     };
   }
 }

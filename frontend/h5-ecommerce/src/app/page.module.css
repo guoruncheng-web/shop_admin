@@ -1,0 +1,357 @@
+/* 首页样式 - 黑色主题 */
+
+.container {
+  background-color: var(--bg-primary);
+  min-height: 100vh;
+}
+
+.navbar {
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-light);
+}
+
+.searchBar {
+  padding: 12px 16px;
+  background-color: var(--bg-card);
+  margin-bottom: 8px;
+}
+
+.searchInput {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: 8px 16px;
+  height: 36px;
+  transition: all 0.2s ease;
+}
+
+.searchInput:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(255, 87, 87, 0.1);
+}
+
+.searchIcon {
+  color: var(--text-tertiary);
+  margin-right: 8px;
+}
+
+.searchPlaceholder {
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.banner {
+  margin: 0 16px 16px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  box-shadow: var(--shadow-medium);
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+}
+
+.bannerContent {
+  padding: 20px;
+  color: var(--text-inverse);
+  position: relative;
+  z-index: 1;
+}
+
+.bannerContent h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.bannerContent p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.categoryCard {
+  margin: 0 16px 16px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-light);
+}
+
+.categoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.categoryItem:hover {
+  background-color: var(--bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(255, 87, 87, 0.1);
+}
+
+.categoryIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.categoryIcon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
+  pointer-events: none;
+}
+
+.categoryName {
+  font-size: 12px;
+  color: var(--text-primary);
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.productCard {
+  margin: 0 16px 16px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-light);
+}
+
+.cardTitle {
+  display: flex;
+  align-items: center;
+  color: var(--text-primary);
+}
+
+.titleIcon {
+  margin-right: 8px;
+  font-size: 16px;
+  color: var(--primary-color);
+}
+
+.productList {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.productItem {
+  flex-shrink: 0;
+  width: 160px;
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+}
+
+.productItem:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+  border-color: var(--primary-light);
+}
+
+.productImage {
+  position: relative;
+  height: 120px;
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imagePlaceholder {
+  font-size: 48px;
+  opacity: 0.6;
+  color: var(--primary-color);
+}
+
+.productTag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 10px;
+  background-color: var(--error-color);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.productInfo {
+  padding: 12px;
+}
+
+.productName {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--text-primary);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  font-weight: 500;
+}
+
+.productPrice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.currentPrice {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.originalPrice {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+
+.promoCard {
+  margin: 0 16px 16px;
+  border-radius: 12px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-light);
+}
+
+.testCard {
+  margin: 0 16px 16px;
+  border-radius: 12px;
+  border: 2px dashed var(--primary-color);
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.testCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(212, 165, 116, 0.05) 0%, rgba(212, 165, 116, 0.02) 100%);
+  pointer-events: none;
+}
+
+.testDescription {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  position: relative;
+  z-index: 1;
+}
+
+.testDescription p {
+  margin: 4px 0;
+}
+
+.safeArea {
+  height: 20px;
+}
+
+/* 响应式适配 */
+@media (max-width: 768px) {
+  .banner {
+    height: 100px;
+  }
+  
+  .bannerContent h2 {
+    font-size: 18px;
+  }
+  
+  .categoryIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .productItem {
+    width: 140px;
+  }
+  
+  .productImage {
+    height: 100px;
+  }
+  
+  .imagePlaceholder {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner {
+    height: 80px;
+    margin: 0 12px 12px;
+  }
+  
+  .bannerContent {
+    padding: 16px;
+  }
+  
+  .bannerContent h2 {
+    font-size: 16px;
+  }
+  
+  .categoryCard,
+  .productCard,
+  .promoCard {
+    margin: 0 12px 12px;
+  }
+  
+  .categoryIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  
+  .categoryName {
+    font-size: 11px;
+  }
+  
+  .productItem {
+    width: 120px;
+  }
+}

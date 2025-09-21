@@ -20,6 +20,12 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { MenusModule } from './modules/menus/menus.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { PermissionsModule } from './modules/permissions/permissions.module';
+import { MigrationController } from './database/migration.controller';
+import { Permission } from './database/entities/permission.entity';
+import { Menu } from './modules/menus/entities/menu.entity';
+import { Role } from './database/entities/role.entity';
+import { Admin } from './database/entities/admin.entity';
 
 @Module({
   imports: [
@@ -92,8 +98,12 @@ import { RolesModule } from './modules/roles/roles.module';
     MenusModule,
     UsersModule,
     RolesModule,
+    PermissionsModule,
+
+    // 为迁移控制器添加TypeORM实体
+    TypeOrmModule.forFeature([Permission, Menu, Role, Admin]),
   ],
-  controllers: [AppController],
+  controllers: [AppController, MigrationController],
   providers: [
     AppService,
     {

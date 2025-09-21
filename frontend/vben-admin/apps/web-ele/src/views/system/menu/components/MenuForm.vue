@@ -25,33 +25,40 @@
         />
       </ElFormItem>
 
-      <ElFormItem label="权限类型" prop="type">
+      <ElFormItem label="菜单类型" prop="type">
         <ElRadioGroup v-model="formData.type" :disabled="isEdit">
-          <ElRadio :label="1">菜单权限</ElRadio>
-          <ElRadio :label="2">路由权限</ElRadio>
-          <ElRadio :label="3">按钮权限</ElRadio>
+          <ElRadio :label="1">目录</ElRadio>
+          <ElRadio :label="2">菜单</ElRadio>
+          <ElRadio :label="3">按钮</ElRadio>
         </ElRadioGroup>
         <div v-if="isEdit" class="form-tip">
-          编辑模式下不允许修改权限类型
+          编辑模式下不允许修改菜单类型
         </div>
       </ElFormItem>
 
-      <ElFormItem label="权限名称" prop="name">
+      <ElFormItem label="菜单名称" prop="name">
         <ElInput
           v-model="formData.name"
-          placeholder="请输入权限名称"
+          placeholder="请输入菜单名称"
           maxlength="50"
           show-word-limit
         />
       </ElFormItem>
 
-      <ElFormItem label="权限标识" prop="code">
+      <ElFormItem 
+        v-if="formData.type === 3"
+        label="权限标识" 
+        prop="code"
+      >
         <ElInput
           v-model="formData.code"
-          placeholder="请输入权限标识，如：system:menu:list"
+          placeholder="请输入权限标识，如：system:menu:add"
           maxlength="100"
           show-word-limit
         />
+        <div class="form-tip">
+          按钮权限需要配置权限标识用于前端权限控制
+        </div>
       </ElFormItem>
 
       <ElFormItem
@@ -81,7 +88,7 @@
       </ElFormItem>
 
       <ElFormItem
-        v-if="formData.type === 1"
+        v-if="formData.type === 1 || formData.type === 2"
         label="菜单图标"
         prop="icon"
       >
@@ -105,6 +112,9 @@
               />
             </template>
           </ElInput>
+        </div>
+        <div class="form-tip">
+          目录和菜单可以配置图标，按钮不需要图标
         </div>
       </ElFormItem>
 
@@ -209,46 +219,55 @@ const formData = reactive<MenuFormData>({
 // Form rules
 const formRules: FormRules = {
   name: [
-    { required: true, message: '请输入权限名称', trigger: 'blur' },
-    { min: 2, max: 50, message: '权限名称长度在 2 到 50 个字符', trigger: 'blur' },
+    { required: true, message: '请输入菜单名称', trigger: 'blur' },
+    { min: 2, max: 50, message: '菜单名称长度在 2 到 50 个字符', trigger: 'blur' },
   ],
   code: [
-    { required: true, message: '请输入权限标识', trigger: 'blur' },
-    { min: 2, max: 100, message: '权限标识长度在 2 到 100 个字符', trigger: 'blur' },
-    { pattern: /^[a-zA-Z][a-zA-Z0-9_:]*$/, message: '权限标识只能包含字母、数字、下划线和冒号，且以字母开头', trigger: 'blur' },
     {
-      // Element Plus 自定义校验器需同步返回 void，使用 callback 风格
       validator: (rule, value, callback) => {
-        if (!value) {
-          callback();
-          return;
-        }
-        (async () => {
-          try {
-            const isUnique = await checkMenuCodeApi(value, formData.id);
-            if (!isUnique) {
-              callback(new Error('权限标识已存在'));
-            } else {
+        // 只有按钮类型才需要权限标识
+        if (formData.type === 3) {
+          if (!value) {
+            callback(new Error('按钮权限必须配置权限标识'));
+            return;
+          }
+          if (value.length < 2 || value.length > 100) {
+            callback(new Error('权限标识长度在 2 到 100 个字符'));
+            return;
+          }
+          if (!/^[a-zA-Z][a-zA-Z0-9_:]*$/.test(value)) {
+            callback(new Error('权限标识只能包含字母、数字、下划线和冒号，且以字母开头'));
+            return;
+          }
+          // 异步验证唯一性
+          (async () => {
+            try {
+              const isUnique = await checkMenuCodeApi(value, formData.id);
+              if (!isUnique) {
+                callback(new Error('权限标识已存在'));
+              } else {
+                callback();
+              }
+            } catch (error) {
+              console.warn('权限标识验证失败:', error);
               callback();
             }
-          } catch (error) {
-            console.warn('权限标识验证失败:', error);
-            // 验证失败不阻止提交
-            callback();
-          }
-        })();
+          })();
+        } else {
+          callback();
+        }
       },
       trigger: 'blur',
     },
   ],
   type: [
-    { required: true, message: '请选择权限类型', trigger: 'change' },
+    { required: true, message: '请选择菜单类型', trigger: 'change' },
   ],
   path: [
     {
       validator: (rule, value, callback) => {
         if ((formData.type === 1 || formData.type === 2) && !value) {
-          callback(new Error('菜单权限和路由权限必须配置路由路径'));
+          callback(new Error('目录和菜单必须配置路由路径'));
         } else if (value && !value.startsWith('/')) {
           callback(new Error('路由路径必须以 / 开头'));
         } else {
@@ -261,8 +280,8 @@ const formRules: FormRules = {
   component: [
     {
       validator: (rule, value, callback) => {
-        if ((formData.type === 1 || formData.type === 2) && !value) {
-          callback(new Error('菜单权限和路由权限必须配置组件路径'));
+        if (formData.type === 2 && !value) {
+          callback(new Error('菜单类型必须配置组件路径'));
         } else {
           callback();
         }
@@ -302,12 +321,18 @@ watch(
 watch(
   () => formData.type,
   (newType) => {
-    // 当权限类型改变时，清空相关字段
+    // 当菜单类型改变时，清空相关字段
     if (newType === 3) {
-      // 按钮权限不需要路径和组件
+      // 按钮类型不需要路径、组件和图标
       formData.path = '';
       formData.component = '';
       formData.icon = '';
+    } else if (newType === 1) {
+      // 目录类型不需要组件路径
+      formData.component = '';
+    } else {
+      // 菜单类型不需要权限标识
+      formData.code = '';
     }
   },
 );

@@ -310,15 +310,9 @@ const fetchMenuList = async () => {
     const res = await getMenuTreeApi(searchForm);
     console.log('✅ 菜单数据获取成功 raw:', res);
 
-    // 解包：兼容 { code, data } 或直接数组返回
-    const list = Array.isArray((res as any)?.data)
-      ? (res as any).data
-      : (Array.isArray(res) ? (res as any) : null);
-
-    console.log('📊 解包后的列表是否数组:', Array.isArray(list), '长度:', list?.length);
-
-    if (Array.isArray(list)) {
-      const normalized = normalizeMenuTree(list);
+    // 现在返回完整的响应格式: { code: 200, data: [...], msg: "成功" }
+    if (res && res.code === 200 && Array.isArray(res.data)) {
+      const normalized = normalizeMenuTree(res.data);
       originalMenuList.value = normalized;
       menuList.value = normalized;
       // 等待渲染完成后再开放开关的变更事件，避免初始化触发
@@ -326,7 +320,7 @@ const fetchMenuList = async () => {
       inited.value = true;
       ElMessage.success(`菜单列表加载成功，共 ${normalized.length} 条记录`);
     } else {
-      console.warn('⚠️ 返回的数据不是数组格式，raw:', res);
+      console.warn('⚠️ 返回的数据格式异常:', res);
       originalMenuList.value = [];
       menuList.value = [];
       ElMessage.warning('菜单数据格式异常');

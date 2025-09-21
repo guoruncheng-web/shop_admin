@@ -236,9 +236,8 @@ export class AuthService {
       throw new UnauthorizedException('用户名或密码错误');
     }
 
-    // 获取用户菜单（暂时使用模拟数据避免数据库超时）
-    // const userMenus = await this.menusService.getUserMenusByUserId(user.id);
-    const userMenus = []; // 暂时返回空数组
+    // 获取用户菜单
+    const userMenus = await this.menusService.getUserMenusByUserId(user.id);
 
     // 生成JWT令牌
     const jwtSecret = this.configService.get('jwt.secret');

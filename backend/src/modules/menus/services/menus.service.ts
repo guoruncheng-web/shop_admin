@@ -24,7 +24,7 @@ export interface RouteRecordStringComponent {
     title: string;
     icon?: string;
     activeIcon?: string;
-    order?: number;
+    orderNo?: number;
     // 显示控制
     hideInMenu?: boolean;
     hideChildrenInMenu?: boolean;
@@ -36,7 +36,7 @@ export interface RouteRecordStringComponent {
     affixTab?: boolean;
     affixTabOrder?: number;
     // 外链和iframe
-    link?: string;
+    externalLink?: string;
     iframeSrc?: string;
     openInNewWindow?: boolean;
     // 徽标配置
@@ -53,9 +53,7 @@ export interface RouteRecordStringComponent {
     // 布局控制
     noBasicLayout?: boolean;
     // 查询参数
-    query?: Record<string, any>;
-    // 其他属性
-    loaded?: boolean;
+    queryParams?: Record<string, any>;
   };
   children?: RouteRecordStringComponent[];
 }
@@ -80,6 +78,7 @@ export class MenusService {
     normalized.children = children.map((c: any) => this.normalizeStatusForOutput(c));
     return normalized as T;
   }
+
   constructor(
     @InjectRepository(Menu)
     private menuRepository: TreeRepository<Menu>,
@@ -206,13 +205,111 @@ export class MenusService {
 
     queryBuilder.orderBy('menu.orderNum', 'ASC');
 
-    // 获取所有符合条件的菜单
+    // 获取所有符合条件的菜单（包括按钮）
     const menus = await queryBuilder.getMany();
 
+    // 为每个菜单添加对应的按钮权限（无论是否有类型过滤）
+    const menusWithButtons = await this.addButtonsToMenus(menus);
+    
     // 手动构建树形结构
-    const tree = this.buildMenuTree(menus);
+    const tree = this.buildMenuTree(menusWithButtons);
+    
     // 对外输出前统一规范 status/children
     return tree.map((n) => this.normalizeStatusForOutput(n));
+  }
+
+  /**
+   * 为菜单添加对应的按钮权限
+   */
+  private async addButtonsToMenus(menus: Menu[]): Promise<Menu[]> {
+    const result = [...menus];
+    
+    // 为每个菜单类型的项目添加标准的按钮权限
+    const menuItems = menus.filter(menu => menu.type === 2); // 菜单类型
+    
+    for (const menu of menuItems) {
+      // 检查是否已经有对应的按钮，如果没有则创建标准按钮
+      const existingButtons = menus.filter(m => m.parentId === menu.id && m.type === 3);
+      
+      if (existingButtons.length === 0) {
+        // 创建标准的CRUD按钮
+        const buttons = this.createStandardButtons(menu);
+        result.push(...buttons);
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+   * 为菜单创建标准的CRUD按钮
+   */
+  private createStandardButtons(menu: Menu): Menu[] {
+    const baseId = menu.id * 1000; // 使用菜单ID * 1000作为按钮ID基数
+    const buttonConfigs = [
+      { suffix: 1, name: '查看', key: 'view' },
+      { suffix: 2, name: '新增', key: 'add' },
+      { suffix: 3, name: '编辑', key: 'edit' },
+      { suffix: 4, name: '删除', key: 'delete' },
+    ];
+
+    // 为角色管理添加特殊的分配权限按钮
+    if (menu.name.includes('角色') || menu.buttonKey?.includes('role')) {
+      buttonConfigs.push({ suffix: 5, name: '分配权限', key: 'permission' });
+    }
+
+    const buttons: Menu[] = buttonConfigs.map(config => ({
+      id: baseId + config.suffix,
+      name: `${menu.name}:${config.name}`,
+      path: '',
+      component: '',
+      redirect: null,
+      title: config.name,
+      icon: null,
+      activeIcon: null,
+      orderNum: config.suffix,
+      hideInMenu: 0,
+      hideChildrenInMenu: 0,
+      hideInBreadcrumb: 0,
+      hideInTab: 0,
+      keepAlive: 0,
+      ignoreAccess: 0,
+      affixTab: 0,
+      affixTabOrder: 0,
+      isExternal: 0,
+      externalLink: null,
+      iframeSrc: null,
+      openInNewWindow: 0,
+      badge: null,
+      badgeType: 'normal',
+      badgeVariants: 'default',
+      authority: null,
+      menuVisibleWithForbidden: 0,
+      activePath: null,
+      maxNumOfOpenTab: -1,
+      fullPathKey: 1,
+      noBasicLayout: 0,
+      type: 3, // 按钮类型
+      status: 1,
+      parentId: menu.id,
+      level: (menu.level || 1) + 1,
+      pathIds: null,
+      permissionId: null,
+      buttonKey: `${menu.name.toLowerCase()}:${config.key}`,
+      queryParams: null,
+      createdBy: null,
+      updatedBy: null,
+      createdByName: null,
+      updatedByName: null,
+      children: [],
+      permission: null,
+      parent: null,
+      permissions: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+    return buttons;
   }
 
   // 分页查询菜单
@@ -287,7 +384,7 @@ export class MenusService {
       updatedByName: currentUser?.username || menu.updatedByName,
     };
 
-      // 如果是按钮类型，处理buttonKey
+    // 如果是按钮类型，处理buttonKey
     if (updateData.type === MenuType.BUTTON || menu.type === MenuType.BUTTON) {
       (mappedData as any).buttonKey =
         permission || updateData.buttonKey || menu.buttonKey;
@@ -343,7 +440,7 @@ export class MenusService {
     await this.menuRepository.remove(menu);
   }
 
-  // 根据用户ID获取菜单（支持多角色，自动去重）
+  // 根据用户ID获取菜单（支持多角色，基于权限过滤）
   async getUserMenusByUserId(
     userId: number,
   ): Promise<RouteRecordStringComponent[]> {
@@ -357,161 +454,136 @@ export class MenusService {
       throw new NotFoundException('用户不存在');
     }
 
-    // 收集用户所有角色的权限ID（去重）
-    const permissionIds = new Set<number>();
+    // 收集用户所有角色的权限代码（去重）
+    const permissionCodes = new Set<string>();
     user.roles.forEach((role) => {
       if (role.status === 1) {
         // 只考虑启用的角色
         role.permissions.forEach((permission) => {
           if (permission.status === 1) {
             // 只考虑启用的权限
-            permissionIds.add(permission.id);
+            permissionCodes.add(permission.code);
           }
         });
       }
     });
 
-    // 查询菜单（只包含目录和菜单类型，排除按钮）
-    const queryBuilder = this.menuRepository
+    // 查询所有菜单（目录和菜单类型）
+    const allMenus = await this.menuRepository
       .createQueryBuilder('menu')
-      .leftJoinAndSelect('menu.permission', 'permission')
-      .leftJoinAndSelect('menu.parent', 'parent')
-      .where('menu.status = :status', { status: true })
+      .leftJoinAndSelect('menu.permissions', 'permissions')
+      .where('menu.status = :status', { status: 1 })
       .andWhere('menu.hideInMenu = :hideInMenu', { hideInMenu: 0 })
-      .andWhere('menu.type IN (:...types)', { types: [1, 2] }); // 只获取目录和菜单
+      .andWhere('menu.type IN (:...types)', { types: [1, 2] }) // 只获取目录和菜单
+      .orderBy('menu.orderNum', 'ASC')
+      .addOrderBy('menu.id', 'ASC')
+      .getMany();
 
-    // 如果有权限限制，只返回有权限的菜单
-    if (permissionIds.size > 0) {
-      queryBuilder.andWhere(
-        '(menu.permissionId IS NULL OR menu.permissionId IN (:...permissionIds))',
-        {
-          permissionIds: Array.from(permissionIds),
-        },
-      );
-    }
+    // 过滤用户有权限访问的菜单
+    const accessibleMenus = allMenus.filter(menu => {
+      // 如果菜单设置了忽略权限，直接允许访问
+      if (menu.ignoreAccess === 1) {
+        return true;
+      }
 
-    const menus = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
-    const menuTree = this.buildMenuTree(menus);
+      // 检查菜单关联的权限
+      if (menu.permissions && menu.permissions.length > 0) {
+        return menu.permissions.some(permission => 
+          permissionCodes.has(permission.code)
+        );
+      }
 
-    // 转换为前端需要的格式
+      // 如果是目录类型且没有关联权限，检查是否有子菜单权限
+      if (menu.type === 1) {
+        const hasChildPermission = allMenus.some(childMenu => 
+          childMenu.parentId === menu.id && 
+          childMenu.permissions?.some(permission => 
+            permissionCodes.has(permission.code)
+          )
+        );
+        return hasChildPermission;
+      }
+
+      // 默认不允许访问
+      return false;
+    });
+
+    // 构建菜单树结构
+    const menuTree = this.buildMenuTree(accessibleMenus);
+    
+    // 转换为前端路由格式
     return this.convertToRouteFormat(menuTree);
   }
 
+  // 构建菜单树结构
+  private buildMenuTree(menus: Menu[]): Menu[] {
+    const menuMap = new Map<number, Menu>();
+    const rootMenus: Menu[] = [];
+
+    // 创建菜单映射
+    menus.forEach(menu => {
+      menuMap.set(menu.id, { ...menu, children: [] });
+    });
+
+    // 构建树结构
+    menus.forEach(menu => {
+      const menuItem = menuMap.get(menu.id);
+      if (menu.parentId && menuMap.has(menu.parentId)) {
+        const parent = menuMap.get(menu.parentId);
+        if (!parent.children) parent.children = [];
+        parent.children.push(menuItem);
+      } else {
+        rootMenus.push(menuItem);
+      }
+    });
+
+    return rootMenus;
+  }
+
+  // 转换为前端路由格式
   private convertToRouteFormat(menus: Menu[]): RouteRecordStringComponent[] {
-    return menus.map((menu) => {
+    return menus.map(menu => {
       const route: RouteRecordStringComponent = {
         name: menu.name,
-        path: menu.path,
-        component: menu.component || (menu.type === 1 ? 'BasicLayout' : ''),
-        redirect: menu.redirect,
+        path: menu.path || '',
+        component: menu.component || '',
+        redirect: menu.redirect || undefined,
         meta: {
-          title: menu.title || menu.name,
+          title: menu.title,
           icon: menu.icon,
           activeIcon: menu.activeIcon,
-          order: menu.orderNum || 0,
-          hideInMenu: (menu.hideInMenu || 0) === 1,
-          hideChildrenInMenu: (menu.hideChildrenInMenu || 0) === 1,
-          hideInBreadcrumb: (menu.hideInBreadcrumb || 0) === 1,
-          hideInTab: (menu.hideInTab || 0) === 1,
-          keepAlive: (menu.keepAlive || 0) === 1,
-          ignoreAccess: (menu.ignoreAccess || 0) === 1,
-          affixTab: (menu.affixTab || 0) === 1,
-          affixTabOrder: menu.affixTabOrder || 0,
-          link: menu.externalLink,
+          orderNo: menu.orderNum,
+          hideInMenu: menu.hideInMenu === 1,
+          hideChildrenInMenu: menu.hideChildrenInMenu === 1,
+          hideInBreadcrumb: menu.hideInBreadcrumb === 1,
+          hideInTab: menu.hideInTab === 1,
+          keepAlive: menu.keepAlive === 1,
+          ignoreAccess: menu.ignoreAccess === 1,
+          affixTab: menu.affixTab === 1,
+          affixTabOrder: menu.affixTabOrder,
+          externalLink: menu.externalLink,
           iframeSrc: menu.iframeSrc,
-          openInNewWindow: (menu.openInNewWindow || 0) === 1,
+          openInNewWindow: menu.openInNewWindow === 1,
           badge: menu.badge,
-          badgeType: menu.badgeType || 'normal',
-          badgeVariants: menu.badgeVariants || 'default',
-          authority: menu.authority || [],
-          menuVisibleWithForbidden: (menu.menuVisibleWithForbidden || 0) === 1,
+          badgeType: menu.badgeType,
+          badgeVariants: menu.badgeVariants,
+          authority: menu.authority,
+          menuVisibleWithForbidden: menu.menuVisibleWithForbidden === 1,
           activePath: menu.activePath,
-          maxNumOfOpenTab: menu.maxNumOfOpenTab || -1,
-          fullPathKey: (menu.fullPathKey || 1) === 1,
-          noBasicLayout: (menu.noBasicLayout || 0) === 1,
-          query: menu.queryParams,
+          maxNumOfOpenTab: menu.maxNumOfOpenTab,
+          fullPathKey: menu.fullPathKey === 1,
+          noBasicLayout: menu.noBasicLayout === 1,
+          queryParams: menu.queryParams,
         },
       };
 
+      // 递归处理子菜单
       if (menu.children && menu.children.length > 0) {
         route.children = this.convertToRouteFormat(menu.children);
       }
 
       return route;
     });
-  }
-
-  // 构建菜单树并去重
-  private buildMenuTree(menus: Menu[]): Menu[] {
-    const menuMap = new Map<number, Menu>();
-    const rootMenus: Menu[] = [];
-
-    // 创建菜单映射，转换数据格式
-    menus.forEach((menu) => {
-      const transformedMenu: Menu = {
-        ...menu,
-        children: [],
-      };
-      menuMap.set(menu.id, transformedMenu);
-    });
-
-    // 构建树形结构
-    menus.forEach((menu) => {
-      const menuNode = menuMap.get(menu.id);
-      if (menuNode) {
-        // 检查是否有父级菜单（通过parentId判断）
-        if (menu.parentId && menu.parentId > 0) {
-          const parent = menuMap.get(menu.parentId);
-          if (parent) {
-            // 检查是否已经存在相同的子菜单（去重）
-            const existingChild = parent.children.find(
-              (child) => child.id === menu.id,
-            );
-            if (!existingChild) {
-              parent.children.push(menuNode);
-            }
-          }
-        } else {
-          // 没有父级ID或parentId为0的是根菜单
-          rootMenus.push(menuNode);
-        }
-      }
-    });
-
-    // 按orderNum排序
-    const sortMenus = (menuList: Menu[]) => {
-      menuList.sort((a, b) => (a.orderNum || 0) - (b.orderNum || 0));
-      menuList.forEach((menu) => {
-        if (menu.children && menu.children.length > 0) {
-          sortMenus(menu.children);
-        }
-      });
-    };
-    sortMenus(rootMenus);
-
-    return rootMenus;
-  }
-
-  // 获取用户菜单权限（兼容旧版本）
-  async getUserMenus(userPermissions: string[]): Promise<Menu[]> {
-    const queryBuilder = this.menuRepository.createQueryBuilder('menu');
-
-    // 只获取启用的菜单
-    queryBuilder.where('menu.status = :status', { status: true });
-
-    // 如果有权限限制，只返回有权限的菜单
-    if (userPermissions && userPermissions.length > 0) {
-      queryBuilder.andWhere(
-        '(menu.permissionId IS NULL OR menu.permissionId IN (:...permissions))',
-        {
-          permissions: userPermissions,
-        },
-      );
-    }
-
-    const menus = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
-
-    return this.buildMenuTree(menus);
   }
 
   // 获取用户按钮权限
@@ -526,43 +598,21 @@ export class MenusService {
       throw new NotFoundException('用户不存在');
     }
 
-    // 收集用户所有角色的权限ID（去重）
-    const permissionIds = new Set<number>();
+    // 收集用户所有角色的权限代码（去重）
+    const permissionCodes = new Set<string>();
     user.roles.forEach((role) => {
       if (role.status === 1) {
         // 只考虑启用的角色
         role.permissions.forEach((permission) => {
-          if (permission.status === 1) {
-            // 只考虑启用的权限
-            permissionIds.add(permission.id);
+          if (permission.status === 1 && permission.type === 'button') {
+            // 只考虑启用的按钮权限
+            permissionCodes.add(permission.code);
           }
         });
       }
     });
 
-    // 查询按钮类型的菜单
-    const queryBuilder = this.menuRepository
-      .createQueryBuilder('menu')
-      .where('menu.status = :status', { status: true })
-      .andWhere('menu.type = :type', { type: 3 }) // 只查询按钮类型
-      .andWhere('menu.buttonKey IS NOT NULL'); // 确保有按钮标识
-
-    // 如果有权限限制，只返回有权限的按钮
-    if (permissionIds.size > 0) {
-      queryBuilder.andWhere(
-        '(menu.permissionId IS NULL OR menu.permissionId IN (:...permissionIds))',
-        {
-          permissionIds: Array.from(permissionIds),
-        },
-      );
-    }
-
-    const buttons = await queryBuilder.select(['menu.buttonKey']).getMany();
-
-    // 返回按钮标识列表
-    return buttons
-      .map((button) => button.buttonKey)
-      .filter((key): key is string => key !== null);
+    return Array.from(permissionCodes);
   }
 
   // 批量删除菜单
@@ -621,7 +671,7 @@ export class MenusService {
     });
     const permissions = Array.from(permissionSet);
 
-    // 查询菜单树
+    // 查询基于权限过滤的菜单树
     const menus = await this.getUserMenusByUserId(userId);
 
     // 返回完整用户档案
