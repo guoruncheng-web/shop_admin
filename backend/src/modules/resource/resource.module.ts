@@ -8,16 +8,19 @@ import { ResourceCategoryController } from './controllers/resource-category.cont
 import { ResourceController } from './controllers/resource.controller';
 import { ResourceInitController } from './controllers/init.controller';
 import { FixSchemaController } from './controllers/fix-schema.controller';
+import { ResourceMenuController } from './controllers/menu-init.controller';
+import { Menu } from '../menus/entities/menu.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ResourceCategory, Resource])
+    TypeOrmModule.forFeature([ResourceCategory, Resource, Menu])
   ],
   controllers: [
     ResourceCategoryController,
     ResourceController,
     ResourceInitController,
-    FixSchemaController
+    FixSchemaController,
+    ResourceMenuController
   ],
   providers: [
     ResourceCategoryService,

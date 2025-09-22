@@ -428,44 +428,44 @@ onMounted(async () => {
 
 <style scoped>
 .static-resource-page {
-  padding: 24px;
-  background-color: #f5f5f5;
+  padding: 16px; /* 减少内边距 */
+  background-color: #fafafa; /* 更浅的背景色 */
   min-height: 100vh;
 }
 
 .page-header {
-  text-align: center;
-  margin-bottom: 32px;
+  text-align: left; /* 左对齐，更简洁 */
+  margin-bottom: 24px; /* 减少间距 */
 }
 
 .page-title {
-  font-size: 32px;
-  font-weight: bold;
+  font-size: 24px; /* 减小字号 */
+  font-weight: 600; /* 减轻字重 */
   color: #1f2937;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .page-description {
-  font-size: 16px;
+  font-size: 14px;
   color: #6b7280;
   margin: 0;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 减小最小宽度 */
+  gap: 16px; /* 减小间距 */
+  margin-bottom: 24px;
 }
 
 .stat-card {
   background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 16px; /* 减小内边距 */
+  border-radius: 8px; /* 减小圆角 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减轻阴影 */
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .stat-icon {

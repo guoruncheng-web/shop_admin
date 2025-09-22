@@ -126,8 +126,8 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
   console.log('🔍 当前访问模式 (preferences.app.accessMode):', preferences.app.accessMode);
   console.log('🔍 完整的 preferences.app 配置:', preferences.app);
 
-  // 🔧 确保使用 backend 模式
-  const accessMode = preferences.app.accessMode === 'backend' ? 'backend' : 'backend';
+  // 🔧 使用配置的访问模式，而不是强制使用 backend
+  const accessMode = preferences.app.accessMode;
   console.log('🔧 使用访问模式:', accessMode);
 
   return await generateAccessible(accessMode, {

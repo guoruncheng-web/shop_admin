@@ -153,20 +153,20 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { getResourceCategories, createResourceCategory, updateResourceCategory, deleteResourceCategory } from '#/api/resource';
+import { ResourceCategoryApi, type ResourceCategory } from '#/api/resource';
 
 // 响应式数据
 const loading = ref(false);
-const categories = ref([]);
+const categories = ref<ResourceCategory[]>([]);
 const showAddDialog = ref(false);
 const showEditDialog = ref(false);
-const editingCategory = ref(null);
-const parentCategory = ref(null);
+const editingCategory = ref<ResourceCategory | null>(null);
+const parentCategory = ref<ResourceCategory | null>(null);
 
 const categoryForm = ref({
   name: '',
   level: 1,
-  parentId: null,
+  parentId: null as number | null,
   sortOrder: 1
 });
 
@@ -174,10 +174,8 @@ const categoryForm = ref({
 const loadCategories = async () => {
   loading.value = true;
   try {
-    const response = await getResourceCategories();
-    if (response.code === 200) {
-      categories.value = response.data;
-    }
+    const response = await ResourceCategoryApi.getCategoryTree();
+    categories.value = response;
   } catch (error) {
     console.error('加载分类失败:', error);
   } finally {
@@ -189,7 +187,7 @@ const refreshCategories = () => {
   loadCategories();
 };
 
-const addSubCategory = (parent) => {
+const addSubCategory = (parent: ResourceCategory) => {
   parentCategory.value = parent;
   categoryForm.value = {
     name: '',
@@ -200,28 +198,26 @@ const addSubCategory = (parent) => {
   showAddDialog.value = true;
 };
 
-const editCategory = (category) => {
+const editCategory = (category: ResourceCategory) => {
   editingCategory.value = category;
   categoryForm.value = {
     name: category.name,
     level: category.level,
-    parentId: category.parentId,
-    sortOrder: category.sortOrder
+    parentId: category.parentId || null,
+    sortOrder: 1 // 临时设置，因为原始数据可能没有 sortOrder
   };
   showEditDialog.value = true;
 };
 
-const deleteCategory = async (category) => {
+const deleteCategory = async (category: ResourceCategory) => {
   if (!confirm(`确定要删除分类"${category.name}"吗？`)) {
     return;
   }
   
   try {
-    const response = await deleteResourceCategory(category.id);
-    if (response.code === 200) {
-      alert('删除成功');
-      loadCategories();
-    }
+    await ResourceCategoryApi.deleteCategory(category.id);
+    alert('删除成功');
+    loadCategories();
   } catch (error) {
     console.error('删除失败:', error);
     alert('删除失败');
@@ -235,18 +231,22 @@ const saveCategory = async () => {
   }
   
   try {
-    let response;
     if (editingCategory.value) {
-      response = await updateResourceCategory(editingCategory.value.id, categoryForm.value);
+      await ResourceCategoryApi.updateCategory(editingCategory.value.id, {
+        name: categoryForm.value.name,
+        parentId: categoryForm.value.parentId || undefined
+      });
+      alert('更新成功');
     } else {
-      response = await createResourceCategory(categoryForm.value);
+      await ResourceCategoryApi.createCategory({
+        name: categoryForm.value.name,
+        parentId: categoryForm.value.parentId || undefined
+      });
+      alert('添加成功');
     }
     
-    if (response.code === 200) {
-      alert(editingCategory.value ? '更新成功' : '添加成功');
-      closeDialog();
-      loadCategories();
-    }
+    closeDialog();
+    loadCategories();
   } catch (error) {
     console.error('保存失败:', error);
     alert('保存失败');
@@ -266,12 +266,12 @@ const closeDialog = () => {
   };
 };
 
-const getResourceCount = (categoryId) => {
+const getResourceCount = (categoryId: number) => {
   // 这里可以从资源统计中获取具体数量
   return Math.floor(Math.random() * 10); // 临时随机数
 };
 
-const viewResources = (category) => {
+const viewResources = (category: ResourceCategory) => {
   // 跳转到资源列表页面，并筛选该分类
   window.location.href = `/medial/static?categoryId=${category.id}`;
 };
@@ -284,18 +284,20 @@ onMounted(() => {
 
 <style scoped>
 .category-management {
-  padding: 20px;
+  padding: 16px; /* 减少内边距 */
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 30px;
+  margin-bottom: 20px; /* 减少间距 */
 }
 
 .page-header h2 {
   color: #333;
-  margin-bottom: 8px;
+  margin-bottom: 4px; /* 减少间距 */
+  font-size: 20px; /* 减小字号 */
+  font-weight: 600; /* 减轻字重 */
 }
 
 .page-header p {
