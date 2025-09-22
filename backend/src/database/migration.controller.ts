@@ -268,6 +268,186 @@ export class MigrationController {
     }
   }
 
+  @Post('fix-permission-hierarchy')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '修复权限层级结构' })
+  @ApiResponse({ status: 200, description: '修复成功' })
+  async fixPermissionHierarchy() {
+    try {
+      // 修复商品管理权限层级
+      await this.fixProductPermissions();
+      
+      // 修复订单管理权限层级
+      await this.fixOrderPermissions();
+
+      // 修复系统管理权限名称
+      await this.fixSystemPermissionNames();
+
+      return {
+        code: 200,
+        data: {},
+        msg: '权限层级结构修复成功',
+      };
+    } catch (error) {
+      console.error('权限层级结构修复失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `修复失败: ${error.message}`,
+      };
+    }
+  }
+
+  @Post('check-permissions-data')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '检查权限数据' })
+  @ApiResponse({ status: 200, description: '检查成功' })
+  async checkPermissionsData() {
+    try {
+      const permissions = await this.permissionRepository.find({
+        where: { status: 1 },
+        order: { id: 'ASC' },
+      });
+
+      return {
+        code: 200,
+        data: permissions,
+        msg: '权限数据查询成功',
+      };
+    } catch (error) {
+      console.error('权限数据查询失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `查询失败: ${error.message}`,
+      };
+    }
+  }
+
+  private async fixSystemPermissionNames() {
+    const systemPermissions = [
+      { code: 'system', name: '系统管理' },
+      { code: 'system:menu', name: '菜单管理' },
+      { code: 'system:role', name: '角色管理' },
+      { code: 'system:user', name: '用户管理' },
+      { code: 'system:menu:view', name: '查看菜单' },
+      { code: 'system:menu:add', name: '新增菜单' },
+      { code: 'system:menu:edit', name: '编辑菜单' },
+      { code: 'system:menu:delete', name: '删除菜单' },
+      { code: 'system:role:view', name: '查看角色' },
+      { code: 'system:role:add', name: '新增角色' },
+      { code: 'system:role:edit', name: '编辑角色' },
+      { code: 'system:role:delete', name: '删除角色' },
+      { code: 'system:role:assign', name: '分配权限' },
+      { code: 'system:user:view', name: '查看用户' },
+      { code: 'system:user:add', name: '新增用户' },
+      { code: 'system:user:edit', name: '编辑用户' },
+      { code: 'system:user:delete', name: '删除用户' },
+    ];
+
+    for (const permData of systemPermissions) {
+      const permission = await this.permissionRepository.findOne({
+        where: { code: permData.code }
+      });
+
+      if (permission) {
+        permission.name = permData.name;
+        await this.permissionRepository.save(permission);
+        console.log(`Updated permission: ${permData.code} -> ${permData.name}`);
+      } else {
+        console.log(`Permission not found: ${permData.code}`);
+      }
+    }
+  }
+
+  private async fixProductPermissions() {
+    // 1. 创建商品管理父级菜单权限
+    let productParent = await this.permissionRepository.findOne({
+      where: { code: 'product' }
+    });
+
+    if (!productParent) {
+      productParent = this.permissionRepository.create({
+        name: '商品管理',
+        code: 'product',
+        type: 'menu',
+        description: '商品管理模块',
+        status: 1,
+        parentId: null,
+      });
+      productParent = await this.permissionRepository.save(productParent);
+    } else {
+      // 更新已存在的父级权限名称
+      productParent.name = '商品管理';
+      await this.permissionRepository.save(productParent);
+    }
+
+    // 2. 更新商品相关权限的层级关系和类型
+    const productPermissions = [
+      { code: 'product:list', name: '商品列表', type: 'menu' },
+      { code: 'product:add', name: '商品新增', type: 'button' },
+      { code: 'product:edit', name: '商品编辑', type: 'button' },
+      { code: 'product:delete', name: '商品删除', type: 'button' },
+    ];
+
+    for (const permData of productPermissions) {
+      const permission = await this.permissionRepository.findOne({
+        where: { code: permData.code }
+      });
+
+      if (permission) {
+        permission.parentId = productParent.id;
+        permission.type = permData.type as any;
+        permission.name = permData.name;
+        await this.permissionRepository.save(permission);
+      }
+    }
+  }
+
+  private async fixOrderPermissions() {
+    // 1. 创建订单管理父级菜单权限
+    let orderParent = await this.permissionRepository.findOne({
+      where: { code: 'order' }
+    });
+
+    if (!orderParent) {
+      orderParent = this.permissionRepository.create({
+        name: '订单管理',
+        code: 'order',
+        type: 'menu',
+        description: '订单管理模块',
+        status: 1,
+        parentId: null,
+      });
+      orderParent = await this.permissionRepository.save(orderParent);
+    } else {
+      // 更新已存在的父级权限名称
+      orderParent.name = '订单管理';
+      await this.permissionRepository.save(orderParent);
+    }
+
+    // 2. 更新订单相关权限的层级关系和类型
+    const orderPermissions = [
+      { code: 'order:list', name: '订单列表', type: 'menu' },
+      { code: 'order:detail', name: '订单详情', type: 'button' },
+    ];
+
+    for (const permData of orderPermissions) {
+      const permission = await this.permissionRepository.findOne({
+        where: { code: permData.code }
+      });
+
+      if (permission) {
+        permission.parentId = orderParent.id;
+        permission.type = permData.type as any;
+        permission.name = permData.name;
+        await this.permissionRepository.save(permission);
+      }
+    }
+  }
+
   private async createTestRoleAndUser() {
     // 创建超级管理员角色
     let superAdminRole = await this.roleRepository.findOne({

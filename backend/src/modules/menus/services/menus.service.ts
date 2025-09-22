@@ -454,65 +454,197 @@ export class MenusService {
       throw new NotFoundException('用户不存在');
     }
 
-    // 收集用户所有角色的权限代码（去重）
-    const permissionCodes = new Set<string>();
+    // 收集用户所有角色的权限（去重）
+    const userPermissions = new Map<string, any>();
     user.roles.forEach((role) => {
       if (role.status === 1) {
         // 只考虑启用的角色
         role.permissions.forEach((permission) => {
-          if (permission.status === 1) {
-            // 只考虑启用的权限
-            permissionCodes.add(permission.code);
+          if (permission.status === 1 && permission.type === 'menu') {
+            // 只考虑启用的菜单类型权限
+            userPermissions.set(permission.code, permission);
           }
         });
       }
     });
 
-    // 查询所有菜单（目录和菜单类型）
-    const allMenus = await this.menuRepository
-      .createQueryBuilder('menu')
-      .leftJoinAndSelect('menu.permissions', 'permissions')
-      .where('menu.status = :status', { status: 1 })
-      .andWhere('menu.hideInMenu = :hideInMenu', { hideInMenu: 0 })
-      .andWhere('menu.type IN (:...types)', { types: [1, 2] }) // 只获取目录和菜单
-      .orderBy('menu.orderNum', 'ASC')
-      .addOrderBy('menu.id', 'ASC')
-      .getMany();
-
-    // 过滤用户有权限访问的菜单
-    const accessibleMenus = allMenus.filter(menu => {
-      // 如果菜单设置了忽略权限，直接允许访问
-      if (menu.ignoreAccess === 1) {
-        return true;
-      }
-
-      // 检查菜单关联的权限
-      if (menu.permissions && menu.permissions.length > 0) {
-        return menu.permissions.some(permission => 
-          permissionCodes.has(permission.code)
-        );
-      }
-
-      // 如果是目录类型且没有关联权限，检查是否有子菜单权限
-      if (menu.type === 1) {
-        const hasChildPermission = allMenus.some(childMenu => 
-          childMenu.parentId === menu.id && 
-          childMenu.permissions?.some(permission => 
-            permissionCodes.has(permission.code)
-          )
-        );
-        return hasChildPermission;
-      }
-
-      // 默认不允许访问
-      return false;
-    });
-
-    // 构建菜单树结构
-    const menuTree = this.buildMenuTree(accessibleMenus);
+    // 基于权限生成菜单结构
+    const menuTree = this.buildMenuTreeFromPermissions(Array.from(userPermissions.values()));
     
     // 转换为前端路由格式
-    return this.convertToRouteFormat(menuTree);
+    return this.convertPermissionsToRouteFormat(menuTree);
+  }
+
+  // 基于权限构建菜单树结构
+  private buildMenuTreeFromPermissions(permissions: any[]): any[] {
+    const permissionMap = new Map<number, any>();
+    const rootPermissions: any[] = [];
+
+    // 创建权限映射并添加children属性
+    permissions.forEach(permission => {
+      permissionMap.set(permission.id, { ...permission, children: [] });
+    });
+
+    // 构建树结构
+    permissions.forEach(permission => {
+      const permissionItem = permissionMap.get(permission.id);
+      if (permission.parentId && permissionMap.has(permission.parentId)) {
+        const parent = permissionMap.get(permission.parentId);
+        parent.children.push(permissionItem);
+      } else {
+        rootPermissions.push(permissionItem);
+      }
+    });
+
+    return rootPermissions;
+  }
+
+  // 将权限树转换为前端路由格式
+  private convertPermissionsToRouteFormat(permissions: any[]): RouteRecordStringComponent[] {
+    return permissions.map(permission => {
+      // 根据权限代码生成路由信息
+      const routeInfo = this.getRouteInfoByPermissionCode(permission.code);
+      
+      const route: RouteRecordStringComponent = {
+        name: permission.name || routeInfo.name,
+        path: routeInfo.path,
+        component: routeInfo.component,
+        meta: {
+          title: permission.name || routeInfo.title,
+          icon: routeInfo.icon,
+          activeIcon: null,
+          orderNo: this.getOrderByPermissionCode(permission.code),
+          hideInMenu: false,
+          hideChildrenInMenu: false,
+          hideInBreadcrumb: false,
+          hideInTab: false,
+          keepAlive: routeInfo.keepAlive || false,
+          ignoreAccess: false,
+          affixTab: false,
+          affixTabOrder: 0,
+          externalLink: null,
+          iframeSrc: null,
+          openInNewWindow: false,
+          badge: null,
+          badgeType: 'normal',
+          badgeVariants: 'default',
+          authority: routeInfo.authority,
+          menuVisibleWithForbidden: false,
+          activePath: null,
+          maxNumOfOpenTab: -1,
+          fullPathKey: true,
+          noBasicLayout: false,
+          queryParams: null,
+        },
+      };
+
+      // 递归处理子权限
+      if (permission.children && permission.children.length > 0) {
+        route.children = this.convertPermissionsToRouteFormat(permission.children);
+      }
+
+      return route;
+    });
+  }
+
+  // 根据权限代码获取路由信息
+  private getRouteInfoByPermissionCode(code: string): any {
+    const routeMap = {
+      'system': {
+        name: '系统管理',
+        path: '/system',
+        component: 'BasicLayout',
+        title: '系统管理',
+        icon: 'ion:settings-outline',
+        authority: '["admin", "super_admin"]'
+      },
+      'system:menu': {
+        name: '菜单管理',
+        path: '/system/menu',
+        component: 'system/menu/index',
+        title: '菜单管理',
+        icon: 'ion:menu-outline',
+        keepAlive: true,
+        authority: '["super_admin"]'
+      },
+      'system:role': {
+        name: '角色管理',
+        path: '/system/role',
+        component: 'system/role/index',
+        title: '角色管理',
+        icon: 'ion:key-outline',
+        keepAlive: true,
+        authority: '["super_admin"]'
+      },
+      'system:user': {
+        name: '用户管理',
+        path: '/system/user',
+        component: 'system/user/index',
+        title: '用户管理',
+        icon: 'ion:people-outline',
+        keepAlive: true,
+        authority: '["admin", "super_admin"]'
+      },
+      'product': {
+        name: '商品管理',
+        path: '/product',
+        component: 'BasicLayout',
+        title: '商品管理',
+        icon: 'ion:cube-outline',
+        authority: '["admin", "super_admin", "product_admin"]'
+      },
+      'product:list': {
+        name: '商品列表',
+        path: '/product/list',
+        component: 'product/list/index',
+        title: '商品列表',
+        icon: 'ion:list-outline',
+        keepAlive: true,
+        authority: '["admin", "super_admin", "product_admin"]'
+      },
+      'order': {
+        name: '订单管理',
+        path: '/order',
+        component: 'BasicLayout',
+        title: '订单管理',
+        icon: 'ion:receipt-outline',
+        authority: '["admin", "super_admin", "order_admin"]'
+      },
+      'order:list': {
+        name: '订单列表',
+        path: '/order/list',
+        component: 'order/list/index',
+        title: '订单列表',
+        icon: 'ion:list-outline',
+        keepAlive: true,
+        authority: '["admin", "super_admin", "order_admin"]'
+      }
+    };
+
+    return routeMap[code] || {
+      name: code,
+      path: `/${code.replace(':', '/')}`,
+      component: `${code.replace(':', '/')}/index`,
+      title: code,
+      icon: 'ion:document-outline',
+      authority: '["admin", "super_admin"]'
+    };
+  }
+
+  // 根据权限代码获取排序号
+  private getOrderByPermissionCode(code: string): number {
+    const orderMap = {
+      'system': 1,
+      'system:user': 1,
+      'system:role': 2,
+      'system:menu': 3,
+      'product': 2,
+      'product:list': 1,
+      'order': 3,
+      'order:list': 1
+    };
+
+    return orderMap[code] || 99;
   }
 
   // 构建菜单树结构
