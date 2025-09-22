@@ -21,6 +21,7 @@ import { MenusModule } from './modules/menus/menus.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { ResourceModule } from './modules/resource/resource.module';
 import { MigrationController } from './database/migration.controller';
 import { Permission } from './database/entities/permission.entity';
 import { Menu } from './modules/menus/entities/menu.entity';
@@ -99,6 +100,7 @@ import { Admin } from './database/entities/admin.entity';
     UsersModule,
     RolesModule,
     PermissionsModule,
+    ResourceModule,
 
     // 为迁移控制器添加TypeORM实体
     TypeOrmModule.forFeature([Permission, Menu, Role, Admin]),
