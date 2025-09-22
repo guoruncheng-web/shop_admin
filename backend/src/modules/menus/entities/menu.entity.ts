@@ -9,6 +9,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
+import { RoleMenu } from '../../../database/entities/role-menu.entity';
 
 @Entity('menus')
 export class Menu {
@@ -321,6 +322,10 @@ export class Menu {
   @ManyToOne(() => Menu, (menu) => menu.children, { nullable: true })
   @JoinColumn({ name: 'parent_id' })
   parent: Menu | null;
+
+  // 关联角色（通过中间表）
+  @OneToMany(() => RoleMenu, (roleMenu) => roleMenu.menu)
+  roleMenus: RoleMenu[];
 
   @CreateDateColumn({
     type: 'timestamp',

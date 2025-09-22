@@ -317,16 +317,31 @@ export class PermissionsService {
       throw new NotFoundException('角色不存在');
     }
 
-    // 获取权限列表
-    let permissions: Permission[] = [];
-    if (permissionIds && permissionIds.length > 0) {
-      permissions = await this.permissionRepository.find({
-        where: { id: In(permissionIds) },
-      });
-    }
+    // 使用事务确保数据一致性
+    await this.roleRepository.manager.transaction(async (transactionalEntityManager) => {
+      // 先清除该角色的所有权限关联
+      await transactionalEntityManager.query(
+        'DELETE FROM role_permissions WHERE role_id = ?',
+        [roleId]
+      );
 
-    // 更新角色权限
-    role.permissions = permissions;
-    await this.roleRepository.save(role);
+      // 如果有新权限需要分配，则批量插入
+      if (permissionIds && permissionIds.length > 0) {
+        // 验证权限是否存在
+        const permissions = await transactionalEntityManager.find(Permission, {
+          where: { id: In(permissionIds) },
+        });
+
+        if (permissions.length !== permissionIds.length) {
+          throw new BadRequestException('部分权限不存在');
+        }
+
+        // 批量插入新的权限关联
+        const values = permissionIds.map(permissionId => `(${roleId}, ${permissionId})`).join(', ');
+        await transactionalEntityManager.query(
+          `INSERT INTO role_permissions (role_id, permission_id) VALUES ${values}`
+        );
+      }
+    });
   }
 }

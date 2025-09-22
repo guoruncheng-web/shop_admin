@@ -75,7 +75,7 @@
       </ElFormItem>
 
       <ElFormItem
-        v-if="formData.type === 1 || formData.type === 2"
+        v-if="formData.type === 2"
         label="组件路径"
         prop="component"
       >
@@ -85,6 +85,9 @@
           maxlength="200"
           show-word-limit
         />
+        <div class="form-tip">
+          目录类型会自动使用 BasicLayout，无需手动配置组件路径
+        </div>
       </ElFormItem>
 
       <ElFormItem
@@ -328,9 +331,10 @@ watch(
       formData.component = '';
       formData.icon = '';
     } else if (newType === 1) {
-      // 目录类型不需要组件路径
+      // 目录类型不需要组件路径（后端会自动设置为 BasicLayout）
       formData.component = '';
-    } else {
+      formData.code = '';
+    } else if (newType === 2) {
       // 菜单类型不需要权限标识
       formData.code = '';
     }

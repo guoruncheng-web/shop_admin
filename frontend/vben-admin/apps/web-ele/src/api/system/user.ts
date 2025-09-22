@@ -80,7 +80,7 @@ export async function getUserListApi(params?: QueryUserParams) {
   const response = await requestClient.get<ApiResponse<UserListResult>>('/users', { params });
   
   if (response && response.code === 200 && response.data) {
-    return response.data;
+    return response;
   }
   
   throw new Error(response?.msg || '获取用户列表失败');

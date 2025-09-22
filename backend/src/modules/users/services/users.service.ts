@@ -22,6 +22,19 @@ export class UsersService {
     const user = await this.adminRepository.findOne({
       where: { id },
       relations: ['roles'],
+      select: [
+        'id',
+        'username', 
+        'realName',
+        'email',
+        'phone',
+        'avatar',
+        'status',
+        'lastLoginTime',
+        'lastLoginIp',
+        'createdAt',
+        'updatedAt'
+      ]
     });
 
     if (!user) {

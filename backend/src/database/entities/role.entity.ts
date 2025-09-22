@@ -3,12 +3,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
+  OneToMany,
   JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Admin } from './admin.entity';
 import { Permission } from './permission.entity';
+import { RoleMenu } from './role-menu.entity';
 
 @Entity('roles')
 export class Role {
@@ -53,4 +55,8 @@ export class Role {
     inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'id' },
   })
   permissions: Permission[];
+
+  // 关联菜单（通过中间表）
+  @OneToMany(() => RoleMenu, (roleMenu) => roleMenu.role)
+  roleMenus: RoleMenu[];
 }
