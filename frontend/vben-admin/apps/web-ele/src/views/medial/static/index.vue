@@ -45,19 +45,19 @@
     <div class="action-section">
       <div class="action-buttons">
         <button class="btn btn-primary" @click="handleUpload">
-          <span class="btn-icon">⬆️</span>
+          <span class="btn-icon">📤</span>
           上传资源
         </button>
         <button class="btn btn-secondary" @click="handleCategoryManage">
-          <span class="btn-icon">🏷️</span>
+          <span class="btn-icon">🗂️</span>
           分类管理
         </button>
         <button class="btn btn-secondary" @click="handleBatchOperation">
-          <span class="btn-icon">📋</span>
+          <span class="btn-icon">⚡</span>
           批量操作
         </button>
         <button class="btn btn-secondary" @click="handleExport">
-          <span class="btn-icon">📊</span>
+          <span class="btn-icon">📈</span>
           导出统计
         </button>
       </div>
@@ -78,27 +78,35 @@
         </div>
         
         <div class="filter-controls">
-          <select v-model="selectedType" class="filter-select">
-            <option value="">全部类型</option>
-            <option value="image">图片</option>
-            <option value="video">视频</option>
-          </select>
+          <ElSelect 
+            v-model="selectedType" 
+            placeholder="全部类型" 
+            clearable
+            style="width: 140px"
+            @change="handleSearch"
+          >
+            <ElOption label="全部类型" value="" />
+            <ElOption label="图片" value="image" />
+            <ElOption label="视频" value="video" />
+          </ElSelect>
           
-          <select v-model="selectedCategory" class="filter-select">
-            <option value="">全部分类</option>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
-              {{ category.name }}
-            </option>
-          </select>
-          
-          <select v-model="sortBy" class="filter-select">
-            <option value="created_desc">最新上传</option>
-            <option value="created_asc">最早上传</option>
-            <option value="name_asc">名称A-Z</option>
-            <option value="name_desc">名称Z-A</option>
-            <option value="size_desc">文件大小↓</option>
-            <option value="size_asc">文件大小↑</option>
-          </select>
+          <ElTreeSelect 
+            v-model="selectedCategory" 
+            :data="categories"
+            placeholder="全部分类" 
+            clearable
+            check-strictly
+            :render-after-expand="false"
+            :check-on-click-node="false"
+            style="width: 180px"
+            :props="{
+              value: 'id',
+              label: 'name',
+              children: 'children',
+              disabled: (data:any) => data.children && data.children.length > 0
+            }"
+            @change="handleSearch"
+          />
         </div>
       </div>
     </div>
@@ -140,7 +148,7 @@
         
         <div class="resource-actions">
           <button class="action-btn" @click.stop="handlePreview(resource)" title="预览">👁️</button>
-          <button class="action-btn" @click.stop="handleEdit(resource)" title="编辑">✏️</button>
+          <button class="action-btn" @click.stop="handleViewDetails(resource)" title="查看详情">📋</button>
           <button class="action-btn" @click.stop="handleDownload(resource)" title="下载">⬇️</button>
           <button class="action-btn danger" @click.stop="handleDelete(resource)" title="删除">🗑️</button>
         </div>
@@ -170,6 +178,86 @@
       </button>
     </div>
 
+    <!-- 资源详情模态框 -->
+    <div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
+      <div class="modal-content details-modal" @click.stop>
+        <div class="modal-header">
+          <h3>资源详情</h3>
+          <button class="modal-close" @click="closeDetailsModal">×</button>
+        </div>
+        
+        <div class="modal-body">
+          <div v-if="selectedResource" class="details-content">
+            <!-- 资源预览 -->
+            <div class="details-preview">
+              <img 
+                v-if="selectedResource.type === 'image'"
+                :src="selectedResource.url"
+                :alt="selectedResource.name"
+                class="details-image"
+              />
+              <div v-else class="details-video">
+                <div class="video-icon">🎬</div>
+                <span>视频文件</span>
+              </div>
+            </div>
+            
+            <!-- 资源信息 -->
+            <div class="details-info">
+              <div class="info-row">
+                <label>资源名称：</label>
+                <span>{{ selectedResource.name }}</span>
+              </div>
+              
+              <div class="info-row">
+                <label>资源类型：</label>
+                <span>{{ selectedResource.type === 'image' ? '图片' : '视频' }}</span>
+              </div>
+              
+              <div class="info-row">
+                <label>文件大小：</label>
+                <span>{{ formatFileSize(selectedResource.fileSize || 0) }}</span>
+              </div>
+              
+              <div class="info-row">
+                <label>资源分类：</label>
+                <span>{{ getCategoryName(selectedResource.categoryId) }}</span>
+              </div>
+              
+              <div class="info-row">
+                <label>上传时间：</label>
+                <span>{{ formatDate(selectedResource.uploadedAt) }}</span>
+              </div>
+              
+              <div class="info-row">
+                <label>资源链接：</label>
+                <div class="url-container">
+                  <input 
+                    type="text" 
+                    :value="selectedResource.url" 
+                    readonly 
+                    class="url-input"
+                    ref="urlInput"
+                  />
+                  <button class="copy-btn" @click="copyUrl">复制</button>
+                </div>
+              </div>
+              
+              <div v-if="selectedResource.description" class="info-row">
+                <label>描述：</label>
+                <span>{{ selectedResource.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn-secondary" @click="closeDetailsModal">关闭</button>
+          <button class="btn btn-primary" @click="handleDownload(selectedResource)">下载资源</button>
+        </div>
+      </div>
+    </div>
+
     <!-- 上传模态框 -->
     <div v-if="showUploadModal" class="modal-overlay" @click="showUploadModal = false">
       <div class="modal-content" @click.stop>
@@ -180,11 +268,36 @@
         <div class="modal-body">
           <div class="upload-area" @drop="handleDrop" @dragover.prevent>
             <div class="upload-icon">📁</div>
-            <p>拖拽文件到此处或点击选择文件</p>
-            <input type="file" multiple accept="image/*,video/*" @change="handleFileSelect" />
+            <p v-if="selectedFiles.length === 0">
+              拖拽文件到此处或 <span class="upload-link" @click="fileInput?.click()">点击选择</span>
+            </p>
+            <div v-else class="selected-files">
+              <h4>已选择 {{ selectedFiles.length }} 个文件：</h4>
+              <ul>
+                <li v-for="(file, index) in selectedFiles" :key="index">
+                  {{ file.name }} ({{ (file.size / 1024 / 1024).toFixed(2) }}MB)
+                </li>
+              </ul>
+              <p class="reselect-hint">
+                <span class="upload-link" @click="fileInput?.click()">重新选择文件</span>
+              </p>
+            </div>
+            <input ref="fileInput" type="file" multiple accept="image/*,video/*" @change="handleFileSelect" style="display: none;">
           </div>
           
-          <div class="upload-options">
+          <!-- 上传进度显示 -->
+          <div v-if="uploading" class="upload-progress">
+            <div class="progress-info">
+              <h4>{{ uploadStatus }}</h4>
+              <p>当前文件: {{ currentFileName }}</p>
+              <p>进度: {{ currentFileIndex }}/{{ selectedFiles.length }} ({{ uploadProgress }}%)</p>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" :style="{ width: uploadProgress + '%' }"></div>
+            </div>
+          </div>
+
+          <div class="upload-options" v-if="!uploading">
             <label>
               分类：
               <select v-model="uploadCategory">
@@ -197,8 +310,14 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" @click="showUploadModal = false">取消</button>
-          <button class="btn btn-primary" @click="handleUploadConfirm">确认上传</button>
+          <button class="btn btn-secondary" @click="handleUploadCancel" :disabled="uploading">取消</button>
+          <button 
+            class="btn btn-primary" 
+            @click="handleUploadConfirm"
+            :disabled="uploading || selectedFiles.length === 0 || !uploadCategory"
+          >
+            {{ uploading ? '上传中...' : '确认上传' }}
+          </button>
         </div>
       </div>
     </div>
@@ -208,10 +327,15 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElSelect, ElOption, ElOptionGroup, ElTreeSelect, ElMessage } from 'element-plus';
 import { ResourceApi, ResourceCategoryApi, type Resource, type ResourceCategory, type ResourceStatistics } from '#/api/resource';
 
 // 路由实例
 const router = useRouter();
+
+// 模板引用
+const fileInput = ref<HTMLInputElement>();
+const urlInput = ref<HTMLInputElement>();
 
 // 响应式数据
 const searchQuery = ref('');
@@ -222,8 +346,18 @@ const sortOrder = ref<'ASC' | 'DESC'>('DESC');
 const currentPage = ref(1);
 const pageSize = ref(20);
 const showUploadModal = ref(false);
+const showDetailsModal = ref(false);
+const selectedResource = ref<Resource | null>(null);
 const uploadCategory = ref('');
+const selectedFiles = ref<File[]>([]);
+const uploading = ref(false);
 const loading = ref(false);
+
+// 上传进度相关
+const uploadProgress = ref(0); // 整体进度 0-100
+const currentFileIndex = ref(0); // 当前上传文件索引
+const currentFileName = ref(''); // 当前上传文件名
+const uploadStatus = ref(''); // 上传状态文本
 
 // 统计数据
 const stats = reactive<ResourceStatistics>({
@@ -241,12 +375,23 @@ const totalResources = ref(0);
 
 // 计算属性
 const secondLevelCategories = computed(() => {
-  return categories.value
-    .filter(cat => cat.parentId)
-    .map(cat => ({
-      ...cat,
-      parentName: categories.value.find(p => p.id === cat.parentId)?.name || ''
-    }));
+  const result: any[] = [];
+  categories.value.forEach(parent => {
+    if (parent.children) {
+      parent.children.forEach(child => {
+        result.push({
+          ...child,
+          parentName: parent.name
+        });
+      });
+    }
+  });
+  return result;
+});
+
+// 获取父级分类（用于筛选下拉框）
+const parentCategories = computed(() => {
+  return categories.value.filter(cat => !cat.parentId);
 });
 
 const totalPages = computed(() => Math.ceil(totalResources.value / pageSize.value));
@@ -264,8 +409,15 @@ const loadStatistics = async () => {
 
 const loadCategories = async () => {
   try {
-    const result = await ResourceCategoryApi.getCategoryTree();
-    categories.value = result;
+    const result = await ResourceCategoryApi.getCategoryTree() as any ;
+    if(result.code === 200) {
+       console.log("🚀 分类数据：", result)
+       // 直接使用树形结构，不需要扁平化
+       categories.value = result.data;   
+    }
+   
+    
+    console.log('✅ 分类数据加载成功:', categories.value);
   } catch (error) {
     console.error('加载分类数据失败:', error);
   }
@@ -284,9 +436,10 @@ const loadResources = async () => {
       sortOrder: sortOrder.value
     };
     
-    const result = await ResourceApi.getResources(params);
-    resources.value = result.data;
-    totalResources.value = result.total;
+    const result = await ResourceApi.getResources(params) as any;
+    console.log("资源",result)
+    resources.value = result.data.data;
+    totalResources.value = result.data.total;
   } catch (error) {
     console.error('加载资源数据失败:', error);
   } finally {
@@ -296,8 +449,23 @@ const loadResources = async () => {
 
 // 工具方法
 const getCategoryName = (categoryId: number) => {
-  const category = categories.value.find(c => c.id === categoryId);
-  return category?.name || '未分类';
+  // 在一级分类中查找
+  const parentCategory = categories.value.find(c => c.id === categoryId);
+  if (parentCategory) {
+    return parentCategory.name;
+  }
+  
+  // 在二级分类中查找
+  for (const parent of categories.value) {
+    if (parent.children) {
+      const childCategory = parent.children.find(c => c.id === categoryId);
+      if (childCategory) {
+        return `${parent.name} / ${childCategory.name}`;
+      }
+    }
+  }
+  
+  return '未分类';
 };
 
 const formatFileSize = (bytes: number) => {
@@ -346,9 +514,29 @@ const handlePreview = (resource: Resource) => {
   window.open(resource.url, '_blank');
 };
 
-const handleEdit = (resource: Resource) => {
-  console.log('编辑资源:', resource);
-  alert(`编辑功能开发中: ${resource.name}`);
+const handleViewDetails = (resource: Resource) => {
+  selectedResource.value = resource;
+  showDetailsModal.value = true;
+  console.log('查看详情:', resource);
+};
+
+const closeDetailsModal = () => {
+  showDetailsModal.value = false;
+  selectedResource.value = null;
+};
+
+const copyUrl = async () => {
+  if (!selectedResource.value || !urlInput.value) return;
+  
+  try {
+    await navigator.clipboard.writeText(selectedResource.value.url);
+    ElMessage.success('链接已复制到剪贴板');
+  } catch (error) {
+    // 降级方案：选中文本
+    urlInput.value.select();
+    document.execCommand('copy');
+    ElMessage.success('链接已复制到剪贴板');
+  }
 };
 
 const handleDownload = async (resource: Resource) => {
@@ -388,18 +576,122 @@ const handleDelete = async (resource: Resource) => {
 const handleDrop = (e: DragEvent) => {
   e.preventDefault();
   const files = Array.from(e.dataTransfer?.files || []);
-  console.log('拖拽文件:', files);
+  
+  // 过滤只保留图片和视频文件
+  const validFiles = files.filter(file => {
+    const type = file.type;
+    return type.startsWith('image/') || type.startsWith('video/');
+  });
+  
+  if (validFiles.length > 0) {
+    selectedFiles.value = validFiles;
+    console.log('拖拽文件:', validFiles);
+  } else {
+    ElMessage.warning('请选择图片或视频文件');
+  }
 };
 
 const handleFileSelect = (e: Event) => {
   const files = Array.from((e.target as HTMLInputElement).files || []);
-  console.log('选择文件:', files);
+  
+  // 过滤只保留图片和视频文件
+  const validFiles = files.filter(file => {
+    const type = file.type;
+    return type.startsWith('image/') || type.startsWith('video/');
+  });
+  
+  if (validFiles.length > 0) {
+    selectedFiles.value = validFiles;
+    console.log('选择文件:', validFiles);
+  } else {
+    ElMessage.warning('请选择图片或视频文件');
+  }
 };
 
-const handleUploadConfirm = () => {
-  console.log('确认上传，分类:', uploadCategory.value);
+const handleUploadCancel = () => {
   showUploadModal.value = false;
-  alert('上传功能开发中...');
+  selectedFiles.value = [];
+  uploadCategory.value = '';
+};
+
+const handleUploadConfirm = async () => {
+  if (!uploadCategory.value) {
+    ElMessage.warning('请选择分类');
+    return;
+  }
+  
+  if (selectedFiles.value.length === 0) {
+    ElMessage.warning('请选择要上传的文件');
+    return;
+  }
+  
+  uploading.value = true;
+  uploadProgress.value = 0;
+  currentFileIndex.value = 0;
+  
+  try {
+    const totalFiles = selectedFiles.value.length;
+    
+    // 逐个上传文件
+    for (let i = 0; i < selectedFiles.value.length; i++) {
+      const file = selectedFiles.value[i];
+      currentFileIndex.value = i + 1;
+      currentFileName.value = file.name;
+      uploadStatus.value = `正在上传第 ${i + 1}/${totalFiles} 个文件...`;
+      // 1. 先上传文件到云存储
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', 'images'); // 可选的文件夹参数
+      
+      uploadStatus.value = `正在上传文件到云存储: ${file.name}`;
+      const uploadResult = await ResourceApi.uploadResource(formData);
+      console.log('文件上传成功:', uploadResult);
+      
+      uploadStatus.value = `正在保存资源记录: ${file.name}`;
+      // 2. 将上传结果保存到资源池
+      const resourceData = {
+        name: file.name.split('.')[0] || 'untitled', // 去掉扩展名作为名称
+        url: (uploadResult as any).data.url, // 使用上传返回的URL
+        type: file.type.startsWith('image/') ? 'image' as const : 'video' as const,
+        fileSize: (uploadResult as any).data.size || file.size,
+        categoryId: parseInt(uploadCategory.value),
+        uploaderId: 1, // 临时使用固定用户ID
+        uploaderName: '管理员', // 添加上传者姓名
+        description: `上传的${file.type.startsWith('image/') ? '图片' : '视频'}文件`,
+        tags: ['上传', file.type.startsWith('image/') ? '图片' : '视频']
+      };
+      
+      const resourceResult = await ResourceApi.createResource(resourceData);
+      console.log('资源记录创建成功:', resourceResult);
+      
+      // 更新进度
+      uploadProgress.value = Math.round(((i + 1) / totalFiles) * 100);
+      uploadStatus.value = `已完成 ${i + 1}/${totalFiles} 个文件`;
+    }
+    
+    ElMessage.success(`成功上传 ${selectedFiles.value.length} 个文件`);
+    
+    // 重置状态
+    showUploadModal.value = false;
+    selectedFiles.value = [];
+    uploadCategory.value = '';
+    
+    // 重新加载资源列表和统计信息
+    await Promise.all([
+      loadResources(),
+      loadStatistics()
+    ]);
+    
+  } catch (error) {
+    console.error('上传失败:', error);
+    ElMessage.error('上传失败，请稍后重试');
+  } finally {
+    uploading.value = false;
+    uploadProgress.value = 0;
+    currentFileIndex.value = 0;
+    currentFileName.value = '';
+    uploadStatus.value = '';
+  }
 };
 
 // 监听搜索和筛选条件变化
@@ -491,45 +783,65 @@ onMounted(async () => {
 }
 
 .action-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #cbd5e1;
 }
 
 .action-buttons {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 14px 24px;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 48px;
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
+  border: 2px solid transparent;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
 .btn-secondary {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   color: #374151;
-  border: 1px solid #d1d5db;
+  border: 2px solid #e5e7eb;
 }
 
 .btn-secondary:hover {
-  background: #f9fafb;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.btn-icon {
+  font-size: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .filter-section {
@@ -581,7 +893,7 @@ onMounted(async () => {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 14px;
-  background: white;
+  /* background: white; */
 }
 
 .resource-grid {
@@ -758,6 +1070,98 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
+.details-modal {
+  max-width: 800px;
+}
+
+.details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.details-preview {
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.details-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.details-video {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #6b7280;
+}
+
+.details-video .video-icon {
+  font-size: 64px;
+}
+
+.details-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info-row label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.info-row span {
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.url-container {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  align-items: center;
+}
+
+.url-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #f9fafb;
+  color: #374151;
+}
+
+.copy-btn {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.copy-btn:hover {
+  background: #2563eb;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -820,6 +1224,103 @@ onMounted(async () => {
   border: 1px solid #d1d5db;
   border-radius: 6px;
   margin-top: 4px;
+}
+
+.upload-link {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.upload-link:hover {
+  color: #2563eb;
+}
+
+.selected-files {
+  text-align: left;
+}
+
+.selected-files h4 {
+  margin: 0 0 12px 0;
+  color: #1f2937;
+  font-size: 16px;
+}
+
+.selected-files ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.selected-files li {
+  padding: 8px 12px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.reselect-hint {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.upload-progress {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.progress-info h4 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.progress-info p {
+  margin: 4px 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .modal-footer {

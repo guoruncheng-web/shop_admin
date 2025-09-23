@@ -35,8 +35,14 @@ export interface CreateResourceDto {
   url: string;
   type: 'image' | 'video';
   fileSize?: number;
+  fileExtension?: string;
+  mimeType?: string;
+  width?: number;
+  height?: number;
+  duration?: number;
   categoryId: number;
   uploaderId: number;
+  uploaderName: string;
   description?: string;
   tags?: string[];
 }
@@ -123,12 +129,29 @@ export namespace ResourceApi {
   export function recordDownload(id: number) {
     return requestClient.post(`/resources/${id}/download`);
   }
+
+  // 上传资源文件
+  export function uploadResource(formData: FormData) {
+    return requestClient.post<Resource>('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+}
+
+// 创建分类的数据接口
+export interface CreateResourceCategoryDto {
+  name: string;
+  level: number;
+  parentId?: number;
+  sortOrder?: number;
 }
 
 // 资源分类管理API
 export namespace ResourceCategoryApi {
   // 创建分类
-  export function createCategory(data: { name: string; parentId?: number }) {
+  export function createCategory(data: CreateResourceCategoryDto) {
     return requestClient.post<ResourceCategory>('/resource-categories', data);
   }
 
@@ -143,7 +166,7 @@ export namespace ResourceCategoryApi {
   }
 
   // 更新分类
-  export function updateCategory(id: number, data: { name: string; parentId?: number }) {
+  export function updateCategory(id: number, data: Partial<CreateResourceCategoryDto>) {
     return requestClient.put<ResourceCategory>(`/resource-categories/${id}`, data);
   }
 

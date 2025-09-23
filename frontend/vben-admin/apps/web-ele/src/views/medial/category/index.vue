@@ -15,7 +15,60 @@
 
       <!-- 分类树 -->
       <div class="category-tree">
-        <ElTree style="max-width: 600px" :data="data" :props="defaultProps" @node-click="handleNodeClick" />
+        <div v-if="loading" class="loading">
+          <div class="spinner"></div>
+          <span>加载中...</span>
+        </div>
+        <div v-else-if="!categories.length" class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h3>暂无分类</h3>
+          <p>点击上方按钮添加第一个分类</p>
+        </div>
+        <ElTree 
+          v-else
+          style="max-width: 600px" 
+          :data="data" 
+          :props="defaultProps" 
+          @node-click="handleNodeClick"
+          default-expand-all
+          :expand-on-click-node="false"
+        >
+          <template #default="{ node, data }">
+            <div class="tree-node">
+              <span class="node-label">{{ node.label }}</span>
+              <div class="node-actions">
+                <!-- 一级分类可以添加子分类 -->
+                <el-button 
+                  v-if="data.level === 1" 
+                  size="small" 
+                  type="primary" 
+                  @click.stop="addSubCategoryFromTree(data)"
+                  title="添加子分类"
+                >
+                  新增
+                </el-button>
+                <!-- 编辑按钮 -->
+                <el-button 
+                  size="small" 
+                  type="warning" 
+                  @click.stop="editCategoryFromTree(data)"
+                  title="编辑"
+                >
+                  编辑
+                </el-button>
+                <!-- 删除按钮 -->
+                <el-button 
+                  size="small" 
+                  type="danger" 
+                  @click.stop="deleteCategoryFromTree(data)"
+                  title="删除"
+                >
+                  删除
+                </el-button>
+              </div>
+            </div>
+          </template>
+        </ElTree>
       </div>
 
       <!-- 添加/编辑分类对话框 -->
@@ -69,9 +122,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { ResourceCategoryApi, type ResourceCategory } from '#/api/resource';
-import { ElTree, ElButton } from 'element-plus';
+import { ElTree, ElButton, ElMessage } from 'element-plus';
 import { Page } from '@vben/common-ui';
 
 // 响应式数据
@@ -83,73 +136,38 @@ const editingCategory = ref<ResourceCategory | null>(null);
 const parentCategory = ref<ResourceCategory | null>(null);
 const defaultProps = {
   children: 'children',
-  label: 'label',
-}
-interface Tree {
-  label: string
-  children?: Tree[]
+  label: 'name', // 使用name字段作为显示标签
 }
 
-const handleNodeClick = (data: Tree) => {
-  console.log(data)
+interface TreeNode {
+  id: number;
+  name: string;
+  label: string; // Element Plus Tree需要的字段
+  children?: TreeNode[];
+  level: number;
+  parentId?: number;
 }
-const data: Tree[] = [
-  {
-    label: 'Level one 1',
-    children: [
-      {
-        label: 'Level two 1-1',
-        children: [
-          {
-            label: 'Level three 1-1-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Level one 2',
-    children: [
-      {
-        label: 'Level two 2-1',
-        children: [
-          {
-            label: 'Level three 2-1-1',
-          },
-        ],
-      },
-      {
-        label: 'Level two 2-2',
-        children: [
-          {
-            label: 'Level three 2-2-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    label: 'Level one 3',
-    children: [
-      {
-        label: 'Level two 3-1',
-        children: [
-          {
-            label: 'Level three 3-1-1',
-          },
-        ],
-      },
-      {
-        label: 'Level two 3-2',
-        children: [
-          {
-            label: 'Level three 3-2-1',
-          },
-        ],
-      },
-    ],
-  },
-]
+
+const handleNodeClick = (data: TreeNode) => {
+  console.log('点击节点:', data);
+}
+
+// 将后端数据转换为Tree组件需要的格式
+const data = computed(() => {
+  return transformCategoriesToTreeData(categories.value);
+});
+
+const transformCategoriesToTreeData = (cats: ResourceCategory[]): TreeNode[] => {
+  return cats.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    label: cat.name, // Element Plus Tree组件需要label字段
+    level: cat.level,
+    parentId: cat.parentId,
+    children: cat.children ? transformCategoriesToTreeData(cat.children) : []
+  }));
+};
+
 const categoryForm = ref({
   name: '',
   level: 1,
@@ -162,9 +180,21 @@ const loadCategories = async () => {
   loading.value = true;
   try {
     const response = await ResourceCategoryApi.getCategoryTree();
-    categories.value = response;
+    console.log('🔍 API响应:', response);
+    
+    // 处理后端返回的数据格式
+    if (response && (response as any).data) {
+      categories.value = (response as any).data;
+    } else if (Array.isArray(response)) {
+      categories.value = response;
+    } else {
+      categories.value = [];
+    }
+    
+    console.log('✅ 分类数据加载成功:', categories.value);
   } catch (error) {
-    console.error('加载分类失败:', error);
+    console.error('❌ 加载分类失败:', error);
+    categories.value = [];
   } finally {
     loading.value = false;
   }
@@ -191,52 +221,107 @@ const editCategory = (category: ResourceCategory) => {
     name: category.name,
     level: category.level,
     parentId: category.parentId || null,
-    sortOrder: 1 // 临时设置，因为原始数据可能没有 sortOrder
+    sortOrder: category.sortOrder || 1
   };
   showEditDialog.value = true;
 };
 
 const deleteCategory = async (category: ResourceCategory) => {
-  if (!confirm(`确定要删除分类"${category.name}"吗？`)) {
+  // 检查是否有子分类
+  if (category.children && category.children.length > 0) {
+    ElMessage.warning('该分类下还有子分类，请先删除子分类');
+    return;
+  }
+
+  if (!confirm(`确定要删除分类"${category.name}"吗？删除后不可恢复。`)) {
     return;
   }
 
   try {
     await ResourceCategoryApi.deleteCategory(category.id);
-    alert('删除成功');
+    ElMessage.success('删除成功');
     loadCategories();
   } catch (error) {
-    console.error('删除失败:', error);
-    alert('删除失败');
+    console.error('❌ 删除失败:', error);
+    ElMessage.error('删除失败，请稍后重试');
   }
+};
+
+// 从树节点添加子分类
+const addSubCategoryFromTree = (nodeData: TreeNode) => {
+  // 找到对应的分类数据
+  const category = findCategoryById(categories.value, nodeData.id);
+  if (category) {
+    addSubCategory(category);
+  }
+};
+
+// 从树节点编辑分类
+const editCategoryFromTree = (nodeData: TreeNode) => {
+  // 找到对应的分类数据
+  const category = findCategoryById(categories.value, nodeData.id);
+  if (category) {
+    editCategory(category);
+  }
+};
+
+// 从树节点删除分类
+const deleteCategoryFromTree = (nodeData: TreeNode) => {
+  // 找到对应的分类数据
+  const category = findCategoryById(categories.value, nodeData.id);
+  if (category) {
+    deleteCategory(category);
+  }
+};
+
+// 递归查找分类
+const findCategoryById = (cats: ResourceCategory[], id: number): ResourceCategory | null => {
+  for (const cat of cats) {
+    if (cat.id === id) {
+      return cat;
+    }
+    if (cat.children) {
+      const found = findCategoryById(cat.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
 };
 
 const saveCategory = async () => {
   if (!categoryForm.value.name.trim()) {
-    alert('请输入分类名称');
+    ElMessage.warning('请输入分类名称');
+    return;
+  }
+
+  if (categoryForm.value.level === 2 && !categoryForm.value.parentId && !parentCategory.value) {
+    ElMessage.warning('请选择父级分类');
     return;
   }
 
   try {
+    const data = {
+      name: categoryForm.value.name.trim(),
+      level: categoryForm.value.level,
+      parentId: categoryForm.value.parentId || parentCategory.value?.id || undefined,
+      sortOrder: categoryForm.value.sortOrder || 0
+    };
+
+    console.log('💾 保存分类数据:', data);
+
     if (editingCategory.value) {
-      await ResourceCategoryApi.updateCategory(editingCategory.value.id, {
-        name: categoryForm.value.name,
-        parentId: categoryForm.value.parentId || undefined
-      });
-      alert('更新成功');
+      await ResourceCategoryApi.updateCategory(editingCategory.value.id, data);
+      ElMessage.success('更新成功');
     } else {
-      await ResourceCategoryApi.createCategory({
-        name: categoryForm.value.name,
-        parentId: categoryForm.value.parentId || undefined
-      });
-      alert('添加成功');
+      await ResourceCategoryApi.createCategory(data);
+      ElMessage.success('添加成功');
     }
 
     closeDialog();
     loadCategories();
   } catch (error) {
-    console.error('保存失败:', error);
-    alert('保存失败');
+    console.error('❌ 保存失败:', error);
+    ElMessage.error('保存失败，请稍后重试');
   }
 };
 
@@ -270,8 +355,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.category-tree {
+  width: 100%;
+}
 .category-management {
   margin: 0 auto;
+  width: 100%;
+}
+:deep(.el-tree) {
+  width: 100%;
+}
+
+:deep(.el-tree-node) {
+  margin-bottom: 8px;
+}
+
+:deep(.el-tree-node__content) {
+  height: auto !important;
+  min-height: 48px;
+  padding: 0 !important;
+}
+
+:deep(.el-tree-node__children) {
+  padding-left: 20px;
 }
 
 .page-header {
@@ -541,6 +647,51 @@ onMounted(() => {
   justify-content: flex-end;
   padding: 20px;
   border-top: 1px solid #f0f0f0;
+}
+
+/* 树节点样式 */
+.tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  margin: 6px 0;
+  min-height: 48px;
+}
+
+.tree-node:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.node-label {
+  flex: 1;
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.node-actions {
+  display: flex;
+  gap: 8px;
+  opacity: 1;
+  visibility: visible;
+  margin-left: 12px;
+}
+
+.node-actions .el-button {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-height: 28px;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.node-actions .el-button:hover {
+  transform: scale(1.05);
 }
 
 @media (max-width: 768px) {
