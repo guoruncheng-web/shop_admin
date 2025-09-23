@@ -7,20 +7,20 @@ const routes: RouteRecordRaw[] = [
   {
     component: BasicLayout,
     meta: {
-      icon: 'lucide:layout-dashboard',
-      order: -1,
+      icon: 'lucide:image',
+      order: 1,
       title:"静态资源",
     },
     name: 'Medial',
     path: '/medial',
+    redirect: '/medial/category',
     children: [
       {
         name: 'Category',
-        path: '/medial/category',
+        path: 'category',
         component: () => import('#/views/medial/category/index.vue'),
         meta: {
-          affixTab: true,
-          icon: 'lucide:area-chart',
+          icon: 'lucide:folder-tree',
           title: "分类管理",
         },
       },

@@ -1,5 +1,8 @@
 import { requestClient } from '#/api/request';
 
+// 设置API基础URL
+const API_BASE_URL = 'http://localhost:3000/api';
+
 // 资源相关接口
 export interface Resource {
   id: number;
