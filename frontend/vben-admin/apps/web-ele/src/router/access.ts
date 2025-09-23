@@ -81,13 +81,8 @@ function transformMenusToRoutes(menus: any[]): RouteRecordStringComponent[] {
       },
       children: children.length > 0 ? children : undefined,
     };
-
-    console.log(`✅ 转换完成的路由:`, route);
     return route;
   });
-
-  console.log(`🎉 菜单转换完成，共生成 ${routes.length} 个路由`);
-  console.log('📋 最终路由数据:', JSON.stringify(routes, null, 2));
   return routes;
 }
 

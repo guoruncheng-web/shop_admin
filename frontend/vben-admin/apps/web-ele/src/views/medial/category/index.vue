@@ -1,159 +1,78 @@
 <template>
-  <div class="category-management">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h2>资源分类管理</h2>
-      <p>管理资源的分类结构，支持两级分类</p>
-    </div>
-
-    <!-- 操作栏 -->
-    <div class="action-bar">
-      <button class="btn btn-primary" @click="showAddDialog = true">
-        <span class="icon">+</span>
-        添加一级分类
-      </button>
-      <button class="btn btn-secondary" @click="refreshCategories">
-        <span class="icon">🔄</span>
-        刷新
-      </button>
-    </div>
-
-    <!-- 分类树 -->
-    <div class="category-tree">
-      <div v-if="loading" class="loading">
-        <div class="spinner"></div>
-        <span>加载中...</span>
-      </div>
-      
-      <div v-else-if="categories.length === 0" class="empty-state">
-        <div class="empty-icon">📁</div>
-        <h3>暂无分类</h3>
-        <p>点击上方按钮添加第一个分类</p>
+  <Page>
+    <div class="category-management">
+      <!-- 操作栏 -->
+      <div class="action-bar">
+        <el-button type="primary" @click="showAddDialog = true">
+          <span class="icon">+</span>
+          添加一级分类
+        </el-button>
+        <button class="btn btn-secondary" @click="refreshCategories">
+          <span class="icon">🔄</span>
+          刷新
+        </button>
       </div>
 
-      <div v-else class="tree-container">
-        <div 
-          v-for="category in categories" 
-          :key="category.id" 
-          class="category-item level-1"
-        >
-          <!-- 一级分类 -->
-          <div class="category-header">
-            <div class="category-info">
-              <span class="category-icon">📂</span>
-              <span class="category-name">{{ category.name }}</span>
-              <span class="category-count">({{ category.children?.length || 0 }}个子分类)</span>
-            </div>
-            <div class="category-actions">
-              <button class="btn-icon" @click="addSubCategory(category)" title="添加子分类">
-                <span>+</span>
-              </button>
-              <button class="btn-icon" @click="editCategory(category)" title="编辑">
-                <span>✏️</span>
-              </button>
-              <button class="btn-icon danger" @click="deleteCategory(category)" title="删除">
-                <span>🗑️</span>
-              </button>
-            </div>
+      <!-- 分类树 -->
+      <div class="category-tree">
+        <ElTree style="max-width: 600px" :data="data" :props="defaultProps" @node-click="handleNodeClick" />
+      </div>
+
+      <!-- 添加/编辑分类对话框 -->
+      <div v-if="showAddDialog || showEditDialog" class="modal-overlay" @click="closeDialog">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>{{ editingCategory ? '编辑分类' : '添加分类' }}</h3>
+            <button class="close-btn" @click="closeDialog">×</button>
           </div>
 
-          <!-- 二级分类 -->
-          <div v-if="category.children && category.children.length > 0" class="subcategories">
-            <div 
-              v-for="subCategory in category.children" 
-              :key="subCategory.id"
-              class="category-item level-2"
-            >
-              <div class="category-header">
-                <div class="category-info">
-                  <span class="category-icon">📄</span>
-                  <span class="category-name">{{ subCategory.name }}</span>
-                  <span class="resource-count">({{ getResourceCount(subCategory.id) }}个资源)</span>
-                </div>
-                <div class="category-actions">
-                  <button class="btn-icon" @click="viewResources(subCategory)" title="查看资源">
-                    <span>👁️</span>
-                  </button>
-                  <button class="btn-icon" @click="editCategory(subCategory)" title="编辑">
-                    <span>✏️</span>
-                  </button>
-                  <button class="btn-icon danger" @click="deleteCategory(subCategory)" title="删除">
-                    <span>🗑️</span>
-                  </button>
-                </div>
-              </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>分类名称</label>
+              <input v-model="categoryForm.name" type="text" placeholder="请输入分类名称" class="form-input">
+            </div>
+
+            <div v-if="!editingCategory || editingCategory.level === 1" class="form-group">
+              <label>分类类型</label>
+              <select v-model="categoryForm.level" class="form-select">
+                <option value="1">一级分类</option>
+                <option value="2" v-if="parentCategory">二级分类</option>
+              </select>
+            </div>
+
+            <div v-if="categoryForm.level === 2 && !parentCategory" class="form-group">
+              <label>父级分类</label>
+              <select v-model="categoryForm.parentId" class="form-select">
+                <option value="">请选择父级分类</option>
+                <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                  {{ cat.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>排序</label>
+              <input v-model.number="categoryForm.sortOrder" type="number" placeholder="数字越小排序越靠前" class="form-input">
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 添加/编辑分类对话框 -->
-    <div v-if="showAddDialog || showEditDialog" class="modal-overlay" @click="closeDialog">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ editingCategory ? '编辑分类' : '添加分类' }}</h3>
-          <button class="close-btn" @click="closeDialog">×</button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="form-group">
-            <label>分类名称</label>
-            <input 
-              v-model="categoryForm.name" 
-              type="text" 
-              placeholder="请输入分类名称"
-              class="form-input"
-            >
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="closeDialog">取消</button>
+            <button class="btn btn-primary" @click="saveCategory">
+              {{ editingCategory ? '更新' : '添加' }}
+            </button>
           </div>
-          
-          <div v-if="!editingCategory || editingCategory.level === 1" class="form-group">
-            <label>分类类型</label>
-            <select v-model="categoryForm.level" class="form-select">
-              <option value="1">一级分类</option>
-              <option value="2" v-if="parentCategory">二级分类</option>
-            </select>
-          </div>
-          
-          <div v-if="categoryForm.level === 2 && !parentCategory" class="form-group">
-            <label>父级分类</label>
-            <select v-model="categoryForm.parentId" class="form-select">
-              <option value="">请选择父级分类</option>
-              <option 
-                v-for="cat in categories" 
-                :key="cat.id" 
-                :value="cat.id"
-              >
-                {{ cat.name }}
-              </option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>排序</label>
-            <input 
-              v-model.number="categoryForm.sortOrder" 
-              type="number" 
-              placeholder="数字越小排序越靠前"
-              class="form-input"
-            >
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button class="btn btn-secondary" @click="closeDialog">取消</button>
-          <button class="btn btn-primary" @click="saveCategory">
-            {{ editingCategory ? '更新' : '添加' }}
-          </button>
         </div>
       </div>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ResourceCategoryApi, type ResourceCategory } from '#/api/resource';
+import { ElTree, ElButton } from 'element-plus';
+import { Page } from '@vben/common-ui';
 
 // 响应式数据
 const loading = ref(false);
@@ -162,7 +81,75 @@ const showAddDialog = ref(false);
 const showEditDialog = ref(false);
 const editingCategory = ref<ResourceCategory | null>(null);
 const parentCategory = ref<ResourceCategory | null>(null);
+const defaultProps = {
+  children: 'children',
+  label: 'label',
+}
+interface Tree {
+  label: string
+  children?: Tree[]
+}
 
+const handleNodeClick = (data: Tree) => {
+  console.log(data)
+}
+const data: Tree[] = [
+  {
+    label: 'Level one 1',
+    children: [
+      {
+        label: 'Level two 1-1',
+        children: [
+          {
+            label: 'Level three 1-1-1',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Level one 2',
+    children: [
+      {
+        label: 'Level two 2-1',
+        children: [
+          {
+            label: 'Level three 2-1-1',
+          },
+        ],
+      },
+      {
+        label: 'Level two 2-2',
+        children: [
+          {
+            label: 'Level three 2-2-1',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    label: 'Level one 3',
+    children: [
+      {
+        label: 'Level two 3-1',
+        children: [
+          {
+            label: 'Level three 3-1-1',
+          },
+        ],
+      },
+      {
+        label: 'Level two 3-2',
+        children: [
+          {
+            label: 'Level three 3-2-1',
+          },
+        ],
+      },
+    ],
+  },
+]
 const categoryForm = ref({
   name: '',
   level: 1,
@@ -213,7 +200,7 @@ const deleteCategory = async (category: ResourceCategory) => {
   if (!confirm(`确定要删除分类"${category.name}"吗？`)) {
     return;
   }
-  
+
   try {
     await ResourceCategoryApi.deleteCategory(category.id);
     alert('删除成功');
@@ -229,7 +216,7 @@ const saveCategory = async () => {
     alert('请输入分类名称');
     return;
   }
-  
+
   try {
     if (editingCategory.value) {
       await ResourceCategoryApi.updateCategory(editingCategory.value.id, {
@@ -244,7 +231,7 @@ const saveCategory = async () => {
       });
       alert('添加成功');
     }
-    
+
     closeDialog();
     loadCategories();
   } catch (error) {
@@ -284,20 +271,22 @@ onMounted(() => {
 
 <style scoped>
 .category-management {
-  padding: 16px; /* 减少内边距 */
-  max-width: 1200px;
   margin: 0 auto;
 }
 
 .page-header {
-  margin-bottom: 20px; /* 减少间距 */
+  margin-bottom: 20px;
+  /* 减少间距 */
 }
 
 .page-header h2 {
   color: #333;
-  margin-bottom: 4px; /* 减少间距 */
-  font-size: 20px; /* 减小字号 */
-  font-weight: 600; /* 减轻字重 */
+  margin-bottom: 4px;
+  /* 减少间距 */
+  font-size: 20px;
+  /* 减小字号 */
+  font-weight: 600;
+  /* 减轻字重 */
 }
 
 .page-header p {
@@ -360,8 +349,13 @@ onMounted(() => {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-state {
@@ -378,7 +372,7 @@ onMounted(() => {
 .tree-container {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .category-item {
@@ -470,7 +464,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -538,7 +532,7 @@ onMounted(() => {
 .form-select:focus {
   outline: none;
   border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24,144,255,0.2);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 .modal-footer {
@@ -553,15 +547,15 @@ onMounted(() => {
   .category-management {
     padding: 16px;
   }
-  
+
   .category-header {
     padding: 12px 16px;
   }
-  
+
   .level-2 {
     margin-left: 20px;
   }
-  
+
   .modal-content {
     width: 95%;
     margin: 20px;
