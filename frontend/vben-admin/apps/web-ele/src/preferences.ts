@@ -9,7 +9,7 @@ export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
     name: import.meta.env.VITE_APP_TITLE,
-    accessMode: 'frontend', // 改为前端模式，完全使用前端静态路由
+    accessMode: 'mixed', // 混合模式：同时支持前端静态路由和后端动态菜单
     defaultHomePath: '/analytics', // 恢复默认首页为analytics
   },
   navigation: {

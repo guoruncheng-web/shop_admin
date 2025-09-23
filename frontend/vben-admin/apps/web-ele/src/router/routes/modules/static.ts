@@ -9,14 +9,14 @@ const routes: RouteRecordRaw[] = [
     meta: {
       icon: 'lucide:layout-dashboard',
       order: -1,
-      title: "静态资源",
+      title:"静态资源",
     },
-    name: 'medail',
-    path: '/medail',
+    name: 'Medial',
+    path: '/medial',
     children: [
       {
-        name: 'category',
-        path: '/medail/category',
+        name: 'Category',
+        path: '/medial/category',
         component: () => import('#/views/medial/category/index.vue'),
         meta: {
           affixTab: true,

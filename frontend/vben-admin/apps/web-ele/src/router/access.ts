@@ -134,51 +134,54 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
     ...options,
     fetchMenuListAsync: async () => {
       try {
-        console.log('🚀 fetchMenuListAsync 函数被调用了！');
-        console.log('🚀 开始获取路由数据...');
+        console.log('🚀 [CORRECTED] fetchMenuListAsync starting...');
         
-        // 1. 获取静态路由（框架内置路由）
-        console.log('📋 获取静态路由:', accessRoutes);
-        const staticRoutes = convertStaticRoutesToStringComponent(accessRoutes);
-        console.log('✅ 静态路由转换完成:', staticRoutes);
-        
-        // 2. 获取后端动态菜单数据
-        let dynamicRoutes: RouteRecordStringComponent[] = [];
+        // 在混合模式下，此函数只应获取、转换和返回后端菜单。
+        // 框架会自动将这些动态菜单与 `accessRoutes` 中的静态菜单合并。
         try {
-          console.log('🌐 开始获取用户资料和菜单数据...');
+          console.log('🌐 Fetching user profile and menus from backend...');
           
-          // 🔄 复用已经获取的用户信息，避免重复调用 /auth/profile 接口
           const { useUserStore } = await import('@vben/stores');
           const userStore = useUserStore();
           
           let userProfile = userStore.userInfo;
-          
-          // 如果 store 中没有用户信息，才调用 API
           if (!userProfile) {
-            console.log('📞 用户信息不存在，调用 getProfile API...');
+            console.log('📞 User info not in store, calling getProfile API...');
             userProfile = await getProfile();
           } else {
-            console.log('✅ 复用已存在的用户信息:', userProfile);
+            console.log('✅ Using existing user info from store.');
           }
           
-          // 提取菜单数据
-          const menus = userProfile.menus || [];
-          console.log('📋 从 profile 提取到的菜单数据:', menus);
+          const backendMenus = userProfile.menus || [];
+          console.log(`📋 Got ${backendMenus.length} menus from backend.`);
           
-          // 转换菜单数据为路由格式
-          dynamicRoutes = transformMenusToRoutes(menus);
-          console.log('✅ 动态路由转换完成:', dynamicRoutes);
+          // 🚫 过滤掉与前端静态路由重复的后端菜单项
+          // 静态路由定义在 /router/routes/modules 和 /router/routes/static
+          const staticRoutePaths = ['/dashboard', '/medail'];
+          const staticRouteNames = ['Dashboard', 'Medail', '概览', '静态资源'];
+
+          const filteredBackendMenus = backendMenus.filter((menu: any) => {
+            const menuPath = menu.path || menu.route || menu.url;
+            const menuName = menu.meta?.title || menu.title || menu.name;
+
+            const isDuplicate = staticRoutePaths.includes(menuPath) || staticRouteNames.includes(menuName);
+
+            if (isDuplicate) {
+              console.log(`🚫 Filtering duplicate menu from backend: ${menuName} (${menuPath})`);
+            }
+            return !isDuplicate;
+          });
+
+          console.log(`📊 Backend menus filtered: ${backendMenus.length} -> ${filteredBackendMenus.length}`);
           
+          const dynamicRoutes = transformMenusToRoutes(filteredBackendMenus);
+          console.log(`✅ Transformed ${dynamicRoutes.length} dynamic routes.`);
+          
+          return dynamicRoutes;
         } catch (error) {
-          console.warn('⚠️ 获取后端菜单数据失败，仅使用静态路由:', error);
+          console.warn('⚠️ Failed to fetch backend menus, returning empty array:', error);
+          return []; // Return empty array on failure
         }
-        
-        // 3. 合并静态路由和动态路由
-        const allRoutes = [...staticRoutes, ...dynamicRoutes];
-        console.log('🎯 最终合并的路由数据:', allRoutes);
-        console.log(`📊 路由统计: 静态路由 ${staticRoutes.length} 个，动态路由 ${dynamicRoutes.length} 个，总计 ${allRoutes.length} 个`);
-        
-        return allRoutes;
         
       } catch (error) {
         console.error('❌ 路由生成失败:', error);
