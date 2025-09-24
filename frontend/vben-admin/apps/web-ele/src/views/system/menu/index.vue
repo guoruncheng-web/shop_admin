@@ -1,11 +1,5 @@
 <template>
   <div class="menu-management-page">
-    <!-- 页面头部 -->
-    <div class="page-header">
-      <h1 class="page-title">菜单管理</h1>
-      <p class="page-description">管理系统菜单配置，包括目录、菜单和按钮权限的增删改查</p>
-    </div>
-
     <!-- 搜索和操作区域 -->
     <div class="search-section">
       <ElCard class="search-card">
@@ -96,12 +90,32 @@
             <!-- 菜单名称 -->
             <ElTableColumn prop="name" label="菜单名称" min-width="200" show-overflow-tooltip>
               <template #default="{ row }">
-                <div class="menu-name-cell">
-                  <span v-if="row.icon" class="menu-icon">{{ row.icon }}</span>
+                <span class="menu-name">{{ row.name || row.title || '未命名' }}</span>
+              </template>
+            </ElTableColumn>
+            
+            <!-- 图标 -->
+            <ElTableColumn label="图标" width="80" align="center">
+              <template #default="{ row }">
+                <div class="menu-icon-cell">
+                  <!-- 调试信息：显示图标值 -->
+                  <!-- <div style="font-size: 10px; color: red;">{{ row.icon }}</div> -->
+                  
+                  <!-- 如果有完整的图标代码，显示实际图标 -->
+                  <Icon 
+                    v-if="row.icon && row.icon.includes(':') && row.icon.length > 3" 
+                    :icon="row.icon as string" 
+                    class="menu-icon"
+                    @error="() => console.log('图标加载失败:', row.icon)"
+                  />
+                  <!-- 如果是emoji或短文本，直接显示 -->
+                  <span v-else-if="row.icon && row.icon.length <= 4 && !row.icon.includes(':')" class="menu-icon">{{ row.icon }}</span>
+                  <!-- 如果图标值异常，显示错误提示 -->
+                  <span v-else-if="row.icon && row.icon.length > 0" class="menu-icon-error" :title="`图标格式错误: ${row.icon}`">❌</span>
+                  <!-- 默认图标 -->
                   <span v-else-if="row.type === 1" class="menu-icon-placeholder">📁</span>
                   <span v-else-if="row.type === 2" class="menu-icon-placeholder">📄</span>
                   <span v-else class="menu-icon-placeholder">🔘</span>
-                  <span class="menu-name">{{ row.name || row.title || '未命名' }}</span>
                 </div>
               </template>
             </ElTableColumn>
@@ -177,7 +191,7 @@
                   inactive-text="禁用"
                   inline-prompt
                   size="small"
-                  @change="(value: boolean) => handleStatusChange(row, value)"
+                  @change="(value: string | number | boolean) => handleStatusChange(row, value as boolean)"
                 />
               </template>
             </ElTableColumn>
@@ -252,6 +266,7 @@ import {
   ElMessageBox,
   type TableInstance
 } from 'element-plus';
+import { Icon } from '@iconify/vue';
 import type { MenuPermission, MenuSearchParams } from '#/api/system/menu';
 import {
   getMenuTreeApi,
@@ -295,7 +310,7 @@ const menuTreeOptions = computed(() => {
   
   // 添加根节点选项
   return [
-    { id: 0, name: '根目录', type: 1, status: 1, sort_order: 0, orderNum: 0 },
+    { id: 0, name: '根目录', type: 1, status: true, sort_order: 0, orderNum: 0 } as MenuPermission,
     ...buildTreeOptions(menuTreeData.value),
   ];
 });
@@ -744,25 +759,35 @@ onMounted(() => {
   width: 100%;
 }
 
-.menu-name-cell {
+.menu-icon-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
 }
 
 .menu-icon {
-  font-size: 16px;
+  font-size: 18px;
   color: #3b82f6;
+  width: 18px;
+  height: 18px;
 }
 
 .menu-icon-placeholder {
-  font-size: 16px;
+  font-size: 18px;
   color: #9ca3af;
+}
+
+.menu-icon-error {
+  font-size: 14px;
+  color: #f56565;
+  cursor: help;
 }
 
 .menu-name {
   font-weight: 500;
-  color: #1f2937;
+  color: #fff;
+  flex: 1;
+  min-width: 0;
 }
 
 .path-code,

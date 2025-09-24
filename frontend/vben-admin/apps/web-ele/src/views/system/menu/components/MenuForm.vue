@@ -2,15 +2,16 @@
   <ElDialog
     v-model="dialogVisible"
     :title="isEdit ? '编辑菜单' : '新增菜单'"
-    width="600px"
+    width="700px"
     :close-on-click-modal="false"
     @close="handleClose"
+    class="menu-form-dialog"
   >
     <ElForm
       ref="formRef"
       :model="formData"
       :rules="formRules"
-      label-width="100px"
+      label-width="120px"
       class="menu-form"
     >
       <ElFormItem label="上级菜单" prop="parent_id">
@@ -31,9 +32,6 @@
           <ElRadio :label="2">菜单</ElRadio>
           <ElRadio :label="3">按钮</ElRadio>
         </ElRadioGroup>
-        <div v-if="isEdit" class="form-tip">
-          编辑模式下不允许修改菜单类型
-        </div>
       </ElFormItem>
 
       <ElFormItem label="菜单名称" prop="name">
@@ -56,9 +54,6 @@
           maxlength="100"
           show-word-limit
         />
-        <div class="form-tip">
-          按钮权限需要配置权限标识用于前端权限控制
-        </div>
       </ElFormItem>
 
       <ElFormItem
@@ -95,22 +90,10 @@
         label="菜单图标"
         prop="icon"
       >
-        <div class="icon-input-wrapper">
-          <ElInput
-            v-model="formData.icon"
-            placeholder="请输入图标名称，如：lucide:menu"
-            maxlength="50"
-            show-word-limit
-          >
-            <template #prepend>
-              <span v-if="formData.icon" class="icon-preview">🎨</span>
-              <span v-else class="icon-preview">📷</span>
-            </template>
-          </ElInput>
-        </div>
-        <div class="form-tip">
-          目录和菜单可以配置图标，按钮不需要图标
-        </div>
+        <IconSelector
+          v-model="formData.icon"
+          placeholder="请选择图标"
+        />
       </ElFormItem>
 
       <ElFormItem label="排序" prop="sort_order">
@@ -168,6 +151,7 @@ import {
 } from 'element-plus';
 import type { MenuPermission, MenuFormData } from '#/api/system/menu';
 import { createMenuApi, updateMenuApi } from '#/api/system/menu';
+import IconSelector from './IconSelector.vue';
 
 // Props
 interface Props {
@@ -389,15 +373,67 @@ const handleClose = () => {
 </script>
 
 <style scoped>
+.menu-form-dialog :deep(.el-dialog__body) {
+  padding: 30px 30px 20px;
+}
+
+.menu-form-dialog :deep(.el-dialog__footer) {
+  padding: 20px 30px 30px;
+  border-top: 1px solid #e4e7ed;
+}
+
 .menu-form {
-  padding: 0 20px;
+  padding: 0;
+}
+
+.menu-form :deep(.el-form-item) {
+  margin-bottom: 24px;
+}
+
+.menu-form :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #303133;
+  line-height: 1.6;
+}
+
+.menu-form :deep(.el-form-item__content) {
+  line-height: 1.6;
+}
+
+.menu-form :deep(.el-input),
+.menu-form :deep(.el-select),
+.menu-form :deep(.el-tree-select) {
+  font-size: 14px;
+}
+
+.menu-form :deep(.el-input__inner) {
+  padding: 12px 15px;
+  height: 44px;
+}
+
+.menu-form :deep(.el-radio-group) {
+  display: flex;
+  gap: 20px;
+}
+
+.menu-form :deep(.el-radio) {
+  margin-right: 0;
+}
+
+.menu-form :deep(.el-radio__label) {
+  font-size: 14px;
+  padding-left: 8px;
 }
 
 .form-tip {
-  font-size: 12px;
+  font-size: 13px;
   color: #909399;
-  margin-top: 4px;
-  line-height: 1.4;
+  margin-top: 8px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #e4e7ed;
 }
 
 .icon-input-wrapper {
@@ -412,6 +448,14 @@ const handleClose = () => {
 
 .dialog-footer {
   text-align: right;
+  padding: 20px 0 0;
+  margin-top: 20px;
+}
+
+.dialog-footer .el-button {
+  padding: 10px 24px;
+  font-size: 14px;
+  min-width: 80px;
 }
 
 :deep(.el-tree-select) {
