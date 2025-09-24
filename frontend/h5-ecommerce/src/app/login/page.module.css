@@ -1,271 +1,216 @@
-/* 登录页面样式 - 黑色主题 */
+/* 登录页面样式 - 精确还原参考设计 */
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  background: #fff;
   display: flex;
   flex-direction: column;
-  padding: 40px 20px;
+  position: relative;
 }
 
-/* 简洁的顶部标题 */
-.header {
+/* 品牌区域 */
+.brandSection {
+  background: #fff;
+  padding: 80px 20px 60px;
   text-align: center;
-  margin-bottom: 40px;
-  padding-top: 60px;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin: 0 0 12px 0;
-  letter-spacing: 1px;
-  text-shadow: 0 0 20px rgba(255, 87, 87, 0.3);
-}
-
-.subtitle {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-/* 表单容器 */
-.formContainer {
   flex: 1;
   display: flex;
-  justify-content: center;
-  max-width: 400px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.formCard {
-  background-color: var(--bg-card);
-  border-radius: 16px;
-  padding: 32px 24px;
-  box-shadow: var(--shadow-heavy);
-  border: 1px solid var(--border-primary);
-  width: 100%;
-  position: relative;
-}
-
-.formCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-  border-radius: 16px 16px 0 0;
-}
-
-/* 表单样式 */
-.input {
-  height: 48px;
-  border-radius: 8px;
-  border: 1px solid var(--border-primary);
-  background-color: var(--bg-secondary);
-  font-size: 16px;
-  transition: all 0.3s ease;
-  padding: 0 16px;
-  color: var(--text-primary);
-}
-
-.input:focus {
-  border-color: var(--primary-color);
-  background-color: var(--bg-tertiary);
-  box-shadow: 0 0 0 2px rgba(255, 87, 87, 0.2);
-}
-
-.input::placeholder {
-  color: var(--text-tertiary);
-}
-
-/* 验证码按钮 */
-.codeButton {
-  border: 1px solid var(--primary-color);
-  color: var(--primary-color);
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  padding: 0 16px;
-  height: 32px;
-}
-
-.codeButton:hover:not(:disabled) {
-  background-color: var(--primary-light);
-  color: var(--text-inverse);
-}
-
-.codeButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* 提交按钮 */
-.submitContainer {
-  margin-top: 24px;
-  margin-bottom: 0;
-}
-
-.submitButton {
-  height: 48px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: var(--shadow-medium);
-  transition: all 0.3s ease;
-  color: var(--text-inverse);
-  position: relative;
-  overflow: hidden;
-}
-
-.submitButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s;
-}
-
-.submitButton:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-heavy);
-}
-
-.submitButton:hover::before {
-  left: 100%;
-}
-
-.submitButton:active {
-  transform: translateY(0);
-  box-shadow: var(--shadow-medium);
-}
-
-/* 其他登录方式 */
-.otherLogin {
-  margin-top: 24px;
-}
-
-.divider {
-  margin: 16px 0;
-  color: var(--text-tertiary);
-  font-size: 14px;
-}
-
-.socialLogin {
-  display: flex;
-  justify-content: center;
-}
-
-.socialItem {
-  display: flex;
   flex-direction: column;
+  justify-content: center;
+}
+
+.logo {
+  margin-bottom: 40px;
+}
+
+.logoContainer {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.logoImage {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.logoText {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ff1744;
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.slogan {
+  font-size: 16px;
+  color: #333;
+  letter-spacing: 6px;
+  font-weight: 400;
+  margin-bottom: 40px;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  padding: 16px 24px;
-  border-radius: 8px;
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
+  gap: 30px;
+  margin-top: 20px;
 }
 
-.socialItem:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px rgba(255, 87, 87, 0.2);
-}
-
-.socialIcon {
-  font-size: 20px;
-}
-
-.socialItem span:last-child {
+.features span {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+}
+
+.features span:not(:last-child)::after {
+  content: '•';
+  position: absolute;
+  right: -18px;
+  color: #ddd;
+}
+
+/* 登录表单 */
+.loginForm {
+  background: #fff;
+  padding: 0 20px 40px;
+}
+
+.inputGroup {
+  margin-bottom: 0;
+  position: relative;
+}
+
+.input {
+  height: 60px;
+  border: none;
+  border-bottom: 1px solid #f0f0f0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  padding: 20px 0 15px 0;
+  width: 100%;
+}
+
+.input:focus-within {
+  border-bottom-color: #ff1744;
+}
+
+.loginButton {
+  height: 50px;
+  background: #ff1744;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  color: #fff;
+  margin-top: 40px;
   font-weight: 500;
+  width: 100%;
+  cursor: pointer;
 }
 
-/* 底部链接 */
-.footer {
-  margin-top: 24px;
-  text-align: center;
-}
-
-.footerLinks {
-  font-size: 14px;
-  color: var(--text-secondary);
+.agreement {
+  margin-top: 30px;
+  padding: 0 5px;
 }
 
 .link {
-  color: var(--primary-color);
+  color: #ff1744;
   text-decoration: none;
-  font-weight: 500;
-  margin: 0 4px;
-  transition: color 0.3s ease;
 }
 
 .link:hover {
-  color: var(--primary-dark);
   text-decoration: underline;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .container {
-    padding: 20px 16px;
-  }
-  
-  .header {
-    padding-top: 40px;
-    margin-bottom: 32px;
-  }
-  
-  .title {
-    font-size: 28px;
-  }
-  
-  .subtitle {
-    font-size: 14px;
-  }
-  
-  .formCard {
-    padding: 24px 20px;
-  }
+/* 底部操作 */
+.bottomActions {
+  background: #fff;
+  padding: 30px 20px 40px;
+  margin-top: auto;
 }
 
+.otherLogin {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.loginMethod {
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  padding: 10px 15px;
+}
+
+.loginMethod:hover {
+  color: #ff1744;
+}
+
+.separator {
+  color: #ddd;
+  font-size: 14px;
+  font-weight: 300;
+}
+
+/* 响应式设计 */
 @media (max-width: 480px) {
-  .container {
-    padding: 16px 12px;
+  .brandSection {
+    padding: 60px 15px 40px;
   }
   
-  .header {
-    padding-top: 20px;
-    margin-bottom: 24px;
+  .logoText {
+    font-size: 42px;
+    letter-spacing: 2px;
   }
   
-  .title {
-    font-size: 24px;
+  .slogan {
+    font-size: 14px;
+    letter-spacing: 4px;
   }
   
-  .formCard {
-    padding: 20px 16px;
+  .features {
+    gap: 20px;
   }
   
-  .submitButton {
-    height: 44px;
+  .features span {
+    font-size: 12px;
+  }
+  
+  .features span:not(:last-child)::after {
+    right: -12px;
+  }
+  
+  .loginForm {
+    padding: 0 15px 30px;
+  }
+  
+  .input {
+    height: 55px;
+    padding: 18px 0 12px 0;
     font-size: 15px;
   }
   
-  .socialItem {
-    padding: 12px 20px;
+  .loginButton {
+    height: 48px;
+    font-size: 16px;
+    margin-top: 35px;
+  }
+  
+  .bottomActions {
+    padding: 25px 15px 35px;
+  }
+  
+  .loginMethod {
+    font-size: 15px;
+    padding: 8px 12px;
   }
 }

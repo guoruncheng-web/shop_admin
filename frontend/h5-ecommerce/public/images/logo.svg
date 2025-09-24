@@ -1,0 +1,22 @@
+<svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- 购物袋主体 -->
+  <path d="M20 35 L80 35 L75 85 L25 85 Z" 
+        fill="#ff1744" 
+        stroke="#d50000" 
+        stroke-width="2"/>
+  
+  <!-- 购物袋手柄 -->
+  <path d="M35 35 C35 25, 35 20, 40 15 C45 10, 55 10, 60 15 C65 20, 65 25, 65 35" 
+        fill="none" 
+        stroke="#ff1744" 
+        stroke-width="3"/>
+  
+  <!-- 装饰元素 -->
+  <circle cx="45" cy="55" r="3" fill="white" opacity="0.8"/>
+  <circle cx="55" cy="65" r="2" fill="white" opacity="0.6"/>
+  
+  <!-- 高光效果 -->
+  <path d="M25 40 L70 40 L68 50 L27 50 Z" 
+        fill="white" 
+        opacity="0.2"/>
+</svg>

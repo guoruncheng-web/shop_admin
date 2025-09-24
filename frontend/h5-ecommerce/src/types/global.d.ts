@@ -1,47 +1,67 @@
-// 声明 Less 模块类型
-declare module '*.less' {
-  const classes: { readonly [key: string]: string };
-  export default classes;
-}
+// 全局类型声明文件
 
 declare module '*.module.less' {
-  const classes: { readonly [key: string]: string };
+  const classes: { [key: string]: string };
   export default classes;
 }
 
-// 声明 CSS 模块类型
 declare module '*.module.css' {
-  const classes: { readonly [key: string]: string };
+  const classes: { [key: string]: string };
   export default classes;
 }
 
-// 声明图片资源类型
-declare module '*.png' {
-  const src: string;
-  export default src;
+declare module '*.less' {
+  const content: string;
+  export default content;
 }
 
-declare module '*.jpg' {
-  const src: string;
-  export default src;
+declare module '*.css' {
+  const content: string;
+  export default content;
 }
 
-declare module '*.jpeg' {
-  const src: string;
-  export default src;
+// 扩展 Window 对象
+declare global {
+  interface Window {
+    // 微信相关
+    wx?: unknown;
+    WeixinJSBridge?: unknown;
+    
+    // QQ相关
+    QC?: unknown;
+    
+    // 支付宝相关
+    AlipayJSBridge?: unknown;
+    
+    // 其他第三方SDK
+    [key: string]: unknown;
+  }
 }
 
-declare module '*.gif' {
-  const src: string;
-  export default src;
+// 设备信息类型
+export interface DeviceInfo {
+  isIOS: boolean;
+  isAndroid: boolean;
+  isWeChat: boolean;
+  isMobile: boolean;
+  userAgent: string;
 }
 
-declare module '*.svg' {
-  const src: string;
-  export default src;
+// 用户信息类型
+export interface UserInfo {
+  id: string;
+  phone: string;
+  nickname?: string;
+  avatar?: string;
+  loginType: 'sms' | 'password' | 'wechat' | 'qq' | 'alipay';
 }
 
-declare module '*.webp' {
-  const src: string;
-  export default src;
+// API 响应类型
+export interface ApiResponse<T = unknown> {
+  code: number;
+  message: string;
+  data: T;
+  success: boolean;
 }
+
+export {};

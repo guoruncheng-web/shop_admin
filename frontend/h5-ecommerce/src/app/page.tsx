@@ -8,7 +8,6 @@ import {
 } from 'antd-mobile-icons';
 import Link from 'next/link';
 import styles from './page.module.css';
-import clsx from 'clsx';
 
 export default function Home() {
   const categories = [

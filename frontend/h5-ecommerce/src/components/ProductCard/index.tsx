@@ -2,7 +2,7 @@
 
 import { Tag } from 'antd-mobile';
 import { formatPrice } from '@/utils';
-import styles from './index.module.css';
+import styles from './index.module.less';
 import clsx from 'clsx';
 
 interface ProductCardProps {
@@ -39,6 +39,7 @@ export function ProductCard({
     >
       <div className={styles.imageContainer}>
         {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img 
             src={image} 
             alt={name} 
