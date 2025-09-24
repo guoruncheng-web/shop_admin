@@ -103,16 +103,8 @@
             show-word-limit
           >
             <template #prepend>
-              <Icon
-                v-if="formData.icon"
-                :icon="formData.icon"
-                class="icon-preview"
-              />
-              <Icon
-                v-else
-                icon="lucide:image"
-                class="icon-preview"
-              />
+              <span v-if="formData.icon" class="icon-preview">🎨</span>
+              <span v-else class="icon-preview">📷</span>
             </template>
           </ElInput>
         </div>
@@ -155,6 +147,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'MenuForm',
+});
+
 import { ref, reactive, computed, watch, nextTick } from 'vue';
 import { 
   ElDialog,
@@ -170,9 +166,8 @@ import {
   type FormInstance, 
   type FormRules 
 } from 'element-plus';
-import { Icon } from '@iconify/vue';
 import type { MenuPermission, MenuFormData } from '#/api/system/menu';
-import { createMenuApi, updateMenuApi, checkMenuCodeApi } from '#/api/system/menu';
+import { createMenuApi, updateMenuApi } from '#/api/system/menu';
 
 // Props
 interface Props {
@@ -242,23 +237,8 @@ const formRules: FormRules = {
             callback(new Error('权限标识只能包含字母、数字、下划线和冒号，且以字母开头'));
             return;
           }
-          // 异步验证唯一性
-          (async () => {
-            try {
-              const isUnique = await checkMenuCodeApi(value, formData.id);
-              if (!isUnique) {
-                callback(new Error('权限标识已存在'));
-              } else {
-                callback();
-              }
-            } catch (error) {
-              console.warn('权限标识验证失败:', error);
-              callback();
-            }
-          })();
-        } else {
-          callback();
         }
+        callback();
       },
       trigger: 'blur',
     },

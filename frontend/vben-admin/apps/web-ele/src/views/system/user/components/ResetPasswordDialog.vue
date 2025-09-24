@@ -71,6 +71,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'ResetPasswordDialog',
+});
+
 import { ref, reactive, computed, watch, nextTick } from 'vue';
 import { 
   ElDialog,

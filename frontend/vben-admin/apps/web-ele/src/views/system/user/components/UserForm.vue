@@ -126,6 +126,10 @@
 </template>
 
 <script setup lang="ts">
+defineOptions({
+  name: 'UserForm',
+});
+
 import { ref, reactive, computed, watch, nextTick, onMounted } from 'vue';
 import { 
   ElDialog,
@@ -159,7 +163,6 @@ const props = withDefaults(defineProps<Props>(), {
   userData: null,
 });
 
-// Emits
 const emit = defineEmits<{
   'update:visible': [value: boolean];
   'success': [];

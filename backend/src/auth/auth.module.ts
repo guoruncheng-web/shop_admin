@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth.controller';
@@ -9,9 +10,11 @@ import { MenusModule } from '../modules/menus/menus.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TokenRefreshInterceptor } from '../common/interceptors/token-refresh.interceptor';
+import { Admin } from '../database/entities/admin.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([Admin]),
     MenusModule,
     PassportModule,
     JwtModule.registerAsync({

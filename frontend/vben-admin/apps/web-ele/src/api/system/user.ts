@@ -104,12 +104,7 @@ export async function getUserDetailApi(id: number) {
  */
 export async function createUserApi(data: CreateUserParams) {
   const response = await requestClient.post<ApiResponse<User>>('/users', data);
-  
-  if (response && response.code === 200 && response.data) {
-    return response.data;
-  }
-  
-  throw new Error(response?.msg || '创建用户失败');
+  return response;
 }
 
 /**
@@ -117,12 +112,7 @@ export async function createUserApi(data: CreateUserParams) {
  */
 export async function updateUserApi(id: number, data: UpdateUserParams) {
   const response = await requestClient.put<ApiResponse<User>>(`/users/${id}`, data);
-  
-  if (response && response.code === 200 && response.data) {
-    return response.data;
-  }
-  
-  throw new Error(response?.msg || '更新用户失败');
+  return response;
 }
 
 /**
@@ -130,12 +120,7 @@ export async function updateUserApi(id: number, data: UpdateUserParams) {
  */
 export async function deleteUserApi(id: number) {
   const response = await requestClient.delete<ApiResponse<void>>(`/users/${id}`);
-  
-  if (response && response.code === 200) {
-    return;
-  }
-  
-  throw new Error(response?.msg || '删除用户失败');
+  return response;
 }
 
 /**
@@ -143,12 +128,7 @@ export async function deleteUserApi(id: number) {
  */
 export async function batchDeleteUserApi(ids: number[]) {
   const response = await requestClient.post<ApiResponse<void>>('/users/batch-delete', { ids });
-  
-  if (response && response.code === 200) {
-    return;
-  }
-  
-  throw new Error(response?.msg || '批量删除用户失败');
+  return response;
 }
 
 /**
@@ -156,12 +136,7 @@ export async function batchDeleteUserApi(ids: number[]) {
  */
 export async function changePasswordApi(id: number, data: ChangePasswordParams) {
   const response = await requestClient.put<ApiResponse<void>>(`/users/${id}/change-password`, data);
-  
-  if (response && response.code === 200) {
-    return;
-  }
-  
-  throw new Error(response?.msg || '修改密码失败');
+  return response;
 }
 
 /**
@@ -169,12 +144,7 @@ export async function changePasswordApi(id: number, data: ChangePasswordParams) 
  */
 export async function resetPasswordApi(id: number, newPassword: string) {
   const response = await requestClient.put<ApiResponse<void>>(`/users/${id}/reset-password`, { newPassword });
-  
-  if (response && response.code === 200) {
-    return;
-  }
-  
-  throw new Error(response?.msg || '重置密码失败');
+  return response;
 }
 
 /**
@@ -182,12 +152,7 @@ export async function resetPasswordApi(id: number, newPassword: string) {
  */
 export async function toggleUserStatusApi(id: number) {
   const response = await requestClient.put<ApiResponse<User>>(`/users/${id}/toggle-status`);
-  
-  if (response && response.code === 200 && response.data) {
-    return response.data;
-  }
-  
-  throw new Error(response?.msg || '切换用户状态失败');
+  return response;
 }
 
 /**

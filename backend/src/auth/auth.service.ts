@@ -1,11 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as svgCaptcha from 'svg-captcha';
 import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import Redis from 'ioredis';
 import { LoginDto, LoginResponseDto, CaptchaResponseDto } from './dto/captcha.dto';
 import { MenusService } from '../modules/menus/services/menus.service';
+import { Admin } from '../database/entities/admin.entity';
 
 @Injectable()
 export class AuthService {
@@ -14,6 +18,8 @@ export class AuthService {
   constructor(
     private configService: ConfigService,
     private menusService: MenusService,
+    @InjectRepository(Admin)
+    private adminRepository: Repository<Admin>,
   ) {
     // 获取Redis配置
     const redisHost = this.configService.get('redis.host') || 'localhost';
@@ -144,86 +150,73 @@ export class AuthService {
     return captchas;
   }
 
-  // 模拟用户验证
-  async validateUser(username: string, password: string): Promise<any> {
-    // 这里应该连接数据库验证用户
-    // 暂时使用模拟数据
-    const mockUsers = [
-      {
-        id: 1,
-        username: 'admin',
-        password: '123456',
-        realName: '超级管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        avatar: '/images/avatar/admin.png',
-        roles: ['super_admin'],
-        permissions: [
-          'system:admin',
-          'system:user',
-          'system:role',
-          'system:permission',
-          'product:list',
-          'product:create',
-          'product:update',
-          'product:delete',
-          'order:list',
-          'order:update',
-          'order:delete',
-          'banner:list',
-          'banner:create',
-          'banner:update',
-          'banner:delete'
-        ],
-        roleInfo: [
-          {
-            id: 1,
-            name: '超级管理员',
-            code: 'super_admin',
-            description: '系统超级管理员，拥有所有权限'
-          }
-        ]
-      },
-      {
-        id: 2,
-        username: 'product_admin',
-        password: '123456',
-        realName: '商品管理员',
-        email: 'product@example.com',
-        phone: '13800138001',
-        avatar: '/images/avatar/product.png',
-        roles: ['product_admin'],
-        permissions: [
-          'product:list',
-          'product:create',
-          'product:update',
-          'product:delete',
-          'category:list',
-          'category:create',
-          'category:update',
-          'category:delete'
-        ],
-        roleInfo: [
-          {
-            id: 2,
-            name: '商品管理员',
-            code: 'product_admin',
-            description: '负责商品和分类管理'
-          }
-        ]
-      },
-    ];
+  // 验证用户
+  async validateUser(username: string, password: string, loginIp?: string): Promise<any> {
+    // 从数据库查找用户
+    const user = await this.adminRepository.findOne({
+      where: { username },
+      relations: ['roles'],
+      select: [
+        'id',
+        'username',
+        'password',
+        'realName',
+        'email',
+        'phone',
+        'avatar',
+        'status',
+        'lastLoginTime',
+        'lastLoginIp',
 
-    const user = mockUsers.find(u => u.username === username && u.password === password);
-    if (user) {
-      const { password, ...result } = user;
-      return result;
+      ]
+    });
+
+    if (!user) {
+      return null;
     }
-    return null;
+
+    // 检查用户状态
+    if (user.status !== 1) {
+      throw new UnauthorizedException('用户已被禁用');
+    }
+
+    // 验证密码
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    // 更新登录信息
+    await this.adminRepository.update(user.id, {
+      lastLoginTime: new Date(),
+      lastLoginIp: loginIp || '127.0.0.1'
+    });
+
+    // 构建返回的用户信息
+    const { password: _, ...userInfo } = user;
+    
+    // 提取角色信息
+    const roles = user.roles?.map(role => role.code) || [];
+    const roleInfo = user.roles?.map(role => ({
+      id: role.id,
+      name: role.name,
+      code: role.code,
+      description: role.description
+    })) || [];
+
+    // 获取用户权限（通过角色）
+    const permissions = await this.getUserPermissionsByUserId(user.id);
+
+    return {
+      ...userInfo,
+      roles,
+      roleInfo,
+      permissions
+    };
   }
 
   // 登录
-  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
+  async login(loginDto: LoginDto, loginIp?: string): Promise<LoginResponseDto> {
     // 验证验证码
     const isCaptchaValid = await this.validateCaptcha(loginDto.captchaId, loginDto.captcha);
     if (!isCaptchaValid) {
@@ -231,7 +224,7 @@ export class AuthService {
     }
 
     // 验证用户
-    const user = await this.validateUser(loginDto.username, loginDto.password);
+    const user = await this.validateUser(loginDto.username, loginDto.password, loginIp);
     if (!user) {
       throw new UnauthorizedException('用户名或密码错误');
     }

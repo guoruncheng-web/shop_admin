@@ -12,7 +12,7 @@
     >
       <img v-if="imageUrl" :src="imageUrl" class="avatar" />
       <el-icon v-else class="avatar-uploader-icon">
-        <Icon icon="lucide:plus" />
+        <span>➕</span>
       </el-icon>
     </el-upload>
     
@@ -27,17 +27,15 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { ElMessage, ElUpload } from 'element-plus';
-import { Icon } from '@iconify/vue';
-import { useUserStore } from '@vben/stores';
+import { useAccessStore } from '@vben/stores';
+
+defineOptions({
+  name: 'AvatarUpload',
+});
 
 interface Props {
   modelValue?: string;
   maxSize?: number; // MB
-}
-
-interface Emits {
-  (e: 'update:modelValue', value: string): void;
-  (e: 'change', value: string): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -45,16 +43,25 @@ const props = withDefaults(defineProps<Props>(), {
   maxSize: 2,
 });
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<{
+  'update:modelValue': [value: string];
+  'change': [value: string];
+}>();
 
-const userStore = useUserStore();
+const accessStore = useAccessStore();
 const imageUrl = ref(props.modelValue);
 
 // 上传地址和请求头
 const uploadUrl = computed(() => '/api/upload/image');
-const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.accessToken}`,
-}));
+const uploadHeaders = computed(() => {
+  // 使用Vben框架的accessStore获取token
+  const token = accessStore.accessToken;
+  console.log('Upload token:', token ? 'Token exists' : 'No token found');
+  
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+});
 
 // 上传前检查
 const beforeUpload = (file: File) => {
@@ -74,13 +81,17 @@ const beforeUpload = (file: File) => {
 
 // 上传成功
 const handleSuccess = (response: any) => {
-  if (response.success) {
-    imageUrl.value = response.data.url;
-    emit('update:modelValue', response.data.url);
-    emit('change', response.data.url);
-    ElMessage.success('头像上传成功!');
+  console.log('Upload response:', response);
+  
+  // 适配后端响应格式：{ code: 200, data: "图片URL", msg: "上传成功" }
+  if (response.code === 200 && response.data) {
+    const imageUrl_new = response.data.url;
+    imageUrl.value = imageUrl_new;
+    emit('update:modelValue', imageUrl_new);
+    emit('change', imageUrl_new);
+    ElMessage.success(response.msg || '头像上传成功!');
   } else {
-    ElMessage.error(response.message || '上传失败');
+    ElMessage.error(response.msg || response.message || '上传失败');
   }
 };
 

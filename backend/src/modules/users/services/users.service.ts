@@ -178,20 +178,31 @@ export class UsersService {
       }
     }
 
-    // 更新基本信息
-    Object.assign(user, userData);
-
-    // 处理角色关联
-    if (roleIds !== undefined) {
-      if (roleIds.length > 0) {
-        const roles = await this.roleRepository.findByIds(roleIds);
-        user.roles = roles;
-      } else {
-        user.roles = [];
+    // 使用事务来处理更新操作
+    return await this.adminRepository.manager.transaction(async manager => {
+      // 更新基本信息
+      if (Object.keys(userData).length > 0) {
+        await manager.update(Admin, id, userData);
       }
-    }
 
-    return await this.adminRepository.save(user);
+      // 处理角色关联
+      if (roleIds !== undefined) {
+        // 先删除现有的角色关联
+        await manager.query('DELETE FROM admin_roles WHERE admin_id = ?', [id]);
+        
+        // 如果有新的角色，则插入新的关联
+        if (roleIds.length > 0) {
+          const roles = await manager.findByIds(Role, roleIds);
+          if (roles.length > 0) {
+            const values = roles.map(role => `(${id}, ${role.id})`).join(', ');
+            await manager.query(`INSERT INTO admin_roles (admin_id, role_id) VALUES ${values}`);
+          }
+        }
+      }
+
+      // 返回更新后的用户信息
+      return await this.findById(id);
+    });
   }
 
   // 删除用户
@@ -258,8 +269,22 @@ export class UsersService {
 
   // 启用/禁用用户
   async toggleStatus(id: number): Promise<Admin> {
-    const user = await this.findById(id);
-    user.status = user.status === 1 ? 0 : 1;
-    return await this.adminRepository.save(user);
+    // 先获取用户当前状态（不加载关联关系）
+    const user = await this.adminRepository.findOne({
+      where: { id },
+      select: ['id', 'status']
+    });
+
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    const newStatus = user.status === 1 ? 0 : 1;
+    
+    // 直接更新状态字段，避免触发关联关系的保存
+    await this.adminRepository.update(id, { status: newStatus });
+    
+    // 返回更新后的完整用户信息
+    return await this.findById(id);
   }
 }
