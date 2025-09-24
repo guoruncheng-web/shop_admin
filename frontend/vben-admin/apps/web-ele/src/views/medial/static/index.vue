@@ -6,176 +6,226 @@
       <p class="page-description">统一管理图片和视频资源，支持分类、搜索和统计功能</p>
     </div>
 
-    <!-- 统计卡片 -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">📁</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ stats.totalResources }}</div>
-          <div class="stat-label">总资源数</div>
+    <!-- 主要内容区域 - 左右布局 -->
+    <div class="main-content">
+      <!-- 左侧区域：统计卡片、操作按钮、搜索筛选 -->
+      <div class="sidebar">
+        <!-- 统计卡片 -->
+        <div class="stats-section">
+          <h3 class="section-title">数据统计</h3>
+          <div class="stats-grid-sidebar">
+            <div class="stat-card-small">
+              <div class="stat-icon-small">📁</div>
+              <div class="stat-content-small">
+                <div class="stat-number-small">{{ stats.totalResources }}</div>
+                <div class="stat-label-small">总资源数</div>
+              </div>
+            </div>
+            
+            <div class="stat-card-small">
+              <div class="stat-icon-small">🗂️</div>
+              <div class="stat-content-small">
+                <div class="stat-number-small">{{ totalCategories }}</div>
+                <div class="stat-label-small">分类数量</div>
+              </div>
+            </div>
+            
+            <div class="stat-card-small">
+              <div class="stat-icon-small">🖼️</div>
+              <div class="stat-content-small">
+                <div class="stat-number-small">{{ stats.imageCount }}</div>
+                <div class="stat-label-small">图片资源</div>
+              </div>
+            </div>
+            
+            <div class="stat-card-small">
+              <div class="stat-icon-small">🎬</div>
+              <div class="stat-content-small">
+                <div class="stat-number-small">{{ stats.videoCount }}</div>
+                <div class="stat-label-small">视频资源</div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">🗂️</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ totalCategories }}</div>
-          <div class="stat-label">分类数量</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">🖼️</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ stats.imageCount }}</div>
-          <div class="stat-label">图片资源</div>
-        </div>
-      </div>
-      
-      <div class="stat-card">
-        <div class="stat-icon">🎬</div>
-        <div class="stat-content">
-          <div class="stat-number">{{ stats.videoCount }}</div>
-          <div class="stat-label">视频资源</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 功能操作区 -->
-    <div class="action-section">
-      <div class="action-buttons">
-        <button class="btn btn-primary" @click="handleUpload">
-          <span class="btn-icon">📤</span>
-          上传资源
-        </button>
-        <button class="btn btn-secondary" @click="handleCategoryManage">
-          <span class="btn-icon">🗂️</span>
-          分类管理
-        </button>
-        <button class="btn btn-secondary" @click="handleBatchOperation">
-          <span class="btn-icon">⚡</span>
-          批量操作
-        </button>
-        <button class="btn btn-secondary" @click="handleExport">
-          <span class="btn-icon">📈</span>
-          导出统计
-        </button>
-      </div>
-    </div>
-
-    <!-- 搜索和筛选 -->
-    <div class="filter-section">
-      <div class="filter-row">
-        <div class="search-box">
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="搜索资源名称或标签..."
-            class="search-input"
-            @keyup.enter="handleSearch"
-          />
-          <button class="search-btn" @click="handleSearch">🔍</button>
+        <!-- 功能操作区 -->
+        <div class="action-section-sidebar">
+          <h3 class="section-title">快速操作</h3>
+          <div class="action-buttons-sidebar">
+            <button class="btn-sidebar btn-primary" @click="handleUploadImage">
+              <span class="btn-icon">🖼️</span>
+              上传图片
+            </button>
+            <button class="btn-sidebar btn-primary" @click="handleUploadVideo">
+              <span class="btn-icon">🎬</span>
+              上传视频
+            </button>
+            <button class="btn-sidebar btn-secondary" @click="handleCategoryManage">
+              <span class="btn-icon">🗂️</span>
+              分类管理
+            </button>
+            <!-- <button class="btn-sidebar btn-secondary" @click="handleBatchOperation">
+              <span class="btn-icon">⚡</span>
+              批量操作
+            </button>
+            <button class="btn-sidebar btn-secondary" @click="handleExport">
+              <span class="btn-icon">📈</span>
+              导出统计
+            </button> -->
+          </div>
         </div>
-        
-        <div class="filter-controls">
-          <ElSelect 
-            v-model="selectedType" 
-            placeholder="全部类型" 
-            clearable
-            style="width: 140px"
-            @change="handleSearch"
-          >
-            <ElOption label="全部类型" value="" />
-            <ElOption label="图片" value="image" />
-            <ElOption label="视频" value="video" />
-          </ElSelect>
+
+        <div class="sidebar-section">
+          <div class="sidebar-stats">
+            <div class="stat-item">
+              <span class="stat-label">总资源</span>
+              <span class="stat-value">{{ stats.totalResources }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">图片</span>
+              <span class="stat-value">{{ stats.imageCount }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">视频</span>
+              <span class="stat-value">{{ stats.videoCount }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧资源展示区域 -->
+      <div class="content-area">
+        <!-- 筛选控件区域 -->
+        <div class="filter-section">
+          <div class="filter-row">
+            <div class="search-box">
+              <input 
+                v-model="searchQuery" 
+                type="text" 
+                placeholder="搜索资源名称或标签..."
+                class="search-input"
+                @keyup.enter="handleSearch"
+              />
+              <button class="search-btn" @click="handleSearch">🔍</button>
+            </div>
+            
+            <ElSelect 
+              v-model="selectedType" 
+              placeholder="全部类型" 
+              clearable
+              class="filter-select"
+              @change="handleSearch"
+            >
+              <ElOption label="全部类型" value="" />
+              <ElOption label="图片" value="image" />
+              <ElOption label="视频" value="video" />
+            </ElSelect>
+            
+            <ElTreeSelect 
+              v-model="selectedCategory" 
+              :data="categories"
+              placeholder="全部分类" 
+              clearable
+              check-strictly
+              :render-after-expand="false"
+              :check-on-click-node="false"
+              class="filter-select"
+              :props="{
+                value: 'id',
+                label: 'name',
+                children: 'children',
+                disabled: (data:any) => data.children && data.children.length > 0
+              }"
+              @change="handleSearch"
+            />
+          </div>
+        </div>
+
+        <!-- 资源展示区域 -->
+        <div class="resource-display-area">
+          <!-- 资源列表 -->
+          <div v-if="loading" class="loading-container">
+            <div class="loading-spinner">加载中...</div>
+          </div>
           
-          <ElTreeSelect 
-            v-model="selectedCategory" 
-            :data="categories"
-            placeholder="全部分类" 
-            clearable
-            check-strictly
-            :render-after-expand="false"
-            :check-on-click-node="false"
-            style="width: 180px"
-            :props="{
-              value: 'id',
-              label: 'name',
-              children: 'children',
-              disabled: (data:any) => data.children && data.children.length > 0
-            }"
-            @change="handleSearch"
-          />
-        </div>
-      </div>
-    </div>
+          <div v-else class="resource-grid">
+            <div 
+              v-for="resource in resources" 
+              :key="resource.id" 
+              class="resource-card"
+              @click="handleResourceClick(resource)"
+            >
+              <div class="resource-preview">
+                <img 
+                  v-if="resource.type === 'image'" 
+                  :src="resource.url" 
+                  :alt="resource.name"
+                  class="resource-image"
+                />
+                <div v-else class="resource-video-container">
+                  <video 
+                    :src="resource.url"
+                    class="resource-video"
+                    controls
+                    preload="metadata"
+                    @loadedmetadata="handleVideoLoaded"
+                    @click="handleVideoClick"
+                    @error="handleVideoError"
+                    :poster="resource.thumbnail"
+                  >
+                    您的浏览器不支持视频播放
+                  </video>
+                  <div class="video-overlay">
+                    <div class="video-info">
+                      <span class="video-duration">{{ formatVideoDuration(resource.duration) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-info">
+                <div class="resource-name" :title="resource.name">{{ resource.name }}</div>
+                <div class="resource-meta">
+                  <span class="resource-type">{{ resource.type === 'image' ? '图片' : '视频' }}</span>
+                  <span class="resource-size">{{ formatFileSize(resource.fileSize || 0) }}</span>
+                </div>
+                <div class="resource-category">{{ getCategoryName(resource.categoryId) }}</div>
+                <div class="resource-date">{{ formatDate(resource.uploadedAt) }}</div>
+              </div>
+              
+              <div class="resource-actions">
+                <button class="action-btn" @click.stop="handlePreview(resource)" title="预览">👁️</button>
+                <button class="action-btn" @click.stop="handleViewDetails(resource)" title="查看详情">📋</button>
+                <button class="action-btn" @click.stop="handleDownload(resource)" title="下载">⬇️</button>
+                <button class="action-btn danger" @click.stop="handleDelete(resource)" title="删除">🗑️</button>
+              </div>
+            </div>
+          </div>
 
-    <!-- 资源列表 -->
-    <div v-if="loading" class="loading-container">
-      <div class="loading-spinner">加载中...</div>
-    </div>
-    
-    <div v-else class="resource-grid">
-      <div 
-        v-for="resource in resources" 
-        :key="resource.id" 
-        class="resource-card"
-        @click="handleResourceClick(resource)"
-      >
-        <div class="resource-preview">
-          <img 
-            v-if="resource.type === 'image'" 
-            :src="resource.url" 
-            :alt="resource.name"
-            class="resource-image"
-          />
-          <div v-else class="resource-video">
-            <div class="video-icon">🎬</div>
-            <span class="video-duration">00:00</span>
+          <!-- 分页 -->
+          <div class="pagination">
+            <button 
+              class="page-btn" 
+              :disabled="currentPage === 1"
+              @click="handlePageChange(currentPage - 1)"
+            >
+              上一页
+            </button>
+            
+            <span class="page-info">
+              第 {{ currentPage }} 页，共 {{ totalPages }} 页，总计 {{ totalResources }} 条记录
+            </span>
+            
+            <button 
+              class="page-btn" 
+              :disabled="currentPage === totalPages"
+              @click="handlePageChange(currentPage + 1)"
+            >
+              下一页
+            </button>
           </div>
         </div>
-        
-        <div class="resource-info">
-          <div class="resource-name" :title="resource.name">{{ resource.name }}</div>
-          <div class="resource-meta">
-            <span class="resource-type">{{ resource.type === 'image' ? '图片' : '视频' }}</span>
-            <span class="resource-size">{{ formatFileSize(resource.fileSize || 0) }}</span>
-          </div>
-          <div class="resource-category">{{ getCategoryName(resource.categoryId) }}</div>
-          <div class="resource-date">{{ formatDate(resource.uploadedAt) }}</div>
-        </div>
-        
-        <div class="resource-actions">
-          <button class="action-btn" @click.stop="handlePreview(resource)" title="预览">👁️</button>
-          <button class="action-btn" @click.stop="handleViewDetails(resource)" title="查看详情">📋</button>
-          <button class="action-btn" @click.stop="handleDownload(resource)" title="下载">⬇️</button>
-          <button class="action-btn danger" @click.stop="handleDelete(resource)" title="删除">🗑️</button>
-        </div>
       </div>
-    </div>
-
-    <!-- 分页 -->
-    <div class="pagination">
-      <button 
-        class="page-btn" 
-        :disabled="currentPage === 1"
-        @click="handlePageChange(currentPage - 1)"
-      >
-        上一页
-      </button>
-      
-      <span class="page-info">
-        第 {{ currentPage }} 页，共 {{ totalPages }} 页，总计 {{ totalResources }} 条记录
-      </span>
-      
-      <button 
-        class="page-btn" 
-        :disabled="currentPage === totalPages"
-        @click="handlePageChange(currentPage + 1)"
-      >
-        下一页
-      </button>
     </div>
 
     <!-- 资源详情模态框 -->
@@ -196,9 +246,22 @@
                 :alt="selectedResource.name"
                 class="details-image"
               />
-              <div v-else class="details-video">
-                <div class="video-icon">🎬</div>
-                <span>视频文件</span>
+              <div v-else class="details-video-container">
+                <video 
+                  :src="selectedResource.url"
+                  class="details-video"
+                  controls
+                  preload="metadata"
+                  @loadedmetadata="handleVideoLoaded"
+                  @error="handleVideoError"
+                  :poster="selectedResource.thumbnail"
+                  controlsList="nodownload"
+                >
+                  您的浏览器不支持视频播放
+                </video>
+                <div class="video-details-info">
+                  <span class="video-duration-large">{{ formatVideoDuration(selectedResource.duration) }}</span>
+                </div>
               </div>
             </div>
             
@@ -262,27 +325,59 @@
     <div v-if="showUploadModal" class="modal-overlay" @click="showUploadModal = false">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>上传静态资源</h3>
+          <h3>{{ uploadType === 'image' ? '上传图片' : '上传视频' }}</h3>
           <button class="modal-close" @click="showUploadModal = false">×</button>
         </div>
         <div class="modal-body">
           <div class="upload-area" @drop="handleDrop" @dragover.prevent>
-            <div class="upload-icon">📁</div>
+            <div class="upload-icon">{{ uploadType === 'image' ? '🖼️' : '🎬' }}</div>
             <p v-if="selectedFiles.length === 0">
-              拖拽文件到此处或 <span class="upload-link" @click="fileInput?.click()">点击选择</span>
+              拖拽{{ uploadType === 'image' ? '图片' : '视频' }}文件到此处或 <span class="upload-link" @click="fileInput?.click()">点击选择</span>
             </p>
+            <div v-if="selectedFiles.length === 0" class="upload-tips">
+              <div v-if="uploadType === 'image'" class="upload-tips-content">
+                <h4>📸 图片上传说明</h4>
+                <p><strong>支持格式：</strong>JPEG、PNG、GIF、WebP、BMP</p>
+                <p><strong>文件大小：</strong>单个文件最大 5MB</p>
+                <p><strong>推荐尺寸：</strong>宽度不超过 4096px，高度不超过 4096px</p>
+                <p><strong>上传方式：</strong>直接上传，速度快</p>
+              </div>
+              <div v-else class="upload-tips-content">
+                <h4>🎬 视频上传说明</h4>
+                <p><strong>支持格式：</strong>MP4、AVI、MOV、WMV、FLV、WebM、MKV</p>
+                <p><strong>文件大小：</strong>单个文件最大 500MB</p>
+                <p><strong>推荐参数：</strong>分辨率1920x1080，码率不超过10Mbps</p>
+                <p><strong>上传方式：</strong>分片上传，支持断点续传</p>
+              </div>
+            </div>
             <div v-else class="selected-files">
               <h4>已选择 {{ selectedFiles.length }} 个文件：</h4>
               <ul>
-                <li v-for="(file, index) in selectedFiles" :key="index">
-                  {{ file.name }} ({{ (file.size / 1024 / 1024).toFixed(2) }}MB)
+                <li v-for="(file, index) in selectedFiles" :key="index" class="file-item">
+                  <div class="file-info">
+                    <span class="file-icon">{{ file.type.startsWith('image/') ? '🖼️' : '🎬' }}</span>
+                    <div class="file-details">
+                      <div class="file-name">{{ file.name }}</div>
+                      <div class="file-meta">
+                        <span class="file-type">{{ file.type.startsWith('image/') ? '图片' : '视频' }}</span>
+                        <span class="file-size">{{ formatFileSize(file.size) }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </li>
               </ul>
               <p class="reselect-hint">
                 <span class="upload-link" @click="fileInput?.click()">重新选择文件</span>
               </p>
             </div>
-            <input ref="fileInput" type="file" multiple accept="image/*,video/*" @change="handleFileSelect" style="display: none;">
+            <input 
+              ref="fileInput" 
+              type="file" 
+              multiple 
+              :accept="uploadType === 'image' ? 'image/*' : 'video/*'" 
+              @change="handleFileSelect" 
+              style="display: none;"
+            >
           </div>
           
           <!-- 上传进度显示 -->
@@ -329,6 +424,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElSelect, ElOption, ElOptionGroup, ElTreeSelect, ElMessage } from 'element-plus';
 import { ResourceApi, ResourceCategoryApi, type Resource, type ResourceCategory, type ResourceStatistics } from '#/api/resource';
+import SparkMD5 from 'spark-md5';
 
 // 路由实例
 const router = useRouter();
@@ -352,6 +448,9 @@ const uploadCategory = ref('');
 const selectedFiles = ref<File[]>([]);
 const uploading = ref(false);
 const loading = ref(false);
+
+// 上传类型控制
+const uploadType = ref<'image' | 'video'>('image'); // 当前上传类型
 
 // 上传进度相关
 const uploadProgress = ref(0); // 整体进度 0-100
@@ -401,7 +500,12 @@ const totalCategories = computed(() => categories.value.length);
 const loadStatistics = async () => {
   try {
     const result = await ResourceApi.getStatistics();
-    Object.assign(stats, result);
+    console.log('📊 统计数据响应:', result);
+    // 处理后端返回的数据格式 {code: 200, data: {...}, msg: "success"}
+    if (result.code === 200 && result.data) {
+      Object.assign(stats, result.data);
+      console.log('📊 统计数据更新成功:', stats);
+    }
   } catch (error) {
     console.error('加载统计数据失败:', error);
   }
@@ -486,8 +590,47 @@ const formatDate = (dateString: string) => {
   });
 };
 
+const formatVideoDuration = (duration?: number) => {
+  if (!duration) return '00:00';
+  
+  const minutes = Math.floor(duration / 60);
+  const seconds = Math.floor(duration % 60);
+  
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
+const handleVideoLoaded = (event: Event) => {
+  const video = event.target as HTMLVideoElement;
+  console.log('视频加载完成，时长:', video.duration);
+  
+  // 设置视频封面（第一帧）
+  video.currentTime = 1; // 跳到第1秒作为封面
+};
+
+const handleVideoClick = (event: Event) => {
+  event.stopPropagation(); // 阻止事件冒泡，避免触发卡片点击
+};
+
+const handleVideoError = (event: Event) => {
+  const video = event.target as HTMLVideoElement;
+  console.error('视频加载失败:', video.error);
+  ElMessage.error('视频加载失败，请检查网络连接');
+};
+
 // 事件处理
+const handleUploadImage = () => {
+  uploadType.value = 'image';
+  showUploadModal.value = true;
+};
+
+const handleUploadVideo = () => {
+  uploadType.value = 'video';
+  showUploadModal.value = true;
+};
+
+// 保留原有的通用上传函数作为兼容
 const handleUpload = () => {
+  uploadType.value = 'image'; // 默认为图片
   showUploadModal.value = true;
 };
 
@@ -577,41 +720,240 @@ const handleDrop = (e: DragEvent) => {
   e.preventDefault();
   const files = Array.from(e.dataTransfer?.files || []);
   
-  // 过滤只保留图片和视频文件
-  const validFiles = files.filter(file => {
-    const type = file.type;
-    return type.startsWith('image/') || type.startsWith('video/');
+  // 验证文件类型和大小
+  const validFiles: File[] = [];
+  const invalidFiles: string[] = [];
+  
+  files.forEach(file => {
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    // 根据上传类型过滤文件
+    if (uploadType.value === 'image' && !isImage) {
+      invalidFiles.push(`${file.name}：当前只能上传图片文件`);
+      return;
+    }
+    
+    if (uploadType.value === 'video' && !isVideo) {
+      invalidFiles.push(`${file.name}：当前只能上传视频文件`);
+      return;
+    }
+    
+    if (!isImage && !isVideo) {
+      invalidFiles.push(`${file.name}：不支持的文件格式`);
+      return;
+    }
+    
+    // 检查文件大小
+    const maxSize = uploadType.value === 'image' ? 5 * 1024 * 1024 : 500 * 1024 * 1024; // 图片5MB，视频500MB
+    if (file.size > maxSize) {
+      const maxSizeText = uploadType.value === 'image' ? '5MB' : '500MB';
+      invalidFiles.push(`${file.name}：文件大小超过${maxSizeText}`);
+      return;
+    }
+    
+    validFiles.push(file);
   });
+  
+  if (invalidFiles.length > 0) {
+    ElMessage.warning(`以下文件无法上传：\n${invalidFiles.join('\n')}`);
+  }
   
   if (validFiles.length > 0) {
     selectedFiles.value = validFiles;
     console.log('拖拽文件:', validFiles);
-  } else {
-    ElMessage.warning('请选择图片或视频文件');
   }
 };
 
 const handleFileSelect = (e: Event) => {
   const files = Array.from((e.target as HTMLInputElement).files || []);
   
-  // 过滤只保留图片和视频文件
-  const validFiles = files.filter(file => {
-    const type = file.type;
-    return type.startsWith('image/') || type.startsWith('video/');
+  // 验证文件类型和大小
+  const validFiles: File[] = [];
+  const invalidFiles: string[] = [];
+  
+  files.forEach(file => {
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    
+    // 根据上传类型过滤文件
+    if (uploadType.value === 'image' && !isImage) {
+      invalidFiles.push(`${file.name}：当前只能上传图片文件`);
+      return;
+    }
+    
+    if (uploadType.value === 'video' && !isVideo) {
+      invalidFiles.push(`${file.name}：当前只能上传视频文件`);
+      return;
+    }
+    
+    if (!isImage && !isVideo) {
+      invalidFiles.push(`${file.name}：不支持的文件格式`);
+      return;
+    }
+    
+    // 检查文件大小
+    const maxSize = uploadType.value === 'image' ? 5 * 1024 * 1024 : 500 * 1024 * 1024; // 图片5MB，视频500MB
+    if (file.size > maxSize) {
+      const maxSizeText = uploadType.value === 'image' ? '5MB' : '500MB';
+      invalidFiles.push(`${file.name}：文件大小超过${maxSizeText}`);
+      return;
+    }
+    
+    validFiles.push(file);
   });
+  
+  if (invalidFiles.length > 0) {
+    ElMessage.warning(`以下文件无法上传：\n${invalidFiles.join('\n')}`);
+  }
   
   if (validFiles.length > 0) {
     selectedFiles.value = validFiles;
     console.log('选择文件:', validFiles);
-  } else {
-    ElMessage.warning('请选择图片或视频文件');
   }
+  
+  // 重置input值，允许重复选择同一文件
+  (e.target as HTMLInputElement).value = '';
 };
 
 const handleUploadCancel = () => {
   showUploadModal.value = false;
   selectedFiles.value = [];
   uploadCategory.value = '';
+};
+
+// 分片上传配置
+const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB per chunk
+
+// 计算文件MD5
+const calculateFileMD5 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const spark = new SparkMD5.ArrayBuffer();
+    const fileReader = new FileReader();
+    const chunks = Math.ceil(file.size / CHUNK_SIZE);
+    let currentChunk = 0;
+
+    fileReader.onload = (e) => {
+      spark.append(e.target?.result as ArrayBuffer);
+      currentChunk++;
+
+      if (currentChunk < chunks) {
+        loadNext();
+      } else {
+        resolve(spark.end());
+      }
+    };
+
+    fileReader.onerror = () => {
+      reject(new Error('文件读取失败'));
+    };
+
+    const loadNext = () => {
+      const start = currentChunk * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      fileReader.readAsArrayBuffer(file.slice(start, end));
+    };
+
+    loadNext();
+  });
+};
+
+// 分片上传单个文件
+const uploadFileWithChunks = async (file: File, onProgress: (progress: number) => void) => {
+  const isVideo = file.type.startsWith('video/');
+  
+  // 图片文件直接上传，不使用分片
+  if (!isVideo) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'images');
+    
+    return await ResourceApi.uploadResource(formData, 'image');
+  }
+
+  // 视频文件使用分片上传
+  uploadStatus.value = `正在计算文件校验码: ${file.name}`;
+  const fileMD5 = await calculateFileMD5(file);
+  
+  const chunks = Math.ceil(file.size / CHUNK_SIZE);
+  const uploadedChunks: number[] = [];
+  
+  // 1. 初始化分片上传
+  uploadStatus.value = `正在初始化分片上传: ${file.name}`;
+  const initResult = await ResourceApi.initChunkUpload({
+    fileName: file.name,
+    fileSize: file.size,
+    fileMD5: fileMD5,
+    chunkSize: CHUNK_SIZE,
+    totalChunks: chunks
+  });
+  
+  const uploadId = (initResult as any).data.uploadId;
+  
+  // 2. 检查已上传的分片
+  const checkResult = await ResourceApi.checkUploadedChunks(uploadId);
+  const existingChunks = (checkResult as any).data.uploadedChunks || [];
+  uploadedChunks.push(...existingChunks);
+  
+  // 3. 上传缺失的分片
+  for (let chunkIndex = 0; chunkIndex < chunks; chunkIndex++) {
+    if (uploadedChunks.includes(chunkIndex)) {
+      continue; // 跳过已上传的分片
+    }
+    
+    const start = chunkIndex * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, file.size);
+    const chunkBlob = file.slice(start, end);
+    
+    uploadStatus.value = `正在上传分片 ${chunkIndex + 1}/${chunks}: ${file.name}`;
+    
+    const formData = new FormData();
+    formData.append('chunk', chunkBlob);
+    formData.append('uploadId', uploadId);
+    formData.append('chunkIndex', chunkIndex.toString());
+    formData.append('chunkMD5', await calculateChunkMD5(chunkBlob));
+    
+    try {
+      await ResourceApi.uploadChunk(formData);
+      uploadedChunks.push(chunkIndex);
+      
+      // 更新当前文件的上传进度
+      const fileProgress = Math.round((uploadedChunks.length / chunks) * 100);
+      onProgress(fileProgress);
+      
+    } catch (error) {
+      console.error(`分片 ${chunkIndex} 上传失败:`, error);
+      throw new Error(`分片 ${chunkIndex} 上传失败`);
+    }
+  }
+  
+  // 4. 完成分片上传
+  uploadStatus.value = `正在合并文件: ${file.name}`;
+  const completeResult = await ResourceApi.completeChunkUpload({
+    uploadId: uploadId,
+    fileMD5: fileMD5
+  });
+  
+  return completeResult;
+};
+
+// 计算分片MD5
+const calculateChunkMD5 = (chunk: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const spark = new SparkMD5.ArrayBuffer();
+    const fileReader = new FileReader();
+    
+    fileReader.onload = (e) => {
+      spark.append(e.target?.result as ArrayBuffer);
+      resolve(spark.end());
+    };
+    
+    fileReader.onerror = () => {
+      reject(new Error('分片读取失败'));
+    };
+    
+    fileReader.readAsArrayBuffer(chunk);
+  });
 };
 
 const handleUploadConfirm = async () => {
@@ -637,26 +979,32 @@ const handleUploadConfirm = async () => {
       const file = selectedFiles.value[i];
       currentFileIndex.value = i + 1;
       currentFileName.value = file.name;
-      uploadStatus.value = `正在上传第 ${i + 1}/${totalFiles} 个文件...`;
-      // 1. 先上传文件到云存储
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder', 'images'); // 可选的文件夹参数
       
-      uploadStatus.value = `正在上传文件到云存储: ${file.name}`;
-      const uploadResult = await ResourceApi.uploadResource(formData);
+      // 单个文件进度回调
+      const onFileProgress = (fileProgress: number) => {
+        // 计算总体进度：已完成文件 + 当前文件进度
+        const completedFiles = i;
+        const totalProgress = Math.round(((completedFiles + fileProgress / 100) / totalFiles) * 100);
+        uploadProgress.value = totalProgress;
+      };
+      
+      uploadStatus.value = `正在上传第 ${i + 1}/${totalFiles} 个文件...`;
+      
+      // 使用分片上传或普通上传
+      const uploadResult = await uploadFileWithChunks(file, onFileProgress);
       console.log('文件上传成功:', uploadResult);
       
       uploadStatus.value = `正在保存资源记录: ${file.name}`;
-      // 2. 将上传结果保存到资源池
+      
+      // 保存资源记录
       const resourceData = {
-        name: file.name.split('.')[0] || 'untitled', // 去掉扩展名作为名称
-        url: (uploadResult as any).data.url, // 使用上传返回的URL
+        name: file.name.split('.')[0] || 'untitled',
+        url: (uploadResult as any).data.url,
         type: file.type.startsWith('image/') ? 'image' as const : 'video' as const,
         fileSize: (uploadResult as any).data.size || file.size,
         categoryId: parseInt(uploadCategory.value),
-        uploaderId: 1, // 临时使用固定用户ID
-        uploaderName: '管理员', // 添加上传者姓名
+        uploaderId: 1,
+        uploaderName: '管理员',
         description: `上传的${file.type.startsWith('image/') ? '图片' : '视频'}文件`,
         tags: ['上传', file.type.startsWith('image/') ? '图片' : '视频']
       };
@@ -664,7 +1012,7 @@ const handleUploadConfirm = async () => {
       const resourceResult = await ResourceApi.createResource(resourceData);
       console.log('资源记录创建成功:', resourceResult);
       
-      // 更新进度
+      // 更新总体进度
       uploadProgress.value = Math.round(((i + 1) / totalFiles) * 100);
       uploadStatus.value = `已完成 ${i + 1}/${totalFiles} 个文件`;
     }
@@ -720,19 +1068,23 @@ onMounted(async () => {
 
 <style scoped>
 .static-resource-page {
-  padding: 16px; /* 减少内边距 */
-  background-color: #fafafa; /* 更浅的背景色 */
-  min-height: 100vh;
+  padding: 16px;
+  background-color: #fafafa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .page-header {
-  text-align: left; /* 左对齐，更简洁 */
-  margin-bottom: 24px; /* 减少间距 */
+  text-align: left;
+  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .page-title {
-  font-size: 24px; /* 减小字号 */
-  font-weight: 600; /* 减轻字重 */
+  font-size: 24px;
+  font-weight: 600;
   color: #1f2937;
   margin-bottom: 4px;
 }
@@ -743,61 +1095,241 @@ onMounted(async () => {
   margin: 0;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 减小最小宽度 */
-  gap: 16px; /* 减小间距 */
-  margin-bottom: 24px;
+.main-content {
+  display: flex;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
 }
 
-.stat-card {
-  background: white;
-  padding: 16px; /* 减小内边距 */
-  border-radius: 8px; /* 减小圆角 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 减轻阴影 */
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+/* 统计卡片区域 */
+.stats-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-grid-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.stat-icon {
-  font-size: 32px;
-  width: 60px;
-  height: 60px;
+.stat-card-small {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-icon-small {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f3f4f6;
+  background: #e5e7eb;
   border-radius: 50%;
 }
 
-.stat-number {
-  font-size: 28px;
+.stat-number-small {
+  font-size: 18px;
   font-weight: bold;
   color: #1f2937;
 }
 
-.stat-label {
-  font-size: 14px;
+.stat-label-small {
+  font-size: 12px;
   color: #6b7280;
 }
 
-.action-section {
-  margin-bottom: 32px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid #cbd5e1;
+/* 操作按钮区域 */
+.action-section-sidebar {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.action-buttons {
+.action-buttons-sidebar {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-sidebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
   justify-content: flex-start;
 }
 
+.btn-sidebar.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+}
+
+.btn-sidebar.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-1px);
+}
+
+.btn-sidebar.btn-secondary {
+  background: #f8fafc;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-sidebar.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.content-area {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 筛选区域样式 */
+.filter-section {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+/* 资源展示区域容器 */
+.resource-display-area {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.search-box {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px 0 0 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  min-width: 0;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+}
+
+.search-btn {
+  padding: 12px 16px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.search-btn:hover {
+  background: #2563eb;
+}
+
+.filter-select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 自定义滚动条样式 */
+.content-area::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.content-area::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.content-area::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.content-area::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+.loading-spinner {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+/* 保留原有的btn样式用于模态框等地方 */
 .btn {
   display: flex;
   align-items: center;
@@ -932,23 +1464,46 @@ onMounted(async () => {
   object-fit: cover;
 }
 
+.resource-video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
 .resource-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.video-overlay {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  pointer-events: none;
+}
+
+.video-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 8px;
 }
 
-.video-icon {
-  font-size: 48px;
-}
-
 .video-duration {
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
+  font-weight: 500;
+}
+
+.video-icon {
+  font-size: 48px;
 }
 
 .resource-info {
@@ -1094,12 +1649,42 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.details-video-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .details-video {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: #6b7280;
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  border-radius: 8px;
+}
+
+.details-video::-webkit-media-controls-panel {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.video-details-info {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  pointer-events: none;
+}
+
+.video-duration-large {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .details-video .video-icon {
@@ -1195,6 +1780,45 @@ onMounted(async () => {
   text-align: center;
   margin-bottom: 20px;
   position: relative;
+  transition: border-color 0.3s ease;
+}
+
+.upload-area:hover {
+  border-color: #3b82f6;
+}
+
+.upload-tips {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.upload-tips-content {
+  text-align: left;
+}
+
+.upload-tips-content h4 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-tips-content p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.upload-tips-content p strong {
+  color: #374151;
+  font-weight: 500;
 }
 
 .upload-area input[type="file"] {
@@ -1255,12 +1879,64 @@ onMounted(async () => {
 }
 
 .selected-files li {
-  padding: 8px 12px;
-  background: #f3f4f6;
-  border-radius: 6px;
+  padding: 0;
   margin-bottom: 8px;
+}
+
+.file-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.file-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.file-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
   font-size: 14px;
-  color: #374151;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+
+.file-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.file-type {
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.file-size {
+  color: #9ca3af;
 }
 
 .reselect-hint {
@@ -1333,10 +2009,38 @@ onMounted(async () => {
 
 @media (max-width: 768px) {
   .static-resource-page {
-    padding: 16px;
+    padding: 12px;
   }
   
-  .stats-grid,
+  .main-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .sidebar {
+    width: 100%;
+    order: 2;
+  }
+  
+  .content-area {
+    order: 1;
+  }
+  
+  .stats-grid-sidebar {
+    grid-template-columns: 1fr;
+  }
+  
+  .action-buttons-sidebar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .btn-sidebar {
+    flex: 1;
+    min-width: calc(50% - 4px);
+  }
+  
   .resource-grid {
     grid-template-columns: 1fr;
   }
@@ -1344,14 +2048,26 @@ onMounted(async () => {
   .filter-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   
   .search-box {
     min-width: auto;
+    max-width: none;
   }
   
-  .action-buttons {
-    justify-content: center;
+  .filter-select {
+    min-width: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 280px;
+  }
+  
+  .stats-grid-sidebar {
+    grid-template-columns: 1fr;
   }
 }
 </style>

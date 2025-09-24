@@ -9,21 +9,28 @@ import {
   BadRequestException,
   Param,
   Query,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { UploadService, UploadResult } from '../services/upload.service';
+import { ChunkUploadService } from '../services/chunk-upload.service';
+import { InitChunkUploadDto, CompleteChunkUploadDto } from '../dto/chunk-upload.dto';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 @ApiTags('文件上传')
 @Controller('upload')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class UploadController {
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(
+    private readonly uploadService: UploadService,
+    private readonly chunkUploadService: ChunkUploadService,
+  ) {}
 
   @Post('image')
   @ApiOperation({
@@ -250,6 +257,224 @@ export class UploadController {
         expires: expiresIn,
       },
       msg: '获取临时链接成功',
+    };
+  }
+
+  // ==================== 分片上传相关接口 ====================
+
+  @Post('chunk/init')
+  @ApiOperation({
+    summary: '初始化分片上传',
+    description: '初始化大文件分片上传，返回上传ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '初始化成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            uploadId: { type: 'string', example: 'upload_123456789' },
+            key: { type: 'string', example: 'videos/2024/01/uuid.mp4' },
+            cosUploadId: { type: 'string', example: 'cos_upload_id' },
+          },
+        },
+        msg: { type: 'string', example: '初始化分片上传成功' },
+      },
+    },
+  })
+  async initChunkUpload(@Body() dto: InitChunkUploadDto) {
+    const result = await this.chunkUploadService.initChunkUpload(dto);
+    
+    return {
+      code: 200,
+      data: result,
+      msg: '初始化分片上传成功',
+    };
+  }
+
+  @Post('chunk')
+  @ApiOperation({
+    summary: '上传分片',
+    description: '上传文件分片',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiResponse({
+    status: 200,
+    description: '分片上传成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            chunkIndex: { type: 'number', example: 0 },
+            etag: { type: 'string', example: 'etag_value' },
+            uploaded: { type: 'number', example: 1 },
+            total: { type: 'number', example: 10 },
+          },
+        },
+        msg: { type: 'string', example: '分片上传成功' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('chunk', {
+      storage: diskStorage({
+        destination: './uploads/temp',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = uuidv4();
+          cb(null, `chunk_${uniqueSuffix}`);
+        },
+      }),
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB per chunk
+      },
+    }),
+  )
+  async uploadChunk(
+    @UploadedFile() chunk: Express.Multer.File,
+    @Body('uploadId') uploadId: string,
+    @Body('chunkIndex') chunkIndex: string,
+    @Body('chunkMD5') chunkMD5: string,
+  ) {
+    if (!chunk) {
+      throw new BadRequestException('请提供分片文件');
+    }
+
+    if (!uploadId || !chunkIndex || !chunkMD5) {
+      throw new BadRequestException('缺少必要参数');
+    }
+
+    try {
+      // 读取分片数据
+      const chunkBuffer = require('fs').readFileSync(chunk.path);
+      
+      const result = await this.chunkUploadService.uploadChunk(
+        uploadId,
+        parseInt(chunkIndex),
+        chunkMD5,
+        chunkBuffer,
+      );
+
+      // 删除临时文件
+      require('fs').unlinkSync(chunk.path);
+
+      return {
+        code: 200,
+        data: result,
+        msg: '分片上传成功',
+      };
+    } catch (error) {
+      // 确保删除临时文件
+      if (require('fs').existsSync(chunk.path)) {
+        require('fs').unlinkSync(chunk.path);
+      }
+      throw error;
+    }
+  }
+
+  @Get('chunk/check/:uploadId')
+  @ApiOperation({
+    summary: '检查已上传分片',
+    description: '检查指定上传ID的已上传分片状态',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '检查成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            uploadedChunks: { type: 'array', items: { type: 'number' }, example: [0, 1, 2] },
+            total: { type: 'number', example: 10 },
+            progress: { type: 'number', example: 30 },
+          },
+        },
+        msg: { type: 'string', example: '检查完成' },
+      },
+    },
+  })
+  async checkUploadedChunks(@Param('uploadId') uploadId: string) {
+    const result = await this.chunkUploadService.checkUploadedChunks(uploadId);
+    
+    return {
+      code: 200,
+      data: result,
+      msg: '检查完成',
+    };
+  }
+
+  @Post('chunk/complete')
+  @ApiOperation({
+    summary: '完成分片上传',
+    description: '合并所有分片，完成文件上传',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '上传完成',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'object',
+          properties: {
+            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/videos/uuid.mp4' },
+            key: { type: 'string', example: 'videos/uuid.mp4' },
+            size: { type: 'number', example: 104857600 },
+            originalName: { type: 'string', example: 'video.mp4' },
+            mimeType: { type: 'string', example: 'video/mp4' },
+          },
+        },
+        msg: { type: 'string', example: '文件上传完成' },
+      },
+    },
+  })
+  async completeChunkUpload(@Body() dto: CompleteChunkUploadDto) {
+    const result = await this.chunkUploadService.completeChunkUpload(
+      dto.uploadId,
+      dto.fileMD5,
+    );
+    
+    return {
+      code: 200,
+      data: result,
+      msg: '文件上传完成',
+    };
+  }
+
+  @Delete('chunk/:uploadId')
+  @ApiOperation({
+    summary: '取消分片上传',
+    description: '取消指定的分片上传任务',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '取消成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: { type: 'object', example: {} },
+        msg: { type: 'string', example: '上传已取消' },
+      },
+    },
+  })
+  async cancelChunkUpload(@Param('uploadId') uploadId: string) {
+    const result = await this.chunkUploadService.cancelChunkUpload(uploadId);
+    
+    return {
+      code: 200,
+      data: result,
+      msg: '上传已取消',
     };
   }
 }

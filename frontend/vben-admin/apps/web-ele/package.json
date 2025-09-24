@@ -44,10 +44,12 @@
     "dayjs": "catalog:",
     "element-plus": "catalog:",
     "pinia": "catalog:",
+    "spark-md5": "^3.0.2",
     "vue": "catalog:",
     "vue-router": "catalog:"
   },
   "devDependencies": {
+    "@types/spark-md5": "^3.0.5",
     "unplugin-element-plus": "catalog:"
   }
 }

@@ -19,6 +19,10 @@ export interface Resource {
   downloadCount: number;
   status: number;
   category?: ResourceCategory;
+  thumbnail?: string; // 视频缩略图
+  duration?: number; // 视频时长（秒）
+  width?: number; // 图片/视频宽度
+  height?: number; // 图片/视频高度
 }
 
 export interface ResourceCategory {
@@ -130,13 +134,70 @@ export namespace ResourceApi {
     return requestClient.post(`/resources/${id}/download`);
   }
 
-  // 上传资源文件
-  export function uploadResource(formData: FormData) {
+  // 上传图片文件
+  export function uploadImage(formData: FormData) {
     return requestClient.post<Resource>('/upload/image', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
+  }
+
+  // 上传视频文件
+  export function uploadVideo(formData: FormData) {
+    return requestClient.post<Resource>('/upload/video', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+
+  // 通用上传资源文件（根据文件类型自动选择接口）
+  export function uploadResource(formData: FormData, fileType: 'image' | 'video' = 'image') {
+    if (fileType === 'video') {
+      return uploadVideo(formData);
+    }
+    return uploadImage(formData);
+  }
+
+  // 分片上传相关接口
+  
+  // 初始化分片上传
+  export function initChunkUpload(data: {
+    fileName: string;
+    fileSize: number;
+    fileMD5: string;
+    chunkSize: number;
+    totalChunks: number;
+  }) {
+    return requestClient.post<{ uploadId: string }>('/upload/chunk/init', data);
+  }
+
+  // 检查已上传的分片
+  export function checkUploadedChunks(uploadId: string) {
+    return requestClient.get<{ uploadedChunks: number[] }>(`/upload/chunk/check/${uploadId}`);
+  }
+
+  // 上传单个分片
+  export function uploadChunk(formData: FormData) {
+    return requestClient.post('/upload/chunk', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+
+  // 完成分片上传
+  export function completeChunkUpload(data: {
+    uploadId: string;
+    fileMD5: string;
+  }) {
+    return requestClient.post<{ url: string; size: number }>('/upload/chunk/complete', data);
+  }
+
+  // 取消分片上传
+  export function cancelChunkUpload(uploadId: string) {
+    return requestClient.delete(`/upload/chunk/${uploadId}`);
   }
 }
 
