@@ -10,6 +10,7 @@ import Redis from 'ioredis';
 import { LoginDto, LoginResponseDto, CaptchaResponseDto } from './dto/captcha.dto';
 import { MenusService } from '../modules/menus/services/menus.service';
 import { Admin } from '../database/entities/admin.entity';
+import { UserLoginLogService } from '../modules/login-log/services/user-login-log.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     private menusService: MenusService,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
+    private userLoginLogService: UserLoginLogService,
   ) {
     // 获取Redis配置
     const redisHost = this.configService.get('redis.host') || 'localhost';
@@ -216,18 +218,31 @@ export class AuthService {
   }
 
   // 登录
-  async login(loginDto: LoginDto, loginIp?: string): Promise<LoginResponseDto> {
-    // 验证验证码
-    const isCaptchaValid = await this.validateCaptcha(loginDto.captchaId, loginDto.captcha);
-    if (!isCaptchaValid) {
-      throw new UnauthorizedException('验证码错误或已过期');
-    }
+  async login(loginDto: LoginDto, loginIp?: string, userAgent?: string): Promise<LoginResponseDto> {
+    let userId: number | null = null;
+    
+    try {
+      // 验证验证码
+      const isCaptchaValid = await this.validateCaptcha(loginDto.captchaId, loginDto.captcha);
+      if (!isCaptchaValid) {
+        throw new UnauthorizedException('验证码错误或已过期');
+      }
 
-    // 验证用户
-    const user = await this.validateUser(loginDto.username, loginDto.password, loginIp);
-    if (!user) {
-      throw new UnauthorizedException('用户名或密码错误');
-    }
+      // 验证用户
+      const user = await this.validateUser(loginDto.username, loginDto.password, loginIp);
+      if (!user) {
+        // 记录登录失败日志（用户名错误的情况下无法获取userId，设为null）
+        await this.userLoginLogService.recordLogin(
+          null, 
+          loginIp || '127.0.0.1', 
+          userAgent, 
+          false, 
+          '用户名或密码错误'
+        );
+        throw new UnauthorizedException('用户名或密码错误');
+      }
+
+      userId = user.id;
 
     // 获取用户菜单
     const userMenus = await this.menusService.getUserMenusByUserId(user.id);
@@ -257,6 +272,14 @@ export class AuthService {
       audience: 'wechat-mall-client',
     });
 
+    // 记录登录成功日志
+    await this.userLoginLogService.recordLogin(
+      userId, 
+      loginIp || '127.0.0.1', 
+      userAgent, 
+      true
+    );
+
     return {
       code: 200,
       data: {
@@ -268,6 +291,19 @@ export class AuthService {
       },
       msg: '登录成功',
     };
+    } catch (error) {
+      // 记录登录失败日志
+      if (userId) {
+        await this.userLoginLogService.recordLogin(
+          userId, 
+          loginIp || '127.0.0.1', 
+          userAgent, 
+          false, 
+          error.message
+        );
+      }
+      throw error;
+    }
   }
 
   // 验证JWT令牌

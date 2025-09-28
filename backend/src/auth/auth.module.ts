@@ -7,6 +7,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { MenusModule } from '../modules/menus/menus.module';
+import { LoginLogModule } from '../modules/login-log/login-log.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { TokenRefreshInterceptor } from '../common/interceptors/token-refresh.interceptor';
@@ -16,6 +17,7 @@ import { Admin } from '../database/entities/admin.entity';
   imports: [
     TypeOrmModule.forFeature([Admin]),
     MenusModule,
+    LoginLogModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

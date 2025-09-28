@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, HttpCode, HttpStatus, Query, Res, Headers, UnauthorizedException, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, HttpCode, HttpStatus, Query, Res, Headers, UnauthorizedException, UseGuards, Request, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -97,8 +97,10 @@ export class AuthController {
     status: 400,
     description: '验证码错误或已过期',
   })
-  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
-    return this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto, @Req() request: any): Promise<LoginResponseDto> {
+    const clientIp = request.ip || request.connection.remoteAddress || '127.0.0.1';
+    const userAgent = request.headers['user-agent'] || '';
+    return this.authService.login(loginDto, clientIp, userAgent);
   }
 
   @Get('profile')
