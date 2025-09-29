@@ -277,10 +277,76 @@ export async function checkUserPermissionApi(userId: number, permissionCode: str
   const response = await requestClient.get<ApiResponse<{ hasPermission: boolean }>>(`/users/${userId}/permissions/check`, {
     params: { permissionCode },
   });
-  
+
   if (response && response.code === 200 && response.data) {
     return response.data.hasPermission;
   }
-  
+
   return false;
+}
+
+// ==================== 新增：菜单权限管理 API ====================
+
+// 菜单权限树节点类型（符合前端树组件要求）
+export interface MenuPermissionNode {
+  id: number;
+  label: string;
+  value: number;
+  key: string;
+  title: string;
+  type: number;
+  icon?: string;
+  disabled?: boolean;
+  children?: MenuPermissionNode[];
+}
+
+/**
+ * 获取菜单权限树（用于角色权限分配）
+ */
+export async function getMenuPermissionTreeApi() {
+  const response = await requestClient.get<ApiResponse<MenuPermissionNode[]>>('/role-permissions/menu-tree');
+
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+
+  // 如果响应格式不符合预期，尝试直接返回响应
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  throw new Error(response?.msg || '获取菜单权限树失败');
+}
+
+/**
+ * 获取角色已选中的菜单ID列表
+ */
+export async function getRoleSelectedMenuIdsApi(roleId: number) {
+  const response = await requestClient.get<ApiResponse<number[]>>(`/role-permissions/role/${roleId}/selected-menu-ids`);
+
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+
+  // 如果响应格式不符合预期，尝试直接返回响应
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  throw new Error(response?.msg || '获取角色菜单权限失败');
+}
+
+/**
+ * 保存角色菜单权限
+ */
+export async function saveRoleMenuPermissionsApi(roleId: number, menuIds: number[]) {
+  const response = await requestClient.post<ApiResponse<void>>(`/role-permissions/role/${roleId}/save-permissions`, {
+    menuIds,
+  });
+
+  if (response && response.code === 200) {
+    return;
+  }
+
+  throw new Error(response?.msg || '保存角色菜单权限失败');
 }

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
 import { Role } from '../../../database/entities/role.entity';
+import { Menu } from '../../menus/entities/menu.entity';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { UpdatePermissionDto } from '../dto/update-permission.dto';
 import { QueryPermissionDto } from '../dto/query-permission.dto';
@@ -14,6 +15,8 @@ export class PermissionsService {
     private permissionRepository: Repository<Permission>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(Menu)
+    private menuRepository: Repository<Menu>,
   ) {}
 
   /**
@@ -26,9 +29,32 @@ export class PermissionsService {
       order: { id: 'ASC' },
     });
 
-    // 如果数据库中有权限数据，使用数据库数据构建树形结构
-    if (permissions.length > 0) {
-      return this.buildPermissionTree(permissions);
+    // 获取所有菜单数据并转换为权限格式
+    const menus = await this.menuRepository.find({
+      where: { status: 1 },
+      order: { orderNum: 'ASC' },
+    });
+
+    // 将菜单转换为权限格式
+    const menuPermissions = menus.map(menu => ({
+      id: `menu_${menu.id}`, // 使用前缀避免ID冲突
+      name: menu.title || menu.name,
+      code: menu.buttonKey || `menu:${menu.name}`,
+      type: menu.type === 1 ? 'menu' : menu.type === 2 ? 'menu' : 'button',
+      parentId: menu.parentId ? `menu_${menu.parentId}` : null,
+      menuId: menu.id, // 保留原始菜单ID
+      status: menu.status,
+      description: menu.name || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+
+    // 合并权限和菜单数据
+    const allPermissions = [...permissions, ...menuPermissions] as any[];
+
+    // 如果有数据，构建树形结构
+    if (allPermissions.length > 0) {
+      return this.buildPermissionTree(allPermissions);
     }
 
     // 如果数据库中没有权限数据，返回模拟数据

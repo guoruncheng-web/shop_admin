@@ -28,17 +28,29 @@ export class RoleMenuService {
       throw new NotFoundException('角色不存在');
     }
 
-    // 验证菜单是否存在
+    // 验证菜单是否存在，只保存数据库中实际存在的菜单
     const menus = await this.menuRepository.findByIds(menuIds);
-    if (menus.length !== menuIds.length) {
-      throw new NotFoundException('部分菜单不存在');
+    const existingMenuIds = menus.map(menu => menu.id);
+    
+    // 如果没有找到任何有效的菜单ID，记录警告但不抛出错误
+    if (existingMenuIds.length === 0) {
+      console.warn('没有找到有效的菜单ID:', menuIds);
+      // 删除该角色现有的菜单关联（清空权限）
+      await this.roleMenuRepository.delete({ roleId });
+      return;
+    }
+    
+    // 记录被过滤掉的无效菜单ID
+    const invalidMenuIds = menuIds.filter(id => !existingMenuIds.includes(id));
+    if (invalidMenuIds.length > 0) {
+      console.warn('以下菜单ID在数据库中不存在，已自动过滤:', invalidMenuIds);
     }
 
     // 删除该角色现有的菜单关联
     await this.roleMenuRepository.delete({ roleId });
 
-    // 创建新的菜单关联
-    const roleMenus = menuIds.map(menuId => ({
+    // 创建新的菜单关联（只使用存在的菜单ID）
+    const roleMenus = existingMenuIds.map(menuId => ({
       roleId,
       menuId,
     }));

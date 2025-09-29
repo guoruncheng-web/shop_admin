@@ -4,10 +4,11 @@ import { UserLoginLog } from './entities/user-login-log.entity';
 import { UserLoginLogService } from './services/user-login-log.service';
 import { UserLoginLogController } from './controllers/user-login-log.controller';
 import { SeedController } from './controllers/seed.controller';
+import { Admin } from '../../database/entities/admin.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserLoginLog]),
+    TypeOrmModule.forFeature([UserLoginLog, Admin]),
   ],
   controllers: [UserLoginLogController, SeedController],
   providers: [UserLoginLogService],

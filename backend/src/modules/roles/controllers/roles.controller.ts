@@ -16,13 +16,19 @@ import { RolesService } from '../services/roles.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { QueryRoleDto } from '../dto/query-role.dto';
+import { RoleMenuService } from '../../menus/services/role-menu.service';
+import { MenusService } from '../../menus/services/menus.service';
 
 @ApiTags('角色管理')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(
+    private readonly rolesService: RolesService,
+    private readonly roleMenuService: RoleMenuService,
+    private readonly menusService: MenusService,
+  ) {}
 
   @Get('all')
   @ApiOperation({ summary: '获取所有角色列表' })
@@ -108,6 +114,131 @@ export class RolesController {
       code: 200,
       data: role,
       msg: '状态切换成功',
+    };
+  }
+
+  // ==================== 菜单权限相关接口 ====================
+
+  @Get('menu-tree')
+  @ApiOperation({
+    summary: '获取菜单树（供角色权限分配使用）',
+    description: '获取完整的菜单树形结构，用于角色权限分配界面，返回标准的树形结构'
+  })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    schema: {
+      type: 'object',
+      properties: {
+        code: { type: 'number', example: 200 },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number', example: 1 },
+              label: { type: 'string', example: '系统管理' },
+              value: { type: 'number', example: 1 },
+              title: { type: 'string', example: '系统管理' },
+              key: { type: 'string', example: '1' },
+              children: {
+                type: 'array',
+                items: { type: 'object' }
+              }
+            }
+          }
+        },
+        msg: { type: 'string', example: '获取菜单树成功' }
+      }
+    }
+  })
+  async getMenuTreeForRoleAssign() {
+    const menuTree = await this.menusService.getMenuTree();
+
+    // 转换为前端需要的标准树形结构
+    const formatTreeForFrontend = (menus: any[]): any[] => {
+      return menus.map(menu => {
+        const formattedMenu = {
+          id: menu.id,
+          label: menu.title || menu.name, // 显示文本
+          value: menu.id, // 选择的值
+          title: menu.title || menu.name, // 标题
+          key: String(menu.id), // 唯一key
+          type: menu.type, // 菜单类型：1=目录，2=菜单，3=按钮
+          icon: menu.icon, // 图标
+          path: menu.path, // 路径
+          component: menu.component, // 组件
+          status: menu.status, // 状态
+          orderNum: menu.orderNum || menu.sort || 0, // 排序
+          parentId: menu.parentId, // 父级ID
+          children: menu.children && menu.children.length > 0
+            ? formatTreeForFrontend(menu.children)
+            : undefined
+        };
+
+        // 只保留有效的children
+        if (formattedMenu.children && formattedMenu.children.length === 0) {
+          delete formattedMenu.children;
+        }
+
+        return formattedMenu;
+      });
+    };
+
+    const formattedTree = formatTreeForFrontend(menuTree);
+
+    return {
+      code: 200,
+      data: formattedTree,
+      msg: '获取菜单树成功',
+    };
+  }
+
+  @Get(':id/menus')
+  @ApiOperation({
+    summary: '获取角色已分配的菜单权限',
+    description: '获取指定角色已分配的菜单权限列表'
+  })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  async getRoleMenus(@Param('id', ParseIntPipe) roleId: number) {
+    const menus = await this.roleMenuService.getRoleMenus(roleId);
+    return {
+      code: 200,
+      data: menus,
+      msg: '获取角色菜单权限成功',
+    };
+  }
+
+  @Get(':id/menu-ids')
+  @ApiOperation({
+    summary: '获取角色已分配的菜单ID列表',
+    description: '获取指定角色已分配的菜单ID列表，用于前端复选框回显'
+  })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  async getRoleMenuIds(@Param('id', ParseIntPipe) roleId: number) {
+    const menuIds = await this.roleMenuService.getRoleMenuIds(roleId);
+    return {
+      code: 200,
+      data: menuIds,
+      msg: '获取角色菜单ID列表成功',
+    };
+  }
+
+  @Post(':id/assign-menus')
+  @ApiOperation({
+    summary: '为角色分配菜单权限',
+    description: '为指定角色分配菜单权限，会覆盖原有的菜单权限'
+  })
+  @ApiResponse({ status: 200, description: '分配成功' })
+  async assignMenusToRole(
+    @Param('id', ParseIntPipe) roleId: number,
+    @Body() body: { menuIds: number[] },
+  ) {
+    await this.roleMenuService.assignMenusToRole(roleId, body.menuIds);
+    return {
+      code: 200,
+      data: null,
+      msg: '菜单权限分配成功',
     };
   }
 }

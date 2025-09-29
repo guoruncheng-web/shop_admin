@@ -199,3 +199,6 @@ The project supports multiple environments with different configurations:
 3. **Frontend**: Start with `pnpm dev:ele` from vben-admin directory
 4. **Database**: Initialize with SQL files in `database/` directory if needed
 5. **Testing**: Access API docs at `http://localhost:3000/api/v1/docs`
+- 现在后端只有建立了后台的项目 '/Users/mac/test/cursor1/cursor_shop/backend' 这是数据库文件 '/Users/mac/test/cursor1/cursor_shop/database'
+- '/Users/mac/test/cursor1/cursor_shop/frontend/vben-admin' 这是后台前端项目 。'/Users/mac/test/cursor1/cursor_shop/frontend/h5-ecommerce' 这是项目的h5 webSite电商商城项目
+- 我问你之前服务都已经启动了 不用你自己启动

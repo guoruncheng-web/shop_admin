@@ -98,8 +98,25 @@ export class AuthController {
     description: '验证码错误或已过期',
   })
   async login(@Body() loginDto: LoginDto, @Req() request: any): Promise<LoginResponseDto> {
-    const clientIp = request.ip || request.connection.remoteAddress || '127.0.0.1';
+    // 更准确的IP获取方式，考虑代理和负载均衡
+    const clientIp = request.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                     request.headers['x-real-ip'] ||
+                     request.connection.remoteAddress ||
+                     request.socket.remoteAddress ||
+                     (request.connection.socket ? request.connection.socket.remoteAddress : null) ||
+                     request.ip ||
+                     '127.0.0.1';
     const userAgent = request.headers['user-agent'] || '';
+
+    console.log('登录IP信息:', {
+      'x-forwarded-for': request.headers['x-forwarded-for'],
+      'x-real-ip': request.headers['x-real-ip'],
+      'connection.remoteAddress': request.connection?.remoteAddress,
+      'socket.remoteAddress': request.socket?.remoteAddress,
+      'ip': request.ip,
+      'finalIp': clientIp
+    });
+
     return this.authService.login(loginDto, clientIp, userAgent);
   }
 

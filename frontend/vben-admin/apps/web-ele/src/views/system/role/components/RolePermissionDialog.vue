@@ -77,6 +77,20 @@ import {
 } from 'element-plus';
 import PermissionTree from './PermissionTree.vue';
 
+// 使用新的菜单权限节点类型
+interface MenuPermissionNode {
+  id: number;
+  label: string;
+  value: number;
+  key: string;
+  title: string;
+  type: number;
+  icon?: string;
+  disabled?: boolean;
+  children?: MenuPermissionNode[];
+}
+
+// 兼容旧版本Permission类型
 interface Permission {
   id: number;
   name: string;
@@ -110,7 +124,7 @@ const loading = ref(false);
 const submitLoading = ref(false);
 
 // 权限数据
-const permissions = ref<Permission[]>([]);
+const permissions = ref<MenuPermissionNode[]>([]);
 const checkedPermissions = ref<number[]>([]);
 
 // 选中数量
@@ -133,78 +147,20 @@ watch(
 async function fetchPermissions() {
   try {
     loading.value = true;
-    
-    // 调用真实API获取权限树形数据
-    const { getPermissionTreeApi } = await import('#/api/system/permission');
-    const data = await getPermissionTreeApi();
-    
-    console.log('获取到的权限数据:', data);
+
+    // 调用新的菜单权限树API
+    const { getMenuPermissionTreeApi } = await import('#/api/system/permission');
+    const data = await getMenuPermissionTreeApi();
+
+    console.log('获取到的菜单权限数据:', data);
     permissions.value = data;
     
   } catch (error: any) {
     console.error('获取权限列表失败:', error);
     ElMessage.error(error.message || '获取权限列表失败');
-    
-    // 如果API调用失败，使用模拟数据作为降级方案
-    const mockPermissions: Permission[] = [
-      {
-        id: 1,
-        name: '系统管理',
-        code: 'system',
-        type: 'menu',
-        children: [
-          {
-            id: 11,
-            name: '用户管理',
-            code: 'system:user',
-            type: 'menu',
-            parentId: 1,
-            children: [
-              { id: 111, name: '查看用户', code: 'system:user:view', type: 'button', parentId: 11 },
-              { id: 112, name: '新增用户', code: 'system:user:add', type: 'button', parentId: 11 },
-              { id: 113, name: '编辑用户', code: 'system:user:edit', type: 'button', parentId: 11 },
-              { id: 114, name: '删除用户', code: 'system:user:delete', type: 'button', parentId: 11 },
-            ]
-          },
-          {
-            id: 12,
-            name: '角色管理',
-            code: 'system:role',
-            type: 'menu',
-            parentId: 1,
-            children: [
-              { id: 121, name: '查看角色', code: 'system:role:view', type: 'button', parentId: 12 },
-              { id: 122, name: '新增角色', code: 'system:role:add', type: 'button', parentId: 12 },
-              { id: 123, name: '编辑角色', code: 'system:role:edit', type: 'button', parentId: 12 },
-              { id: 124, name: '删除角色', code: 'system:role:delete', type: 'button', parentId: 12 },
-              { id: 125, name: '分配权限', code: 'system:role:permission', type: 'button', parentId: 12 },
-            ]
-          }
-        ]
-      },
-      {
-        id: 2,
-        name: '商品管理',
-        code: 'product',
-        type: 'menu',
-        children: [
-          {
-            id: 21,
-            name: '商品列表',
-            code: 'product:list',
-            type: 'menu',
-            parentId: 2,
-            children: [
-              { id: 211, name: '查看商品', code: 'product:view', type: 'button', parentId: 21 },
-              { id: 212, name: '新增商品', code: 'product:add', type: 'button', parentId: 21 },
-              { id: 213, name: '编辑商品', code: 'product:edit', type: 'button', parentId: 21 },
-              { id: 214, name: '删除商品', code: 'product:delete', type: 'button', parentId: 21 },
-            ]
-          }
-        ]
-      }
-    ];
-    permissions.value = mockPermissions;
+
+    // 不使用模拟数据，直接显示错误
+    permissions.value = [];
   } finally {
     loading.value = false;
   }
@@ -215,27 +171,26 @@ async function fetchPermissions() {
  */
 async function fetchRolePermissions() {
   if (!props.roleId) return;
-  
+
   try {
-    // 调用真实API获取角色权限
-    const { getRolePermissionsApi } = await import('#/api/system/permission');
-    const rolePermissions = await getRolePermissionsApi(props.roleId);
-    checkedPermissions.value = rolePermissions.map(p => p.id);
+    // 调用新的角色菜单权限API
+    const { getRoleSelectedMenuIdsApi } = await import('#/api/system/permission');
+    const roleMenuIds = await getRoleSelectedMenuIdsApi(props.roleId);
+    checkedPermissions.value = roleMenuIds;
     
   } catch (error: any) {
     console.error('获取角色权限失败:', error);
     ElMessage.error(error.message || '获取角色权限失败');
-    
-    // 如果API调用失败，使用模拟数据作为降级方案
-    const mockRolePermissions = [1, 11, 111, 112, 113, 12, 121, 122, 123];
-    checkedPermissions.value = mockRolePermissions;
+
+    // 不使用模拟数据，直接显示错误
+    checkedPermissions.value = [];
   }
 }
 
 /**
  * 权限选择变化
  */
-function handlePermissionChange(checkedKeys: number[], checkedNodes: Permission[]) {
+function handlePermissionChange(checkedKeys: number[], checkedNodes: MenuPermissionNode[]) {
   checkedPermissions.value = checkedKeys;
 }
 
@@ -251,22 +206,22 @@ function refreshPermissions() {
  */
 async function handleSubmit() {
   if (!props.roleId) return;
-  
+
   try {
     submitLoading.value = true;
-    
-    const selectedPermissions = permissionTreeRef.value?.getCheckedKeys() || [];
-    
-    console.log('分配权限:', {
+
+    const selectedMenuIds = permissionTreeRef.value?.getCheckedKeys() || [];
+
+    console.log('分配菜单权限:', {
       roleId: props.roleId,
-      permissionIds: selectedPermissions,
+      menuIds: selectedMenuIds,
     });
-    
-    // 调用真实API分配权限
-    const { assignRolePermissionsApi } = await import('#/api/system/permission');
-    await assignRolePermissionsApi(props.roleId, selectedPermissions);
-    
-    ElMessage.success('权限分配成功');
+
+    // 调用新的保存角色菜单权限API
+    const { saveRoleMenuPermissionsApi } = await import('#/api/system/permission');
+    await saveRoleMenuPermissionsApi(props.roleId, selectedMenuIds);
+
+    ElMessage.success('菜单权限分配成功');
     emit('success');
     handleClose();
     

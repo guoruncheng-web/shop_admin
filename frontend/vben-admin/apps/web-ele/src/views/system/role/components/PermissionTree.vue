@@ -1,41 +1,26 @@
 <template>
   <div class="permission-tree">
-    <div class="tree-header">
-      <ElSpace>
-        <ElButton size="small" @click="expandAll">
-          <span class="mr-1">⬇</span>
-          展开全部
-        </ElButton>
-        <ElButton size="small" @click="collapseAll">
-          <span class="mr-1">⬆</span>
-          收起全部
-        </ElButton>
-        <ElButton size="small" @click="checkAll">
-          <span class="mr-1">☑</span>
-          全选
-        </ElButton>
-        <ElButton size="small" @click="uncheckAll">
-          <span class="mr-1">☐</span>
-          取消全选
-        </ElButton>
-      </ElSpace>
+    <div class="tree-actions">
+      <ElButton @click="expandAll" size="small" type="primary">展开全部</ElButton>
+      <ElButton @click="collapseAll" size="small">收起全部</ElButton>
+      <ElButton @click="checkAll" size="small" type="success">全选</ElButton>
+      <ElButton @click="uncheckAll" size="small" type="warning">取消全选</ElButton>
     </div>
     
     <ElTree
       ref="treeRef"
       :data="treeData"
       :props="treeProps"
+      :default-expanded-keys="expandedKeys"
+      :default-checked-keys="checkedKeys"
+      :check-strictly="checkStrictly"
       show-checkbox
       node-key="id"
-      :default-checked-keys="checkedKeys"
-      :default-expanded-keys="expandedKeys"
       @check="handleCheck"
-      class="permission-tree-content"
     >
-      <template #default="{ node, data }">
+      <template #default="{ data }">
         <div class="tree-node">
-          <span class="node-icon">{{ getNodeIcon(data) }}</span>
-          <span class="node-label">{{ node.label }}</span>
+          <span class="node-label">{{ getNodeLabel(data) }}</span>
           <ElTag v-if="data.type" :type="getTagType(data.type)" size="small" class="node-tag">
             {{ getTypeLabel(data.type) }}
           </ElTag>
@@ -47,260 +32,288 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-// 暂时使用简单的文本图标，避免依赖问题
-// import { Icon } from '@iconify/vue';
-import {
-  ElButton,
-  ElSpace,
-  ElTag,
-  ElTree,
-  type TreeInstance,
-} from 'element-plus';
+import { ElTree, ElButton, ElTag } from 'element-plus';
 
+// 原有权限节点接口
 interface PermissionNode {
-  id: number;
+  id: string | number;
   name: string;
   code: string;
-  type: 'menu' | 'button' | 'api';
-  parentId?: number;
+  type: string;
+  parentId?: string | number;
   children?: PermissionNode[];
 }
 
-interface Props {
-  permissions: PermissionNode[];
-  checkedPermissions?: number[];
+// 新菜单权限节点接口
+interface MenuPermissionNode {
+  id: string | number;
+  label: string;
+  value: string;
+  key: string;
+  title: string;
+  type: number;
+  icon?: string;
+  disabled?: boolean;
+  children?: MenuPermissionNode[];
 }
 
-interface Emits {
-  (e: 'update:checkedPermissions', value: number[]): void;
-  (e: 'change', checkedKeys: number[], checkedNodes: PermissionNode[]): void;
+// 统一权限节点类型
+type UnifiedPermissionNode = PermissionNode | MenuPermissionNode;
+
+// Props 定义
+interface Props {
+  permissions: UnifiedPermissionNode[];
+  checkedPermissions?: (string | number)[];
+  checkStrictly?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   permissions: () => [],
   checkedPermissions: () => [],
+  checkStrictly: false,
 });
 
-const emit = defineEmits<Emits>();
+// Emits 定义
+const emit = defineEmits<{
+  change: [checkedKeys: (string | number)[], checkedNodes: UnifiedPermissionNode[]];
+}>();
 
-const treeRef = ref<TreeInstance>();
+// 响应式数据
+const treeRef = ref<InstanceType<typeof ElTree>>();
+const expandedKeys = ref<(string | number)[]>([]);
+const checkedKeys = ref<(string | number)[]>([]);
 
-const treeProps = {
-  children: 'children',
-  label: 'name',
-};
-
-// 树形数据 - 直接使用API返回的树形数据，不需要重新构建
+// 计算属性
 const treeData = computed(() => {
-  // 如果API返回的数据已经是树形结构，直接使用
+  if (props.permissions.length === 0) return [];
+  
+  // 检查是否已经是树形结构
   if (props.permissions.length > 0 && props.permissions[0].children) {
     return props.permissions;
   }
-  // 如果是扁平数据，则构建树形结构
-  return buildTree(props.permissions);
+  
+  // 如果是扁平结构，转换为树形结构
+  return buildTree(props.permissions as PermissionNode[]);
 });
 
-// 选中的节点
-const checkedKeys = ref<number[]>([]);
-const expandedKeys = ref<number[]>([]);
+// 动态适配不同数据格式的属性映射
+const treeProps = computed(() => {
+  return {
+    children: 'children',
+    label: 'label', // 我们使用自定义的 getNodeLabel 函数，这里固定为 label
+  };
+});
 
-// 监听外部传入的选中权限
-watch(
-  () => props.checkedPermissions,
-  (newVal) => {
-    checkedKeys.value = [...newVal];
-    nextTick(() => {
-      treeRef.value?.setCheckedKeys(newVal);
+// 工具函数
+const getNodeLabel = (node: UnifiedPermissionNode): string => {
+  if ('label' in node) {
+    return node.label;
+  }
+  return (node as PermissionNode).name || '';
+};
+
+const getNodeIcon = (node: UnifiedPermissionNode): string => {
+  if ('icon' in node && node.icon) {
+    return node.icon;
+  }
+  
+  // 根据类型返回默认图标
+  const type = 'type' in node ? node.type : '';
+  if (typeof type === 'number') {
+    switch (type) {
+      case 1: return '📁'; // 目录
+      case 2: return '📄'; // 菜单
+      case 3: return '🔘'; // 按钮
+      default: return '📋';
+    }
+  } else {
+    switch (type) {
+      case 'menu': return '📄';
+      case 'button': return '🔘';
+      case 'directory': return '📁';
+      default: return '📋';
+    }
+  }
+};
+
+const getTagType = (type: string | number): string => {
+  if (typeof type === 'number') {
+    switch (type) {
+      case 1: return 'info';    // 目录
+      case 2: return 'success'; // 菜单
+      case 3: return 'warning'; // 按钮
+      default: return 'info';
+    }
+  } else {
+    switch (type) {
+      case 'menu': return 'success';
+      case 'button': return 'warning';
+      case 'directory': return 'info';
+      default: return 'info';
+    }
+  }
+};
+
+const getTypeLabel = (type: string | number): string => {
+  if (typeof type === 'number') {
+    switch (type) {
+      case 1: return '目录';
+      case 2: return '菜单';
+      case 3: return '按钮';
+      default: return '未知';
+    }
+  } else {
+    switch (type) {
+      case 'menu': return '菜单';
+      case 'button': return '按钮';
+      case 'directory': return '目录';
+      default: return type;
+    }
+  }
+};
+
+// 构建树形结构
+const buildTree = (flatData: PermissionNode[]): PermissionNode[] => {
+  const map = new Map<string | number, PermissionNode>();
+  const roots: PermissionNode[] = [];
+
+  // 创建映射
+  flatData.forEach(item => {
+    map.set(item.id, { ...item, children: [] });
+  });
+
+  // 构建树形结构
+  flatData.forEach(item => {
+    const node = map.get(item.id);
+    if (node) {
+      if (item.parentId && map.has(item.parentId)) {
+        const parent = map.get(item.parentId);
+        if (parent && parent.children) {
+          parent.children.push(node);
+        }
+      } else {
+        roots.push(node);
+      }
+    }
+  });
+
+  return roots;
+};
+
+// 事件处理
+const handleCheck = (data: UnifiedPermissionNode, checked: any) => {
+  const checkedNodes = treeRef.value?.getCheckedNodes() || [];
+  const checkedKeys = treeRef.value?.getCheckedKeys() || [];
+  emit('change', checkedKeys as (string | number)[], checkedNodes);
+};
+
+// 树操作方法
+const expandAll = () => {
+  const allKeys: (string | number)[] = [];
+  const collectKeys = (nodes: UnifiedPermissionNode[]) => {
+    nodes.forEach(node => {
+      allKeys.push(node.id);
+      if (node.children && node.children.length > 0) {
+        collectKeys(node.children);
+      }
     });
-  },
-  { immediate: true }
-);
+  };
+  collectKeys(treeData.value);
+  expandedKeys.value = allKeys;
+  
+  nextTick(() => {
+    allKeys.forEach(key => {
+      treeRef.value?.store.nodesMap[key]?.expand();
+    });
+  });
+};
+
+const collapseAll = () => {
+  expandedKeys.value = [];
+  nextTick(() => {
+    const allKeys: (string | number)[] = [];
+    const collectKeys = (nodes: UnifiedPermissionNode[]) => {
+      nodes.forEach(node => {
+        allKeys.push(node.id);
+        if (node.children && node.children.length > 0) {
+          collectKeys(node.children);
+        }
+      });
+    };
+    collectKeys(treeData.value);
+    
+    allKeys.forEach(key => {
+      treeRef.value?.store.nodesMap[key]?.collapse();
+    });
+  });
+};
+
+const checkAll = () => {
+  const allKeys: (string | number)[] = [];
+  const collectKeys = (nodes: UnifiedPermissionNode[]) => {
+    nodes.forEach(node => {
+      allKeys.push(node.id);
+      if (node.children && node.children.length > 0) {
+        collectKeys(node.children);
+      }
+    });
+  };
+  collectKeys(treeData.value);
+  
+  nextTick(() => {
+    treeRef.value?.setCheckedKeys(allKeys);
+    const checkedNodes = treeRef.value?.getCheckedNodes() || [];
+    emit('change', allKeys, checkedNodes);
+  });
+};
+
+const uncheckAll = () => {
+  nextTick(() => {
+    treeRef.value?.setCheckedKeys([]);
+    emit('change', [], []);
+  });
+};
 
 // 监听权限数据变化，自动展开第一层
 watch(
   () => props.permissions,
   (newVal) => {
     if (newVal.length > 0) {
-      expandedKeys.value = newVal
-        .filter(item => !item.parentId)
-        .map(item => item.id);
+      // 新格式数据没有 parentId，直接展开第一层
+      const isNewFormat = 'label' in newVal[0] && 'value' in newVal[0];
+      if (isNewFormat) {
+        expandedKeys.value = newVal.map(item => item.id);
+      } else {
+        // 旧格式数据过滤 parentId
+        const oldFormatData = newVal as PermissionNode[];
+        expandedKeys.value = oldFormatData
+          .filter(item => !item.parentId)
+          .map(item => item.id);
+      }
     }
   },
   { immediate: true }
 );
 
-/**
- * 构建树形结构
- */
-function buildTree(permissions: PermissionNode[]): PermissionNode[] {
-  const map = new Map<number, PermissionNode>();
-  const roots: PermissionNode[] = [];
-
-  // 创建映射
-  permissions.forEach(item => {
-    map.set(item.id, { ...item, children: [] });
-  });
-
-  // 构建树形结构
-  permissions.forEach(item => {
-    const node = map.get(item.id)!;
-    if (item.parentId && map.has(item.parentId)) {
-      const parent = map.get(item.parentId)!;
-      if (!parent.children) parent.children = [];
-      parent.children.push(node);
-    } else {
-      roots.push(node);
+// 监听选中的权限变化
+watch(
+  () => props.checkedPermissions,
+  (newVal) => {
+    if (newVal && newVal.length > 0) {
+      checkedKeys.value = [...newVal];
+      nextTick(() => {
+        treeRef.value?.setCheckedKeys(newVal);
+      });
     }
-  });
-
-  return roots;
-}
-
-/**
- * 获取节点图标
- */
-function getNodeIcon(data: PermissionNode): string {
-  switch (data.type) {
-    case 'menu':
-      return '📁';
-    case 'button':
-      return '🔘';
-    case 'api':
-      return '🔗';
-    default:
-      return '⚪';
-  }
-}
-
-/**
- * 获取标签类型
- */
-function getTagType(type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' {
-  switch (type) {
-    case 'menu':
-      return 'primary';
-    case 'button':
-      return 'success';
-    case 'api':
-      return 'warning';
-    default:
-      return 'info';
-  }
-}
-
-/**
- * 获取类型标签
- */
-function getTypeLabel(type: string): string {
-  switch (type) {
-    case 'menu':
-      return '菜单';
-    case 'button':
-      return '按钮';
-    case 'api':
-      return '接口';
-    default:
-      return '未知';
-  }
-}
-
-/**
- * 处理节点选中
- */
-function handleCheck(data: PermissionNode, checked: any) {
-  const checkedKeys = checked.checkedKeys as number[];
-  const checkedNodes = checked.checkedNodes as PermissionNode[];
-  
-  emit('update:checkedPermissions', checkedKeys);
-  emit('change', checkedKeys, checkedNodes);
-}
-
-/**
- * 展开全部
- */
-function expandAll() {
-  const allKeys = getAllNodeKeys(treeData.value);
-  expandedKeys.value = allKeys;
-  nextTick(() => {
-    allKeys.forEach(key => {
-      treeRef.value?.store.nodesMap[key]?.expand();
-    });
-  });
-}
-
-/**
- * 收起全部
- */
-function collapseAll() {
-  expandedKeys.value = [];
-  nextTick(() => {
-    const allKeys = getAllNodeKeys(treeData.value);
-    allKeys.forEach(key => {
-      treeRef.value?.store.nodesMap[key]?.collapse();
-    });
-  });
-}
-
-/**
- * 全选
- */
-function checkAll() {
-  const allKeys = getAllNodeKeys(treeData.value);
-  checkedKeys.value = allKeys;
-  nextTick(() => {
-    treeRef.value?.setCheckedKeys(allKeys);
-  });
-  emit('update:checkedPermissions', allKeys);
-}
-
-/**
- * 取消全选
- */
-function uncheckAll() {
-  checkedKeys.value = [];
-  nextTick(() => {
-    treeRef.value?.setCheckedKeys([]);
-  });
-  emit('update:checkedPermissions', []);
-}
-
-/**
- * 获取所有节点的key
- */
-function getAllNodeKeys(nodes: PermissionNode[]): number[] {
-  const keys: number[] = [];
-  
-  function traverse(nodeList: PermissionNode[]) {
-    nodeList.forEach(node => {
-      keys.push(node.id);
-      if (node.children && node.children.length > 0) {
-        traverse(node.children);
-      }
-    });
-  }
-  
-  traverse(nodes);
-  return keys;
-}
-
-/**
- * 获取选中的权限ID
- */
-function getCheckedKeys(): number[] {
-  return treeRef.value?.getCheckedKeys() as number[] || [];
-}
-
-/**
- * 获取选中的权限节点
- */
-function getCheckedNodes(): PermissionNode[] {
-  return treeRef.value?.getCheckedNodes() as PermissionNode[] || [];
-}
+  },
+  { immediate: true }
+);
 
 // 暴露方法给父组件
 defineExpose({
-  getCheckedKeys,
-  getCheckedNodes,
+  getCheckedKeys: () => treeRef.value?.getCheckedKeys() || [],
+  getCheckedNodes: () => treeRef.value?.getCheckedNodes() || [],
+  setCheckedKeys: (keys: (string | number)[]) => treeRef.value?.setCheckedKeys(keys),
   expandAll,
   collapseAll,
   checkAll,
@@ -308,42 +321,48 @@ defineExpose({
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .permission-tree {
-  .tree-header {
-    padding: 12px 0;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 12px;
-  }
-
-  .permission-tree-content {
-    max-height: 400px;
-    overflow-y: auto;
-
-    .tree-node {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex: 1;
-
-      .node-icon {
-        font-size: 14px;
-        color: #6b7280;
-      }
-
-      .node-label {
-        flex: 1;
-        font-size: 14px;
-      }
-
-      .node-tag {
-        margin-left: auto;
-      }
-    }
-  }
+  width: 100%;
 }
 
-.mr-1 {
-  margin-right: 4px;
+.tree-actions {
+  margin-bottom: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.node-icon {
+  font-size: 16px;
+}
+
+.node-label {
+  flex: 1;
+  font-size: 14px;
+}
+
+.node-tag {
+  margin-left: auto;
+}
+
+:deep(.el-tree-node__content) {
+  height: 32px;
+  display: flex;
+  align-items: center;
+}
+
+:deep(.el-tree-node__expand-icon) {
+  padding: 6px;
+}
+
+:deep(.el-checkbox) {
+  margin-right: 8px;
 }
 </style>
