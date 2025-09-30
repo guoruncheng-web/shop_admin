@@ -1,0 +1,441 @@
+/* Login Page Styles - Elegant Beige Theme */
+
+// SCSS Variables
+$primary-beige: #f5f1e9;
+$secondary-beige: #faf7f2;
+$accent-gold: #c4a376;
+$text-dark: #2a2a2a;
+$text-medium: #5a5a5a;
+$text-light: #8d8d8d;
+$sale-red: #d64d4d;
+$hover-gold: #b18c5a;
+$container-padding: 20px;
+$radius: 15px;
+$input-height: 54px;
+
+/* Page Container */
+.loginPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f5f0 0%, #f0eae1 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 450px;
+  min-height: 700px;
+  background-color: $secondary-beige;
+  border-radius: 25px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+/* Login Header */
+.loginHeader {
+  position: relative;
+  height: 200px;
+  background: linear-gradient(rgba(196, 163, 118, 0.1), rgba(196, 163, 118, 0.05)),
+              url('https://images.unsplash.com/photo-1574589507218-a09dbba62d90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80') center/cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 0 $container-padding;
+}
+
+.logo {
+  font-family: 'Playfair Display', 'Times New Roman', serif;
+  font-size: 35px;
+  font-weight: 600;
+  margin-bottom: 13px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.loginSubtitle {
+  font-size: 18px;
+  font-weight: 300;
+  max-width: 320px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Back Button */
+.backBtn {
+  position: absolute;
+  top: 30px;
+  left: 25px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-3px);
+  }
+}
+
+/* Login Form */
+.loginForm {
+  padding: 40px $container-padding 30px;
+}
+
+.welcomeText {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  text-align: center;
+  position: relative;
+  color: $text-dark;
+
+  &:after {
+    content: '';
+    width: 60px;
+    height: 3px;
+    background: $accent-gold;
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.inputGroup {
+  margin-bottom: 22px;
+  position: relative;
+
+  label {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: $text-dark;
+    padding-left: 5px;
+  }
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 15px;
+  color: $accent-gold;
+  pointer-events: none;
+  z-index: 1;
+}
+
+// antd-mobile Input 自定义样式
+.customInput {
+  --border-radius: #{$radius};
+  --border-color: rgba(0, 0, 0, 0.08);
+  --placeholder-color: #{$text-light};
+  --text-align: left;
+  --font-size: 17px;
+  --color: #{$text-dark};
+  width: 100%;
+  height: $input-height;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--border-color);
+  border-radius: $radius;
+  padding: 0 20px 0 45px;
+  transition: all 0.3s;
+
+  :global(.adm-input-element) {
+    font-size: 17px;
+  }
+
+  &:focus-within {
+    border-color: $accent-gold;
+    box-shadow: 0 5px 15px rgba(196, 163, 118, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.optionsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+
+  // antd-mobile Checkbox 自定义样式
+  :global(.adm-checkbox) {
+    --icon-size: 18px;
+    --font-size: 14px;
+    --gap: 8px;
+  }
+
+  :global(.adm-checkbox-icon) {
+    border-color: $accent-gold;
+  }
+
+  :global(.adm-checkbox-icon-checked) {
+    background-color: $accent-gold;
+    border-color: $accent-gold;
+  }
+
+  :global(.adm-checkbox-content) {
+    color: $text-medium;
+    font-size: 14px;
+  }
+}
+
+.forgotPassword {
+  color: $accent-gold;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+
+  &:hover {
+    color: $hover-gold;
+    text-decoration: underline;
+  }
+}
+
+// antd-mobile Button 自定义样式
+.loginButton {
+  --border-radius: #{$radius};
+  --background-color: linear-gradient(to right, #c4a376, #b18c5a);
+  height: $input-height !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 12px rgba(196, 163, 118, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  background: linear-gradient(to right, #c4a376, #b18c5a) !important;
+  border: none !important;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(to right, #b18c5a, #9e7a4c) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 15px rgba(196, 163, 118, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  &:global(.adm-button-loading) {
+    background: linear-gradient(to right, #b18c5a, #9e7a4c) !important;
+  }
+
+  :global(.adm-button-loading-wrapper) {
+    color: white;
+  }
+}
+
+.signupLink {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 16px;
+  color: $text-medium;
+
+  a {
+    color: $accent-gold;
+    font-weight: 600;
+    text-decoration: none;
+    margin-left: 5px;
+
+    &:hover {
+      text-decoration: underline;
+      color: $hover-gold;
+    }
+  }
+}
+
+/* Social Login */
+.socialLogin {
+  position: relative;
+  text-align: center;
+  margin: 35px 0 25px;
+}
+
+.divider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: $text-light;
+  font-size: 14px;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $text-light;
+    opacity: 0.2;
+    margin: 0 15px;
+  }
+}
+
+.socialIcons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 25px;
+}
+
+.socialIcon {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  }
+
+  &.weixin {
+    color: #2aae67;
+  }
+
+  &.qq {
+    color: #12b7f5;
+  }
+
+  &.weibo {
+    color: #e6162d;
+  }
+}
+
+/* Animation elements */
+.decorationCircle {
+  position: absolute;
+  z-index: 0;
+
+  &.circle1 {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(196, 163, 118, 0.1) 0%, rgba(196, 163, 118, 0.05) 100%);
+    top: -30px;
+    left: -70px;
+  }
+
+  &.circle2 {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(196, 163, 118, 0.08) 0%, rgba(196, 163, 118, 0.03) 100%);
+    bottom: 100px;
+    right: -50px;
+  }
+}
+
+/* Loading animation */
+.formLoader {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.3);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: none;
+  overflow: hidden;
+  border-radius: 0 0 $radius $radius;
+
+  &.active {
+    display: block;
+  }
+}
+
+.loaderProgress {
+  height: 100%;
+  width: 30%;
+  background: $accent-gold;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .loginPage {
+    padding: 10px;
+  }
+
+  .loginHeader {
+    height: 180px;
+  }
+
+  .logo {
+    font-size: 32px;
+  }
+
+  .loginSubtitle {
+    font-size: 16px;
+  }
+
+  .welcomeText {
+    font-size: 24px;
+  }
+
+  .customInput {
+    padding: 0 20px 0 40px;
+
+    :global(.adm-input-element) {
+      font-size: 16px;
+    }
+  }
+
+  .socialIcon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .loginForm {
+    padding: 30px $container-padding 25px;
+  }
+}
+
+@media (max-width: 360px) {
+  .logo {
+    font-size: 29px;
+  }
+
+  .loginSubtitle {
+    font-size: 14px;
+  }
+
+  .welcomeText {
+    font-size: 21px;
+  }
+
+  .socialIcons {
+    gap: 20px;
+  }
+
+  .socialIcon {
+    width: 45px;
+    height: 45px;
+  }
+}
