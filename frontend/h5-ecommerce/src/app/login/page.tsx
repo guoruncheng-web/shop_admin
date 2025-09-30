@@ -1,224 +1,348 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAppDispatch } from '@/store/hooks';
-import { loginStart, loginSuccess, loginFailure } from '@/store/slices/userSlice';
-import { authAPI } from '@/services/api';
-import styles from './login.module.scss';
+import React, { useEffect, useMemo, useState } from 'react';
 
-// Simple Toast component
-const showToast = (message: string) => {
-  const toast = document.createElement('div');
-  toast.textContent = message;
-  toast.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    z-index: 10000;
-    animation: fadeIn 0.3s ease;
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.style.animation = 'fadeOut 0.3s ease';
-    setTimeout(() => document.body.removeChild(toast), 300);
-  }, 2000);
-};
-
-function LoginContent() {
+export default function LoginPage() {
   const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [remember, setRemember] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const dispatch = useAppDispatch();
+  const [code, setCode] = useState('');
+  const [sending, setSending] = useState(false);
+  const [seconds, setSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const redirectUrl = searchParams?.get('redirect') || '/';
+  // 倒计时计时器
+  useEffect(() => {
+    if (seconds <= 0) return;
+    const timer = setInterval(() => setSeconds((s) => s - 1), 1000);
+    return () => clearInterval(timer);
+  }, [seconds]);
 
-  const doLogin = async () => {
-    if (!phone || !password) {
-      showToast('请输入手机号和密码');
+  const canSendCode = useMemo(() => {
+    return !sending && seconds === 0 && phone.length === 11;
+  }, [sending, seconds, phone]);
+
+  const sendCode = () => {
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号码');
       return;
     }
-
-    setLoading(true);
-    dispatch(loginStart());
-
-    try {
-      // 发送登录请求（Mock 或真实后端会自动处理）
-      const res = await authAPI.login({ username: phone, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      dispatch(loginSuccess(res.data.user));
-      showToast('登录成功!');
-      setTimeout(() => {
-        router.push(redirectUrl);
-      }, 1500);
-    } catch (err: any) {
-      console.error('登录失败:', err);
-      dispatch(loginFailure(err?.message || '登录失败'));
-      showToast(err?.response?.data?.message || err?.message || '登录失败，请重试');
-      setLoading(false);
-    }
-  };
-
-  const demoLogin = () => {
-    const mockUser = {
-      id: '1',
-      username: phone || 'demo_user',
-      email: `${phone || 'demo'}@example.com`,
-      avatar: '/images/avatar.jpg',
-    };
-    const token = 'mock_token_' + Date.now();
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    dispatch(loginSuccess(mockUser));
-    showToast('演示登录成功');
+    setSending(true);
+    // 模拟请求
     setTimeout(() => {
-      router.push(redirectUrl);
-    }, 1500);
+      setSending(false);
+      setSeconds(60);
+    }, 600);
   };
 
+  const handleLogin = () => {
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号码');
+      return;
+    }
+    if (!code || code.length < 4) {
+      alert('请输入有效的验证码');
+      return;
+    }
+    setLoading(true);
+    // 模拟登录
+    setTimeout(() => {
+      try {
+        localStorage.setItem('token', 'mock-token-' + Date.now());
+      } catch {}
+      setLoading(false);
+      alert('登录成功！');
+      window.location.href = '/';
+    }, 1200);
+  };
+
+  // 限制输入为数字
+  const onPhoneInput = (v: string) => setPhone(v.replace(/[^\d]/g, '').slice(0, 11));
+  const onCodeInput = (v: string) => setCode(v.replace(/[^\d]/g, '').slice(0, 6));
 
   return (
-    <div className={styles.loginPage}>
-      <div className={styles.loginContainer}>
-        {/* Decoration Elements */}
-        <div className={`${styles.decorationCircle} ${styles.circle1}`}></div>
-        <div className={`${styles.decorationCircle} ${styles.circle2}`}></div>
-
-        {/* Header Section */}
-        <div className={styles.loginHeader}>
-          {/* <div className={styles.backBtn} onClick={handleBack}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </div> */}
-          <div className={styles.logo}>Elegance</div>
-          <p className={styles.loginSubtitle}>欢迎回到高端时尚购物平台</p>
+    <div
+      style={{
+        background: '#f8f9fa',
+        minHeight: '100vh',
+        padding: 0,
+      }}
+    >
+      <div
+        style={{
+          background: '#fff',
+          borderRadius: 0,
+          boxShadow: 'none',
+          width: '100%',
+          maxWidth: '100%',
+          height: '100vh',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
+        {/* 头部 */}
+        <div
+          style={{
+            background: 'linear-gradient(to right, #e29692, #c57d7a)',
+            padding: 24,
+            textAlign: 'center' as const,
+            color: '#fff',
+            position: 'relative',
+          }}
+        >
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -80,
+              right: -80,
+              width: 160,
+              height: 160,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              top: -40,
+              left: -40,
+              width: 100,
+              height: 100,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+            }}
+          />
+          <div
+            style={{
+              width: 90,
+              height: 90,
+              background: '#fff',
+              borderRadius: '50%',
+              margin: '0 auto 12px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+            }}
+          >
+            <span style={{ fontSize: '2.5rem', color: '#e29692' }}>🛍️</span>
+          </div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: 0.5 }}>StyleHub</div>
+          <div style={{ marginTop: 8, opacity: 0.9 }}>时尚购物，随时随地</div>
         </div>
 
-        {/* Login Form */}
-        <div className={styles.loginForm}>
-          <h2 className={styles.welcomeText}>登录您的账号</h2>
-
-          {/* Demo Mode Notice - 显示 Mock 模式提示 */}
-          {!process.env.NEXT_PUBLIC_API_BASE_URL && (
-            <div style={{
-              background: 'rgba(196, 163, 118, 0.1)',
-              border: '1px solid rgba(196, 163, 118, 0.3)',
-              borderRadius: 10,
-              padding: '12px 16px',
-              marginBottom: 20,
-              fontSize: '0.85rem',
-              color: '#5a5a5a',
-              textAlign: 'center',
-            }}>
-              💡 演示模式：输入任意手机号和密码即可登录
-            </div>
-          )}
-
-          <div className={styles.inputGroup}>
-            <label htmlFor="phone">手机号码</label>
-            <div className={styles.inputWrapper}>
-              <svg className={styles.inputIcon} width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H7V4h10v16z"/>
-              </svg>
+        {/* 表单 */}
+        <div style={{ padding: '24px 20px 20px' }}>
+          {/* 手机号 */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>手机号码</label>
+            <div style={{ position: 'relative' }}>
+              <span
+                style={{
+                  position: 'absolute',
+                  left: 15,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: '#666',
+                }}
+              >
+                📱
+              </span>
               <input
                 type="tel"
-                placeholder="请输入手机号码"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                id="phone"
-                className={styles.customInput}
+                onChange={(e) => onPhoneInput(e.target.value)}
+                placeholder="请输入您的手机号码"
+                maxLength={11}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px 12px 45px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: 12,
+                  fontSize: '1rem',
+                  transition: 'all 0.3s',
+                  outline: 'none',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#e29692';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(226,150,146,0.2)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e0e0e0';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
               />
             </div>
           </div>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="password">密码</label>
-            <div className={styles.inputWrapper}>
-              <svg className={styles.inputIcon} width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-              </svg>
-              <input
-                type="password"
-                placeholder="请输入密码"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                id="password"
-                className={styles.customInput}
-              />
+          {/* 验证码 */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>验证码</label>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ position: 'relative', flexGrow: 1 }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#666',
+                  }}
+                >
+                  🛡️
+                </span>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => onCodeInput(e.target.value)}
+                  placeholder="请输入验证码"
+                  maxLength={6}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px 12px 45px',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 12,
+                    fontSize: '1rem',
+                    transition: 'all 0.3s',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#e29692';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(226,150,146,0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e0e0e0';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              <button
+                onClick={sendCode}
+                disabled={!canSendCode}
+                style={{
+                  background: canSendCode ? '#f9f0ef' : '#eee',
+                  color: canSendCode ? '#e29692' : '#999',
+                  border: 'none',
+                  borderRadius: 12,
+                  padding: '0 16px',
+                  fontWeight: 500,
+                  cursor: canSendCode ? 'pointer' : 'not-allowed',
+                  whiteSpace: 'nowrap' as const,
+                  minWidth: 120,
+                }}
+              >
+                {seconds > 0 ? `${seconds}秒后重新发送` : sending ? '发送中...' : '获取验证码'}
+              </button>
             </div>
           </div>
 
-          <div className={styles.optionsRow}>
-            <label className={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-              />
-              <span>记住我</span>
-            </label>
-            <a href="#" className={styles.forgotPassword} onClick={(e) => { e.preventDefault(); showToast('功能开发中'); }}>
-              忘记密码?
-            </a>
-          </div>
-
+          {/* 登录按钮 */}
           <button
-            onClick={doLogin}
+            onClick={handleLogin}
             disabled={loading}
-            className={styles.loginButton}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(to right, #e29692, #c57d7a)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              padding: 12,
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'transform 0.3s, box-shadow 0.3s',
+              marginTop: 10,
+              boxShadow: loading ? 'none' : '0 5px 15px rgba(226, 150, 146, 0.4)',
+            }}
           >
-            {loading ? '登录中...' : '登录'}
+            {loading ? '登录中...' : '立即登录'}
           </button>
-          <div className={`${styles.formLoader} ${loading ? styles.active : ''}`}>
-            <div className={styles.loaderProgress}></div>
+
+          {/* 分隔与其他登录 */}
+          <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0' }}>
+            <div style={{ flexGrow: 1, height: 1, background: '#e0e0e0' }} />
+            <div style={{ padding: '0 12px', color: '#666', fontSize: '0.9rem' }}>其他登录方式</div>
+            <div style={{ flexGrow: 1, height: 1, background: '#e0e0e0' }} />
           </div>
 
-          <p className={styles.signupLink}>
-            还没有账号? <a href="#" onClick={(e) => { e.preventDefault(); demoLogin(); }}>演示登录</a>
-          </p>
-
-          <div className={styles.socialLogin}>
-            <div className={styles.divider}>使用其他方式登录</div>
-            <div className={styles.socialIcons}>
-              <div className={`${styles.socialIcon} ${styles.weixin}`} onClick={() => showToast('微信登录开发中')}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8.5 12c-.83 0-1.5-.67-1.5-1.5S7.67 9 8.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm7 0c-.83 0-1.5-.67-1.5-1.5S14.67 9 15.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-1.12.23-2.18.65-3.15.42.48.87.92 1.35 1.32-.28.59-.43 1.24-.43 1.93 0 2.49 2.01 4.5 4.5 4.5.69 0 1.34-.15 1.93-.43.4.48.84.93 1.32 1.35-.97.42-2.03.65-3.15.65z"/>
-                </svg>
-              </div>
-              <div className={`${styles.socialIcon} ${styles.qq}`} onClick={() => showToast('QQ登录开发中')}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                </svg>
-              </div>
-              <div className={`${styles.socialIcon} ${styles.weibo}`} onClick={() => showToast('微博登录开发中')}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                </svg>
-              </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: '50%',
+                background: '#f9f9f9',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.3s',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-5px)')}
+              onMouseOut={(e) => (e.currentTarget.style.transform = 'none')}
+            >
+              <span style={{ fontSize: '1.5rem', color: '#09bb07' }}>🟢</span>
             </div>
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: '50%',
+                background: '#f9f9f9',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                cursor: 'pointer',
+                transition: 'transform 0.3s',
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.transform = 'translateY(-5px)')}
+              onMouseOut={(e) => (e.currentTarget.style.transform = 'none')}
+            >
+              <span style={{ fontSize: '1.5rem', color: '#108ee9' }}>🔵</span>
+            </div>
+          </div>
+
+          {/* 底部链接 */}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 16,
+              marginTop: 24,
+              fontSize: '0.9rem',
+            }}
+          >
+            {['用户协议', '隐私政策', '帮助中心'].map((t, i) => (
+              <a
+                key={t}
+                href="#"
+                style={{
+                  color: '#666',
+                  textDecoration: 'none',
+                  position: 'relative',
+                  padding: '0 8px',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.color = '#e29692')}
+                onMouseOut={(e) => (e.currentTarget.style.color = '#666')}
+              >
+                {t}
+                {i !== 2 ? (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      right: -10,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      height: 12,
+                      width: 1,
+                      background: '#e0e0e0',
+                    }}
+                  />
+                ) : null}
+              </a>
+            ))}
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div className={styles.loginPage}><div>加载中...</div></div>}>
-      <LoginContent />
-    </Suspense>
   );
 }

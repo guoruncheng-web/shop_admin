@@ -2,968 +2,717 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="filename" content="premium_user_profile.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的尊享空间 - Elegance购物平台</title>
+    <meta name="filename" content="user_profile_optimized.html">
+    <title>个人中心 - StyleHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        :root {
-            --primary-beige: #f8f5f0;
-            --secondary-beige: #f4f0e9;
-            --accent-gold: #c4a376;
-            --gold-dark: #a78a5c;
-            --gold-light: #e0cda8;
-            --text-dark: #2a2a2a;
-            --text-medium: #5c5c5c;
-            --text-light: #888888;
-            --border-color: #e5e0d7;
-            --red-light: #f8e4e3;
-            --radius: 18px;
-            --radius-card: 14px;
-            --container-padding: 20px;
-            --header-height: 180px;
-            --tab-height: 70px;
-            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.15);
-            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-
+        
+        :root {
+            --primary: #e29692;
+            --primary-light: #f9f0ef;
+            --primary-dark: #c57d7a;
+            --light: #f9f9f9;
+            --light-gray: #f5f5f5;
+            --gray: #e0e0e0;
+            --dark: #333;
+            --dark-gray: #666;
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 10px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+        }
+        
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fcfaf7 0%, #f8f5f0 100%);
-            color: var(--text-dark);
-            line-height: 1.55;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .premium-container {
-            max-width: 420px;
-            min-height: 812px;
+            background-color: #f7f7f7;
+            color: var(--dark);
+            max-width: 375px;
             margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.96);
-            background-image: radial-gradient(ellipse at 25% 10%, rgba(240, 236, 228, 0.3) 10%, transparent 90%);
             position: relative;
-            overflow-x: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+            padding-bottom: 100px;
         }
-
-        /* 顶部装饰元素 */
-        .decor-top {
-            position: absolute;
-            top: 0;
-            right: -50px;
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(45deg, var(--gold-light) 0%, var(--gold-dark) 100%);
-            border-radius: 50%;
-            filter: blur(40px);
-            opacity: 0.3;
-            z-index: 0;
-        }
-
-        /* 用户信息区域 - 全新建模 */
-        .luxury-header {
-            position: relative;
-            padding: 35px var(--container-padding) 28px;
-            background: linear-gradient(to bottom, rgba(248, 245, 240, 0.9) 0%, rgba(255, 255, 255, 1) 90%);
-            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
-            overflow: hidden;
-            z-index: 2;
-        }
-
-        .luxury-header::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(to right, transparent, var(--accent-gold), transparent);
-            opacity: 0.4;
-        }
-
-        .user-info {
-            display: flex;
-            gap: 22px;
-            margin-bottom: 30px;
-            padding: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .avatar-elite {
-            width: 96px;
-            height: 96px;
-            border-radius: 50%;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 4px solid transparent;
-            background: linear-gradient(var(--primary-beige), var(--primary-beige)),
-                        linear-gradient(120deg, var(--gold-dark), var(--gold-light), var(--gold-dark));
-            background-origin: border-box;
-            background-clip: content-box, border-box;
-            overflow: hidden;
-            box-shadow: var(--shadow-md);
-        }
-
-        .avatar-elite .avatar-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.8rem;
-            font-weight: 700;
-            color: var(--accent-gold);
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .avatar-elite:hover {
-            background: linear-gradient(var(--primary-beige), var(--primary-beige)),
-                        linear-gradient(120deg, #b69a65, #d6c09c, #b69a65);
-        }
-
-        .avatar-edit-elite {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 8px rgba(167, 138, 92, 0.25);
-            transition: var(--transition);
-        }
-
-        .avatar-edit-elite:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 12px rgba(167, 138, 92, 0.3);
-        }
-
-        .user-details-elite {
-            flex: 1;
-            padding-top: 12px;
-        }
-
-        .username-prestige {
-            font-size: 1.7rem;
-            font-family: 'Playfair Display', serif;
-            font-weight: 600;
-            margin-bottom: 12px;
-            letter-spacing: 0.5px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .username-prestige::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 0;
-            width: 90px;
-            height: 2px;
-            background: linear-gradient(to right, var(--accent-gold), transparent);
-        }
-
-        .vip-badge-prestige {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(45deg, var(--gold-dark), var(--accent-gold), var(--gold-light));
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            display: inline-block;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(167, 138, 92, 0.25);
-        }
-
-        .vip-badge-prestige::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.5), transparent);
-            animation: shine 1.5s infinite;
-        }
-
-        @keyframes shine {
-            0% {left: -100%;}
-            100% {left: 150%;}
-        }
-
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 15px;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-medium);
-            font-size: 0.92rem;
-        }
-
-        .contact-item i {
-            width: 20px;
-            color: var(--accent-gold);
-            text-align: center;
-        }
-
-        .stats-elite {
-            display: flex;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: var(--radius-card);
-            padding: 22px 10px;
-            box-shadow: var(--shadow-xs);
-            gap: 5px;
-        }
-
-        .stat-panel {
-            flex: 1;
-            text-align: center;
-            padding: 5px;
-            transition: var(--transition);
-        }
-
-        .stat-panel:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-value-elite {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--gold-dark);
-            font-variant-numeric: tabular-nums;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-label-elite {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .divider-elite {
-            width: 1px;
-            background: linear-gradient(to bottom, 
-                transparent, 
-                var(--border-color) 30%, 
-                var(--border-color) 70%, 
-                transparent);
-            margin: 5px 0;
-        }
-
-        /* 操作区域 */
-        .actions-prestige {
-            display: flex;
-            gap: 16px;
-            margin-top: 22px;
-            padding: 0 10px;
-        }
-
-        .action-button-luxury {
-            flex: 1;
-            padding: 16px 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            border-radius: var(--radius-card);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-xs);
-            transition: var(--transition);
-        }
-
-        .action-button-luxury::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transform: translateX(-100%);
-            transition: var(--transition);
-        }
-
-        .action-button-luxury:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(196, 163, 118, 0.4);
-        }
-
-        .action-button-luxury:hover::before {
-            transform: translateX(100%);
-        }
-
-        .action-button-luxury i {
-            font-size: 1.6rem;
-            color: var(--gold-dark);
-            margin-bottom: 10px;
-        }
-
-        /* 内容区域 */
-        .content-elite {
-            padding: 20px var(--container-padding);
-        }
-
-        .section-title-elite {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.45rem;
-            font-weight: 600;
-            color: var(--gold-dark);
-            margin-bottom: 28px;
-            position: relative;
-            padding-left: 15px;
-            letter-spacing: 0.8px;
-        }
-
-        .section-title-elite::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 6px;
-            height: 26px;
-            width: 5px;
-            background: linear-gradient(to bottom, var(--accent-gold), var(--gold-dark) 80%);
-            border-radius: 3px;
-        }
-
-        /* 会员中心卡片 */
-        .membership-luxury {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 35px;
-        }
-
-        .membership-card-prestige {
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            border-radius: var(--radius-card);
-            padding: 25px 0 18px;
-            box-shadow: var(--shadow-xs);
-            text-align: center;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .membership-card-prestige:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(196, 163, 118, 0.4);
-        }
-
-        .membership-card-prestige::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, var(--gold-light), var(--accent-gold), var(--gold-dark));
-        }
-
-        .membership-card-prestige i {
-            font-size: 2rem;
-            color: var(--gold-dark);
-            margin-bottom: 15px;
-        }
-
-        .value-prestige {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--gold-dark);
-            font-variant-numeric: tabular-nums;
-        }
-
-        .membership-label-prestige {
-            font-size: 0.87rem;
-            color: var(--text-medium);
-            letter-spacing: 0.5px;
-            margin-top: 5px;
-        }
-
-        /* 订单状态 */
-        .orders-section-prestige {
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            border-radius: var(--radius-card);
-            padding: 25px 18px;
-            box-shadow: var(--shadow-xs);
-            margin-bottom: 35px;
-            transition: var(--transition);
-        }
-
-        .orders-section-prestige:hover {
-            box-shadow: var(--shadow-hover);
-            transform: translateY(-3px);
-        }
-
-        .order-nav-elite {
+        
+        /* 重新设计的页头 */
+        .app-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
+            padding: var(--spacing-md);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--light-gray);
         }
-
-        .nav-title-elite {
+        
+        .app-header button {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+        
+        .app-header button:hover {
+            background: var(--light-gray);
+        }
+        
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        /* 用户中心部分 */
+        .user-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            padding: var(--spacing-xl);
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .user-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .avatar-container {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto var(--spacing-md);
+        }
+        
+        .avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            object-fit: cover;
+            background: white;
+        }
+        
+        .avatar-placeholder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f0f0f0;
+            color: #999;
+            font-size: 2rem;
+            border-radius: 50%;
+        }
+        
+        .user-info {
+            z-index: 2;
+        }
+        
+        .user-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .vip-badge {
+            background: #ffd700;
+            color: #333;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            margin: 10px auto;
+        }
+        
+        .vip-badge i {
+            margin-right: 5px;
+            color: #333;
+        }
+        
+        /* 会员卡片 */
+        .membership-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-sm);
+            padding: 0 var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .membership-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .membership-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .membership-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--spacing-sm);
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+        
+        .membership-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .membership-value {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+        }
+        
+        /* 订单状态 */
+        .order-status-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin: 0 var(--spacing-md) var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .section-title {
             font-size: 1.1rem;
             font-weight: 600;
-            color: var(--gold-dark);
-            letter-spacing: 0.5px;
+            position: relative;
+            padding-left: 10px;
         }
-
-        .view-all-elite {
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 65%;
+            width: 3px;
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        .section-link {
             font-size: 0.9rem;
-            color: var(--accent-gold);
-            font-weight: 500;
-            transition: var(--transition);
+            color: var(--dark-gray);
         }
-
-        .view-all-elite:hover {
-            text-decoration: underline;
-        }
-
-        .status-grid-elite {
+        
+        .status-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
+            gap: var(--spacing-sm);
         }
-
-        .status-item-elite {
+        
+        .status-item {
+            text-align: center;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xs) 0;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .status-item:hover {
+            background: rgba(226, 150, 146, 0.1);
+        }
+        
+        .status-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            background: var(--light-gray);
+            border-radius: 50%;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        .status-label {
+            font-size: 0.75rem;
+            color: var(--dark);
+        }
+        
+        .order-count {
+            position: absolute;
+            top: -5px;
+            right: 15px;
+            background: #ff5500;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 导航菜单 */
+        .profile-nav {
+            background: white;
+            border-radius: var(--border-radius);
+            margin: 0 var(--spacing-md) var(--spacing-xl);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .nav-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--light-gray);
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .nav-item:last-child {
+            border-bottom: none;
+        }
+        
+        .nav-item:hover {
+            background: var(--light-gray);
+        }
+        
+        .nav-label {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-sm);
+            color: var(--primary);
+        }
+        
+        .nav-name {
+            font-weight: 500;
+        }
+        
+        /* 猜你喜欢 */
+        .recommendations-section {
+            padding: 0 var(--spacing-md);
+        }
+        
+        .recommendations-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--spacing-sm);
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .product-image {
+            height: 150px;
+            position: relative;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-image .image-placeholder {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+        
+        .product-details {
+            padding: var(--spacing-sm);
+        }
+        
+        .product-name {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+        }
+        
+        .product-price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 375px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 10px 0;
-            border-radius: var(--radius-card);
-            transition: var(--transition);
-        }
-
-        .status-item-elite:hover {
-            background: rgba(196, 163, 118, 0.05);
-        }
-
-        .status-icon-container {
-            position: relative;
-            margin-bottom: 12px;
-        }
-
-        .status-circle {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(247, 243, 237, 0.8) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .status-circle::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            bottom: -2px;
-            left: -2px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-light), var(--accent-gold));
-            z-index: -1;
-            box-shadow: 0 4px 15px rgba(167, 138, 92, 0.3);
-        }
-
-        .status-icon {
-            font-size: 1.4rem;
-            color: var(--gold-dark);
-        }
-
-        .pending-counter {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: linear-gradient(to bottom, #ff5252, #d64141);
-            color: white;
-            font-size: 0.7rem;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            box-shadow: 0 3px 8px rgba(214, 65, 65, 0.3);
-        }
-
-        .status-label {
-            font-size: 0.85rem;
-            color: var(--text-medium);
-        }
-
-        /* 猜你喜欢 */
-        .recommend-section-prestige {
-            margin-top: 15px;
-        }
-
-        .recommend-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .refresh-luxury {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.95rem;
-            color: var(--accent-gold);
-            background: rgba(196, 163, 118, 0.1);
-            padding: 8px 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .refresh-luxury:hover {
-            background: rgba(196, 163, 118, 0.2);
-            transform: translateX(4px);
-        }
-
-        .product-grid-luxury {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 22px;
-        }
-
-        .product-card-premium {
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border: 1px solid rgba(229, 224, 215, 0.7);
-            border-radius: var(--radius-card);
-            overflow: hidden;
-            position: relative;
-            transition: var(--transition);
-            box-shadow: var(--shadow-xs);
-        }
-
-        .product-card-premium:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(196, 163, 118, 0.4);
-        }
-
-        .product-image-art {
-            height: 180px;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .discount-tag-prestige {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            padding: 4px 14px;
-            background: linear-gradient(to right, #c9333c, #b42828);
-            color: white;
-            font-size: 0.85rem;
-            font-weight: 600;
-            border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(180, 40, 40, 0.25);
-        }
-
-        .product-info-luxury {
-            padding: 18px 14px;
-            border-top: 1px solid rgba(229, 224, 215, 0.4);
-        }
-
-        .product-name-luxury {
-            font-size: 0.97rem;
-            font-weight: 500;
-            color: var(--text-dark);
-            margin-bottom: 12px;
-            line-height: 1.4;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 45px;
-        }
-
-        .price-elite {
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .current-price-elite {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--gold-dark);
-        }
-
-        .original-price-elite {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            text-decoration: line-through;
-            margin-left: 7px;
-        }
-
-        /* 底部导航 */
-        .nav-elite {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: var(--tab-height);
-            background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(245, 242, 236, 0.95));
-            border-top: 1px solid rgba(229, 224, 215, 0.4);
-            position: sticky;
-            bottom: 0;
-            padding: 0 10px;
-            z-index: 10;
-        }
-
-        .nav-item-luxury {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 8px 16px;
-            border-radius: var(--radius);
-            transition: var(--transition);
-        }
-
-        .nav-item-luxury.active {
-            background: rgba(196, 163, 118, 0.1);
-        }
-
-        .nav-item-luxury:hover:not(.active) {
-            background: rgba(196, 163, 118, 0.05);
-        }
-
-        .nav-icon {
-            font-size: 1.5rem;
-            color: var(--gold-dark);
-            margin-bottom: 5px;
-            transition: var(--transition);
-        }
-
-        .nav-item-luxury.active .nav-icon {
-            color: var(--gold-dark);
-            transform: translateY(-3px);
-        }
-
-        .nav-icon-pink {
-            position: relative;
-            background: linear-gradient(to bottom, var(--accent-gold), var(--gold-dark));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .nav-label {
+            color: var(--dark-gray);
+            text-decoration: none;
+            transition: color 0.3s;
             font-size: 0.75rem;
-            font-weight: 500;
-            color: var(--text-medium);
-            transition: var(--transition);
         }
-
-        .nav-item-luxury.active .nav-label {
-            color: var(--gold-dark);
-            font-weight: 600;
+        
+        .nav-btn.active {
+            color: var(--primary);
+        }
+        
+        .nav-btn i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        
+        /* 响应式增强 */
+        @media (max-width: 360px) {
+            .membership-cards {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="premium-container">
-        <div class="decor-top"></div>
-        
-        <!-- 用户信息区域 -->
-        <div class="luxury-header">
-            <div class="user-info">
-                <div class="avatar-elite">
-                    <div class="avatar-text">M</div>
-                    <div class="avatar-edit-elite">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                </div>
-                <div class="user-details-elite">
-                    <h1 class="username-prestige">张茗月
-                        <span class="vip-badge-prestige">铂金会员</span>
-                    </h1>
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <i class="fas fa-phone-alt"></i>138****4567
-                        </div>
-                        <div class="contact-item">
-                            <i class="fas fa-envelope"></i> mingyue@example.com
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="stats-elite">
-                <div class="stat-panel">
-                    <div class="stat-value-elite">¥4,289</div>
-                    <div class="stat-label-elite">账户余额</div>
-                </div>
-                <div class="divider-elite"></div>
-                <div class="stat-panel">
-                    <div class="stat-value-elite">5,680</div>
-                    <div class="stat-label-elite">积分</div>
-                </div>
-                <div class="divider-elite"></div>
-                <div class="stat-panel">
-                    <div class="stat-value-elite">12</div>
-                    <div class="stat-label-elite">优惠券</div>
-                </div>
-            </div>
-            
-            <div class="actions-prestige">
-                <div class="action-button-luxury">
-                    <i class="fas fa-wallet"></i>
-                    <span>我的钱包</span>
-                </div>
-                <div class="action-button-luxury">
-                    <i class="fas fa-cog"></i>
-                    <span>设置</span>
-                </div>
-                <div class="action-button-luxury">
-                    <i class="fas fa-headset"></i>
-                    <span>专属客服</span>
-                </div>
+    <!-- 页头 -->
+    <div class="app-header">
+        <button>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">个人中心</div>
+        <button>
+            <i class="fas fa-bell"></i>
+        </button>
+    </div>
+    
+    <!-- 用户信息卡片 -->
+    <div class="user-card">
+        <div class="avatar-container">
+            <!-- 使用可靠图片源 -->
+            <img class="avatar" src="https://picsum.photos/id/64/200/200" alt="用户头像" onerror="this.parentElement.querySelector('.avatar-placeholder').style.display='flex'">
+            <div class="avatar-placeholder" style="display:none;">
+                <i class="fas fa-user"></i>
             </div>
         </div>
         
-        <!-- 主要内容区域 -->
-        <div class="content-elite">
-            <h2 class="section-title-elite">会员权益</h2>
-            <div class="membership-luxury">
-                <div class="membership-card-prestige">
-                    <i class="fas fa-gift"></i>
-                    <div class="value-prestige">8</div>
-                    <div class="membership-label-prestige">红包</div>
-                </div>
-                <div class="membership-card-prestige">
-                    <i class="fas fa-ticket-alt"></i>
-                    <div class="value-prestige">12</div>
-                    <div class="membership-label-prestige">优惠券</div>
-                </div>
-                <div class="membership-card-prestige">
-                    <i class="fas fa-gem"></i>
-                    <div class="value-prestige">5,680</div>
-                    <div class="membership-label-prestige">积分</div>
-                </div>
-            </div>
-            
-            <h2 class="section-title-elite">我的订单</h2>
-            <div class="orders-section-prestige">
-                <div class="order-nav-elite">
-                    <div class="nav-title-elite">全部订单</div>
-                    <a href="#" class="view-all-elite">
-                        查看全部 <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-                <div class="status-grid-elite">
-                    <div class="status-item-elite">
-                        <div class="status-icon-container">
-                            <div class="status-circle">
-                                <i class="fas fa-credit-card status-icon"></i>
-                                <div class="pending-counter">2</div>
-                            </div>
-                        </div>
-                        <div class="status-label">待付款</div>
-                    </div>
-                    <div class="status-item-elite">
-                        <div class="status-icon-container">
-                            <div class="status-circle">
-                                <i class="fas fa-truck status-icon"></i>
-                                <div class="pending-counter">1</div>
-                            </div>
-                        </div>
-                        <div class="status-label">待发货</div>
-                    </div>
-                    <div class="status-item-elite">
-                        <div class="status-icon-container">
-                            <div class="status-circle">
-                                <i class="fas fa-box-open status-icon"></i>
-                            </div>
-                        </div>
-                        <div class="status-label">待收货</div>
-                    </div>
-                    <div class="status-item-elite">
-                        <div class="status-icon-container">
-                            <div class="status-circle">
-                                <i class="fas fa-comment-alt status-icon"></i>
-                                <div class="pending-counter">5</div>
-                            </div>
-                        </div>
-                        <div class="status-label">待评价</div>
-                    </div>
-                    <div class="status-item-elite">
-                        <div class="status-icon-container">
-                            <div class="status-circle">
-                                <i class="fas fa-undo status-icon"></i>
-                            </div>
-                        </div>
-                        <div class="status-label">退款/售后</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 猜你喜欢 -->
-            <div class="recommend-section-prestige">
-                <div class="recommend-header">
-                    <h2 class="section-title-elite">猜你喜欢</h2>
-                    <div class="refresh-luxury">
-                        <span>换一批</span>
-                        <i class="fas fa-redo"></i>
-                    </div>
-                </div>
-                
-                <div class="product-grid-luxury">
-                    <div class="product-card-premium">
-                        <div class="product-image-art" style="background-image: url('https://images.unsplash.com/photo-1605901309584-818e25960a8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')">
-                            <div class="discount-tag-prestige">-45%</div>
-                        </div>
-                        <div class="product-info-luxury">
-                            <div class="product-name-luxury">进口羊绒女士大衣 冬季保暖长款风衣 优雅设计师款</div>
-                            <div class="price-elite">
-                                <span class="current-price-elite">¥899</span>
-                                <span class="original-price-elite">¥1,599</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="product-card-premium">
-                        <div class="product-image-art" style="background-image: url('https://images.unsplash.com/photo-1496747611176-843222e1e57c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')">
-                            <div class="discount-tag-prestige">-35%</div>
-                        </div>
-                        <div class="product-info-luxury">
-                            <div class="product-name-luxury">经典立领商务衬衫 纯棉舒适透气款 四季可穿</div>
-                            <div class="price-elite">
-                                <span class="current-price-elite">¥389</span>
-                                <span class="original-price-elite">¥599</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="product-card-premium">
-                        <div class="product-image-art" style="background-image: url('https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')"></div>
-                        <div class="product-info-luxury">
-                            <div class="product-name-luxury">薄纱款复古连衣裙 法式时尚方领 夏日度假系列</div>
-                            <div class="price-elite">
-                                <span class="current-price-elite">¥429</span>
-                                <span class="original-price-elite">¥699</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="product-card-premium">
-                        <div class="product-image-art" style="background-image: url('https://images.unsplash.com/photo-1527215850255-dfe04f8b10ce?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')">
-                            <div class="discount-tag-prestige">新品</div>
-                        </div>
-                        <div class="product-info-luxury">
-                            <div class="product-name-luxury">复古方框墨镜 韩版潮流太阳镜 UV400防护</div>
-                            <div class="price-elite">
-                                <span class="current-price-elite">¥689</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 底部导航 -->
-        <div class="nav-elite">
-            <div class="nav-item-luxury">
-                <i class="fas fa-home nav-icon"></i>
-                <span class="nav-label">首页</span>
-            </div>
-            <div class="nav-item-luxury">
-                <i class="fas fa-list nav-icon"></i>
-                <span class="nav-label">分类</span>
-            </div>
-            <div class="nav-item-luxury">
-                <i class="fas fa-shopping-cart nav-icon"></i>
-                <span class="nav-label">购物车</span>
-            </div>
-            <div class="nav-item-luxury active">
-                <i class="fas fa-user nav-icon nav-icon-pink"></i>
-                <span class="nav-label">我的</span>
+        <div class="user-info">
+            <div class="user-name">张美丽</div>
+            <div class="user-contact">138****1234</div>
+            <div class="vip-badge">
+                <i class="fas fa-crown"></i> 铂金会员
             </div>
         </div>
     </div>
     
+    <!-- 会员卡片 -->
+    <div class="membership-cards">
+        <div class="membership-card">
+            <div class="membership-icon">
+                <i class="fas fa-gift"></i>
+            </div>
+            <div class="membership-title">我的红包</div>
+            <div class="membership-value">5个未使用</div>
+        </div>
+        
+        <div class="membership-card">
+            <div class="membership-icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="membership-title">我的优惠券</div>
+            <div class="membership-value">3张可用</div>
+        </div>
+        
+        <div class="membership-card">
+            <div class="membership-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="membership-title">我的积分</div>
+            <div class="membership-value">1250分</div>
+        </div>
+    </div>
+    
+    <!-- 订单状态 -->
+    <div class="order-status-section">
+        <div class="section-header">
+            <div class="section-title">我的订单</div>
+            <div class="section-link">查看全部</div>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-item">
+                <div style="position: relative;">
+                    <div class="status-icon">
+                        <i class="fas fa-money-check-alt"></i>
+                    </div>
+                    <div class="order-count">2</div>
+                </div>
+                <div class="status-label">待付款</div>
+            </div>
+            
+            <div class="status-item">
+                <div style="position: relative;">
+                    <div class="status-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="order-count">1</div>
+                </div>
+                <div class="status-label">待发货</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-icon">
+                    <i class="fas fa-truck"></i>
+                </div>
+                <div class="status-label">待收货</div>
+            </div>
+            
+            <div class="status-item">
+                <div style="position: relative;">
+                    <div class="status-icon">
+                        <i class="fas fa-comment"></i>
+                    </div>
+                    <div class="order-count">3</div>
+                </div>
+                <div class="status-label">待评价</div>
+            </div>
+            
+            <div class="status-item">
+                <div class="status-icon">
+                    <i class="fas fa-undo"></i>
+                </div>
+                <div class="status-label">退款/售后</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导航菜单 -->
+    <div class="profile-nav">
+        <div class="nav-item">
+            <div class="nav-label">
+                <div class="nav-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="nav-name">我的收藏</div>
+            </div>
+            <div><i class="fas fa-chevron-right"></i></div>
+        </div>
+        
+        <div class="nav-item">
+            <div class="nav-label">
+                <div class="nav-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="nav-name">地址管理</div>
+            </div>
+            <div><i class="fas fa-chevron-right"></i></div>
+        </div>
+        
+        <div class="nav-item">
+            <div class="nav-label">
+                <div class="nav-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="nav-name">账户安全</div>
+            </div>
+            <div><i class="fas fa-chevron-right"></i></div>
+        </div>
+        
+        <div class="nav-item">
+            <div class="nav-label">
+                <div class="nav-icon">
+                    <i class="fas fa-headset"></i>
+                </div>
+                <div class="nav-name">客服中心</div>
+            </div>
+            <div><i class="fas fa-chevron-right"></i></div>
+        </div>
+    </div>
+    
+    <!-- 猜你喜欢（修复图片问题） -->
+    <div class="recommendations-section">
+        <div class="recommendations-header">
+            <div class="section-title">猜你喜欢</div>
+            <div class="section-link">更多推荐</div>
+        </div>
+        
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-image">
+                    <!-- 使用可靠图片源 -->
+                    <img src="https://picsum.photos/id/1004/300/300" alt="时尚夹克" onerror="this.parentElement.querySelector('.image-placeholder').style.display='flex'">
+                    <div class="image-placeholder" style="display:none;">图片加载中</div>
+                </div>
+                <div class="product-details">
+                    <div class="product-name">修身休闲时尚夹克 2023新款</div>
+                    <div class="product-price">¥289.00</div>
+                </div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://picsum.photos/id/1013/300/300" alt="女士卫衣" onerror="this.parentElement.querySelector('.image-placeholder').style.display='flex'">
+                    <div class="image-placeholder" style="display:none;">图片加载中</div>
+                </div>
+                <div class="product-details">
+                    <div class="product-name">纯棉字母连帽卫衣女款</div>
+                    <div class="product-price">¥159.00</div>
+                </div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://picsum.photos/id/1028/300/300" alt="直筒牛仔裤" onerror="this.parentElement.querySelector('.image-placeholder').style.display='flex'">
+                    <div class="image-placeholder" style="display:none;">图片加载中</div>
+                </div>
+                <div class="product-details">
+                    <div class="product-name">直筒修身弹力牛仔裤</div>
+                    <div class="product-price">¥229.00</div>
+                </div>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-image">
+                    <img src="https://picsum.photos/id/1033/300/300" alt="百搭连衣裙" onerror="this.parentElement.querySelector('.image-placeholder').style.display='flex'">
+                    <div class="image-placeholder" style="display:none;">图片加载中</div>
+                </div>
+                <div class="product-details">
+                    <div class="product-name">春夏女士V领百搭连衣裙</div>
+                    <div class="product-price">¥199.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部菜单栏 -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-btn">
+            <i class="fas fa-home"></i>
+            <span>首页</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-th-large"></i>
+            <span>分类</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span>购物车</span>
+        </a>
+        <a href="#" class="nav-btn active">
+            <i class="fas fa-user"></i>
+            <span>我的</span>
+        </a>
+    </div>
+
     <script>
+        // 图片加载失败处理
         document.addEventListener('DOMContentLoaded', function() {
-            // 产品卡片悬停效果
-            const productCards = document.querySelectorAll('.product-card-premium');
-            productCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-8px)';
-                    this.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15)';
-                });
-                
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.08)';
-                });
-            });
-            
-            // 换一批功能
-            const refreshBtn = document.querySelector('.refresh-luxury');
-            refreshBtn.addEventListener('click', function() {
-                this.innerHTML = `<span>加载中...</span> <i class="fas fa-spinner fa-spin"></i>`;
-                
-                setTimeout(() => {
-                    this.innerHTML = `<span>换一批</span><i class="fas fa-redo"></i>`;
-                }, 800);
-            });
-            
-            // 导航栏互动效果
-            const navItems = document.querySelectorAll('.nav-item-luxury');
-            navItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    navItems.forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                });
-            });
-            
-            // 统计卡片悬停效果
-            const statPanels = document.querySelectorAll('.stat-panel');
-            statPanels.forEach(panel => {
-                panel.addEventListener('mouseenter', function() {
-                    this.style.background = 'rgba(196, 163, 118, 0.08)';
-                });
-                panel.addEventListener('mouseleave', function() {
-                    this.style.background = 'none';
-                });
+            document.querySelectorAll('img').forEach(img => {
+                img.onerror = function() {
+                    const placeholder = this.parentElement.querySelector('.image-placeholder');
+                    if (placeholder) {
+                        placeholder.style.display = 'flex';
+                        this.style.display = 'none';
+                    }
+                };
             });
         });
     </script>

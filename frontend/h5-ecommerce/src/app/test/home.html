@@ -2,27 +2,28 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="filename" content="mobile_ecommerce_app.html">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>Elegance Wardrobe - Premium Fashion</title>
+    <meta name="filename" content="elegance_fashion_home.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegance - 高端时尚电商平台</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Global Variables & Resets */
         :root {
-            --primary-beige: #f5f1e9;
-            --secondary-beige: #faf7f2;
+            --primary-beige: #f8f5f0;
+            --secondary-beige: #f4f0e9;
             --accent-gold: #c4a376;
+            --gold-dark: #a78a5c;
+            --gold-light: #e0cda8;
             --text-dark: #2a2a2a;
-            --text-medium: #5a5a5a;
-            --text-light: #8d8d8d;
-            --border-color: #e8e4db;
-            --sale-red: #d64d4d;
-            --hover-gold: #b18c5a;
-            --item-gap: 1rem;
-            --container-padding: 1.25rem;
-            --radius: 12px;
+            --text-medium: #5c5c5c;
+            --text-light: #888888;
+            --border-color: #e5e0d7;
+            --radius: 18px;
+            --radius-card: 14px;
+            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15);
         }
 
         * {
@@ -33,884 +34,933 @@
 
         body {
             font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-beige);
+            background-image: radial-gradient(circle at 20% 30%, rgba(244, 240, 233, 0.3) 0%, transparent 80%);
             color: var(--text-dark);
-            background-color: #fff;
-            line-height: 1.5;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Page Container */
-        .phone-container {
-            width: 100%;
+        .elegance-container {
             max-width: 375px;
             min-height: 812px;
             margin: 0 auto;
-            background-color: var(--primary-beige);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-color: rgba(255, 255, 255, 0.98);
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header Styles */
-        .app-header {
+        /* 顶部装饰元素 */
+        .gold-circle {
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--gold-light) 0%, var(--accent-gold) 100%);
+            opacity: 0.15;
+            filter: blur(20px);
+        }
+
+        /* 顶部导航 */
+        .header {
+            position: sticky;
+            top: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem var(--container-padding) 0.5rem;
-            background-color: var(--secondary-beige);
+            padding: 20px 16px 10px;
+            background: linear-gradient(to bottom, rgba(255, 250, 245, 0.95), rgba(255, 255, 255, 0.98));
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
         }
 
-        .logo {
+        /* 品牌Logo使用内联SVG */
+        .brand-logo {
+            display: flex;
+            align-items: center;
             font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 1.8rem;
+            font-weight: 700;
             color: var(--text-dark);
         }
 
-        .icons {
+        .logo-svg {
+            width: 36px;
+            height: 36px;
+            margin-right: 8px;
+        }
+
+        .nav-icons {
             display: flex;
-            gap: 1.2rem;
+            gap: 16px;
         }
 
-        .search-bar {
-            margin: 1rem var(--container-padding);
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            background: rgba(196, 163, 118, 0.1);
+            font-size: 1.1rem;
             position: relative;
+            transition: var(--transition);
         }
 
-        .search-bar input {
+        .nav-icon:hover {
+            background: rgba(196, 163, 118, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background-color: #e53e3e;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .search-container {
+            margin: 0 16px;
+            position: relative;
+            margin-bottom: 5px;
+        }
+
+        .search-container input {
             width: 100%;
-            padding: 0.85rem 1rem 0.85rem 3rem;
+            padding: 13px 20px 13px 50px;
             border: none;
+            border-radius: 30px;
             background: white;
-            border-radius: var(--radius);
             font-size: 1rem;
-            color: var(--text-medium);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+        }
+
+        .search-container input:focus {
+            box-shadow: 0 5px 15px rgba(196, 163, 118, 0.1);
+            outline: none;
         }
 
         .search-icon {
             position: absolute;
-            left: 1rem;
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-light);
+            color: var(--accent-gold);
+            font-size: 1.1rem;
         }
 
-        /* Main Content */
-        .page-content {
-            height: calc(100% - 150px);
-            overflow-y: auto;
-            background-color: var(--secondary-beige);
-            padding-bottom: 4rem;
+        /* 轮播图区域 */
+        .hero-carousel {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+            margin: 10px 16px 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
         }
 
-        /* Tab Bar */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
+        .hero-slide {
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 25px;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+        }
+
+        .slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 60%);
+        }
+
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            width: 60%;
+        }
+
+        .slide-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .slide-desc {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .slide-btn {
+            background: white;
+            color: var(--text-dark);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .slide-btn:hover {
+            background: var(--accent-gold);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .carousel-nav {
+            position: absolute;
+            bottom: 20px;
             left: 0;
             right: 0;
-            height: 70px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            z-index: 3;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .carousel-dot.active {
+            background: var(--accent-gold);
+            transform: scale(1.2);
+        }
+
+        /* 品牌展示区 */
+        .brand-section {
+            padding: 0 16px 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+        }
+
+        .view-all {
+            color: var(--accent-gold);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .brand-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .brand-card {
+            background: white;
+            border-radius: var(--radius-card);
+            padding: 15px 10px;
+            box-shadow: var(--shadow-xs);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .brand-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .brand-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+        }
+
+        /* 使用FontAwesome品牌图标 */
+        .brand-icon {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            text-align: center;
+        }
+
+        /* 折扣专区 */
+        .sale-section {
+            padding: 20px 16px;
+            background: rgba(196, 163, 118, 0.03);
+            margin-top: 10px;
+            border-top: 1px solid rgba(229, 224, 215, 0.4);
+            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
+        }
+
+        .sale-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sale-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .sale-header-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--radius-card);
+            overflow: hidden;
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .discount-tag {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: linear-gradient(to right, #d64141, #c9333c);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .product-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-name {
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            min-height: 48px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .vendor-name {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vendor-name i {
+            font-size: 0.9rem;
+        }
+
+        .price-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .original-price {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-decoration: line-through;
+            margin-top: 2px;
+        }
+
+        .add-to-cart {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .add-to-cart:hover {
+            transform: scale(1.1);
+            background: var(--gold-dark);
+        }
+
+        /* 热销专区 */
+        .hot-section {
+            padding: 25px 16px;
+        }
+
+        .hot-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .hot-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #e63946, #d64141);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .hot-header-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: #d64141;
+        }
+
+        /* 底部导航 */
+        .nav-bar {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            background-color: var(--secondary-beige);
-            border-top: 1px solid var(--border-color);
-            max-width: 375px;
-            margin: 0 auto;
-            z-index: 100;
+            height: 70px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border-top: 1px solid rgba(229, 224, 215, 0.4);
+            position: sticky;
+            bottom: 0;
+            padding: 0 10px;
+            z-index: 10;
         }
 
-        .tab-item {
+        .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             font-size: 0.75rem;
             color: var(--text-light);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            padding: 0.5rem;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: var(--radius);
         }
 
-        .tab-item.active {
+        .nav-item.active {
             color: var(--accent-gold);
+            background: rgba(196, 163, 118, 0.1);
         }
 
-        .tab-item i {
+        .nav-item i {
             font-size: 1.4rem;
-            margin-bottom: 0.25rem;
-        }
-
-        /* Section Styles */
-        .section {
-            padding: 1.5rem var(--container-padding);
-        }
-
-        .section-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .section-title h2 {
-            font-size: 1.35rem;
-            font-weight: 600;
-        }
-
-        .view-all {
-            color: var(--accent-gold);
-            font-size: 0.9rem;
-        }
-
-        /* Banner Carousel */
-        .banner-carousel {
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-            padding: 0 var(--container-padding);
-            height: 180px;
-        }
-
-        .banner-slide {
-            height: 100%;
-            border-radius: var(--radius);
-            background-position: center;
-            background-size: cover;
-            position: relative;
-            transition: transform 0.5s ease;
-        }
-
-        .banner-slide-content {
-            position: absolute;
-            bottom: 1.5rem;
-            left: 1.5rem;
-            max-width: 60%;
-        }
-
-        .banner-slide-content h3 {
-            font-size: 1.5rem;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-            margin-bottom: 0.5rem;
-        }
-
-        .banner-slide-btn {
-            background-color: rgba(255, 255, 255, 0.85);
-            color: var(--text-dark);
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .banner-nav {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .banner-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.2);
-        }
-
-        .banner-dot.active {
-            background-color: var(--accent-gold);
-        }
-
-        /* Brands Section */
-        .brands-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.75rem;
-            margin: 0 auto;
-        }
-
-        .brand-item {
-            background: white;
-            border-radius: var(--radius);
-            padding: 0.75rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .brand-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .brand-item img {
-            height: 50px;
-            width: 90%;
-            object-fit: contain;
-            margin: 0 auto 0.5rem;
-        }
-
-        .brand-item p {
-            font-size: 0.7rem;
-            font-weight: 500;
-        }
-
-        /* Product Grid */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .product-card {
-            background: white;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        .tag-ribbon {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            z-index: 1;
-        }
-
-        .discount-tag {
-            background-color: var(--sale-red);
-            color: white;
-        }
-
-        .hot-tag {
-            background-color: var(--accent-gold);
-            color: white;
-        }
-
-        .product-img {
-            width: 100%;
-            height: 170px;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .product-details {
-            padding: 0.9rem;
-        }
-
-        .product-name {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 0.3rem;
-            height: 40px;
-            overflow: hidden;
-        }
-
-        .product-price {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.25rem;
-        }
-
-        .current-price {
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .original-price {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            text-decoration: line-through;
-        }
-
-        .discount-percent {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--sale-red);
-        }
-
-        .vendor-name {
-            font-size: 0.7rem;
-            color: var(--accent-gold);
-            margin-top: 0.3rem;
-        }
-
-        /* Categories Page */
-        .category-container {
-            display: flex;
-            height: calc(100% - 2.5rem);
-        }
-
-        .category-sidebar {
-            width: 30%;
-            background-color: #f5f1e7;
-            border-right: 1px solid var(--border-color);
-            overflow-y: auto;
-        }
-
-        .category-item {
-            padding: 1.1rem 1rem;
-            font-size: 0.95rem;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .category-item.active {
-            background-color: white;
-            color: var(--accent-gold);
-            font-weight: 500;
-            border-right: 2px solid var(--accent-gold);
-        }
-
-        .category-content {
-            width: 70%;
-            background-color: white;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .subcategory-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .subcategory-title {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 0.8rem;
-        }
-
-        .subcategory-products {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        /* Cart Page */
-        .cart-vendor-group {
-            background-color: white;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .vendor-header {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .vendor-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            margin-right: 0.75rem;
-            background-size: cover;
-        }
-
-        .vendor-info {
-            flex: 1;
-        }
-
-        .vendor-name {
-            font-weight: 500;
-        }
-
-        .vendor-range {
-            font-size: 0.8rem;
-            color: var(--text-light);
-        }
-
-        .cart-items {
-            padding: 0.5rem;
-        }
-
-        .cart-item {
-            display: flex;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .cart-item-image {
-            width: 80px;
-            height: 100px;
-            border-radius: 10px;
-            background-size: cover;
-            margin-right: 1rem;
-        }
-
-        .cart-item-details {
-            flex: 1;
-        }
-
-        .cart-item-name {
-            font-size: 0.95rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .cart-item-size, .cart-item-color {
-            font-size: 0.8rem;
-            color: var(--text-light);
-            margin-bottom: 0.3rem;
-        }
-
-        .cart-item-price {
-            font-weight: 600;
-            margin-top: 0.5rem;
-        }
-
-        .cart-item-quantity {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .qty-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1px solid var(--border-color);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        .qty-value {
-            min-width: 30px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .cart-footer {
-            padding: 0.7rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--secondary-beige);
-            border-top: 1px solid var(--border-color);
-        }
-
-        .vendor-total {
-            font-weight: 500;
-        }
-
-        .promotion-button {
-            padding: 0.4rem 1rem;
-            background-color: var(--accent-gold);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 0.8rem;
-        }
-
-        .checkout-section {
-            background-color: white;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin: 1rem var(--container-padding);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .checkout-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-        }
-
-        .checkout-label {
-            color: var(--text-medium);
-        }
-
-        .total-price {
-            font-weight: 700;
-            font-size: 1.2rem;
-            margin: 1rem 0;
-        }
-
-        .checkout-button {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: var(--radius);
-            background-color: var(--accent-gold);
-            color: white;
-            font-size: 1rem;
-            font-weight: 500;
-            margin-top: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .checkout-button:hover {
-            background-color: var(--hover-gold);
-        }
-
-        /* Profile Page */
-        .profile-header {
-            background-color: white;
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin: var(--container-padding);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-
-        .user-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            margin: 0 auto 1rem;
-            background-size: cover;
-            background-position: center;
-            position: relative;
-        }
-
-        .profile-name {
-            font-size: 1.3rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .profile-email {
-            color: var(--text-light);
-            margin-bottom: 1rem;
-        }
-
-        .membership-row {
-            display: flex;
-            justify-content: space-between;
-            background-color: white;
-            padding: 1.2rem;
-            border-radius: var(--radius);
-            margin: var(--container-padding);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .membership-item {
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .membership-icon {
-            background-color: var(--secondary-beige);
-            color: var(--accent-gold);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            margin: 0 auto 0.75rem;
-        }
-
-        .membership-title {
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 0.25rem;
-        }
-
-        .membership-value {
-            font-size: 0.85rem;
-            color: var(--accent-gold);
-        }
-
-        .orders-row {
-            display: flex;
-            justify-content: space-between;
-            background-color: white;
-            padding: 1.2rem;
-            border-radius: var(--radius);
-            margin: var(--container-padding);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-
-        .order-item {
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .order-icon {
-            position: relative;
-            margin-bottom: 0.75rem;
-        }
-
-        .order-icon i {
-            font-size: 1.3rem;
-            color: var(--accent-gold);
-        }
-
-        .order-pending {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: var(--sale-red);
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .order-title {
-            font-size: 0.8rem;
+            margin-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="phone-container">
-        <!-- Top Header -->
-        <div class="app-header">
-            <div class="logo">Elegance</div>
-            <div class="icons">
-                <i class="far fa-bell"></i>
-                <i class="far fa-heart"></i>
+    <div class="elegance-container">
+        <div class="gold-circle"></div>
+        
+        <!-- 顶部导航 - 使用内联SVG品牌Logo -->
+        <div class="header">
+            <div class="brand-logo">
+                <svg class="logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M70,40 Q100,10 130,40 L130,100 C130,120 120,140 100,150 C80,140 70,120 70,100 Z" 
+                          fill="#2a2a2a" stroke="#f5f1e9" stroke-width="2"/>
+                    <path d="M100,50 C90,60 85,70 85,85 C85,100 90,110 100,115 C110,110 115,100 115,85 C115,70 110,60 100,50 Z" 
+                          fill="none" stroke="#c4a376" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M85,40 Q100,20 115,40" 
+                          fill="none" stroke="#c4a376" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                ELEGANCE
+            </div>
+            <div class="nav-icons">
+                <div class="nav-icon">
+                    <i class="far fa-heart"></i>
+                </div>
+                <div class="nav-icon">
+                    <i class="far fa-bell"></i>
+                    <div class="notification-dot"></div>
+                </div>
             </div>
         </div>
-
-        <!-- Search Bar -->
-        <div class="search-bar">
+        
+        <!-- 搜索框 -->
+        <div class="search-container">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" placeholder="搜索商品、品牌、品类">
+            <input type="text" placeholder="搜索品牌、商品或品类">
         </div>
-
-        <!-- Page Content -->
-        <div class="page-content" id="pageContent">
-            <!-- Only Home Page content in this example -->
-            <!-- Banner Carousel -->
-            <div class="banner-carousel">
-                <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');">
-                    <div class="banner-slide-content">
-                        <h3>New Season Styles</h3>
-                        <button class="banner-slide-btn">立即查看</button>
-                    </div>
-                </div>
-                <div class="banner-nav">
-                    <div class="banner-dot active"></div>
-                    <div class="banner-dot"></div>
-                    <div class="banner-dot"></div>
+        
+        <!-- 轮播图区域 -->
+        <div class="hero-carousel">
+            <!-- 轮播图1 -->
+            <div class="hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <div class="slide-title">新款秋装登场</div>
+                    <p class="slide-desc">精选设计师秋冬系列，全场新品8折优惠</p>
+                    <button class="slide-btn">立即选购</button>
                 </div>
             </div>
-
-            <!-- Main Content Sections -->
-            <!-- Popular Brands -->
-            <div class="section">
-                <div class="section-title">
-                    <h2>品牌精选</h2>
-                    <span class="view-all">查看全部</span>
-                </div>
-                <div class="brands-grid">
-                    <div class="brand-item">
-                        <img src="https://cdn.logo.com/hotlink-ok/logo-social.png" alt="">
-                        <p>ZARA</p>
-                    </div>
-                    <div class="brand-item">
-                        <img src="https://logo.com/image.jpg" alt="">
-                        <p>HM</p>
-                    </div>
-                    <div class="brand-item">
-                        <img src="https://example.com/logo.png" alt="">
-                        <p>UNIQLO</p>
-                    </div>
-                    <div class="brand-item">
-                        <img src="https://logos.com/image" alt="">
-                        <p>NIKE</p>
-                    </div>
+            
+            <!-- 轮播图2 -->
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <div class="slide-title">高端外套专场</div>
+                    <p class="slide-desc">真皮、羊毛材质外套限时特惠</p>
+                    <button class="slide-btn">立即选购</button>
                 </div>
             </div>
-
-            <!-- Discount Section -->
-            <div class="section">
-                <div class="section-title">
-                    <h2>折扣专区</h2>
-                    <span class="view-all">查看全部</span>
-                </div>
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="tag-ribbon discount-tag">SALE</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">女式丝质衬衫</div>
-                            <div class="vendor-name">By Fashion Hub</div>
-                            <div class="product-price">
-                                <div class="current-price">¥189</div>
-                                <div class="original-price">¥329</div>
-                                <div class="discount-percent">42% OFF</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon discount-tag">SALE</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">休闲束腰连衣裙</div>
-                            <div class="vendor-name">By Designers Co.</div>
-                            <div class="product-price">
-                                <div class="current-price">¥279</div>
-                                <div class="original-price">¥499</div>
-                                <div class="discount-percent">44% OFF</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon discount-tag">SALE</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1591369822092-7d8c9c6d0e58?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">男士休闲裤</div>
-                            <div class="vendor-name">By Men's Choice</div>
-                            <div class="product-price">
-                                <div class="current-price">¥229</div>
-                                <div class="original-price">¥399</div>
-                                <div class="discount-percent">42% OFF</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon discount-tag">SALE</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1541944171323-036b76efd0fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">秋季外套女</div>
-                            <div class="vendor-name">By Style Empire</div>
-                            <div class="product-price">
-                                <div class="current-price">¥319</div>
-                                <div class="original-price">¥549</div>
-                                <div class="discount-percent">42% OFF</div>
-                            </div>
-                        </div>
-                    </div>
+            
+            <!-- 轮播图3 -->
+            <div class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <div class="slide-title">配饰新品上架</div>
+                    <p class="slide-desc">精致配饰提升整体时尚感</p>
+                    <button class="slide-btn">立即选购</button>
                 </div>
             </div>
-
-            <!-- Hot Sale Section -->
-            <div class="section">
-                <div class="section-title">
-                    <h2>热销专区</h2>
-                    <span class="view-all">查看全部</span>
+            
+            <div class="carousel-nav">
+                <div class="carousel-dot active"></div>
+                <div class="carousel-dot"></div>
+                <div class="carousel-dot"></div>
+            </div>
+        </div>
+        
+        <!-- 品牌展示区 - 使用FontAwesome品牌图标 -->
+        <div class="brand-section">
+            <div class="section-header">
+                <div class="section-title">精选品牌</div>
+                <a href="#" class="view-all">全部品牌</a>
+            </div>
+            
+            <div class="brand-grid">
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fab fa-modx"></i> <!-- ZARA替代图标 -->
+                    </div>
+                    <div class="brand-name">ZARA</div>
                 </div>
-                <div class="product-grid">
-                    <div class="product-card">
-                        <div class="tag-ribbon hot-tag">HOT</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1620799139652-715e4d5b232d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">牛仔裤休闲款男</div>
-                            <div class="vendor-name">By Denim Co.</div>
-                            <div class="product-price">
-                                <div class="current-price">¥259</div>
-                            </div>
-                        </div>
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fab fa-h-square"></i> <!-- H&M替代图标 -->
                     </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon hot-tag">HOT</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1489976908522-aabafff16364?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">修身连衣裙女</div>
-                            <div class="vendor-name">By Fashion House</div>
-                            <div class="product-price">
-                                <div class="current-price">¥289</div>
-                            </div>
-                        </div>
+                    <div class="brand-name">H&M</div>
+                </div>
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fas fa-tshirt"></i> <!-- UNIQLO替代图标 -->
                     </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon hot-tag">HOT</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">运动鞋休闲款</div>
-                            <div class="vendor-name">By Sports Gear Inc</div>
-                            <div class="product-price">
-                                <div class="current-price">¥349</div>
-                            </div>
-                        </div>
+                    <div class="brand-name">UNIQLO</div>
+                </div>
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fas fa-socks"></i> <!-- NIKE替代图标 -->
                     </div>
-                    <div class="product-card">
-                        <div class="tag-ribbon hot-tag">HOT</div>
-                        <div class="product-img" style="background-image: url('https://images.unsplash.com/photo-1543294479-bfd055201d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-                        <div class="product-details">
-                            <div class="product-name">女士手提包</div>
-                            <div class="vendor-name">By Accessories Co.</div>
-                            <div class="product-price">
-                                <div class="current-price">¥399</div>
-                            </div>
-                        </div>
+                    <div class="brand-name">NIKE</div>
+                </div>
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fas fa-gem"></i> <!-- Sephora替代图标 -->
                     </div>
+                    <div class="brand-name">Sephora</div>
+                </div>
+                <div class="brand-card">
+                    <div class="brand-icon">
+                        <i class="fas fa-crown"></i> <!-- Louis Vuitton替代图标 -->
+                    </div>
+                    <div class="brand-name">Louis Vuitton</div>
                 </div>
             </div>
         </div>
-
-        <!-- Bottom Tab Bar -->
-        <div class="tab-bar">
-            <div class="tab-item active">
+        
+        <!-- 折扣专区 -->
+        <div class="sale-section">
+            <div class="sale-header">
+                <div class="sale-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="sale-header-text">折扣专区</div>
+            </div>
+            
+            <div class="products-grid">
+                <!-- 商品1 -->
+                <div class="product-card">
+                    <div class="discount-tag">-35%</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">法式复古方领连衣裙</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Fashion House
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥399.00</div>
+                                <div class="original-price">¥599.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品2 -->
+                <div class="product-card">
+                    <div class="discount-tag">-42%</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">纯色修身吊带连衣裙</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Elegant Woman
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥459.00</div>
+                                <div class="original-price">¥799.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品3 -->
+                <div class="product-card">
+                    <div class="discount-tag">-30%</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">设计师款麂皮外套</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Style Empire
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥799.00</div>
+                                <div class="original-price">¥1149.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品4 -->
+                <div class="product-card">
+                    <div class="discount-tag">-25%</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">缎面蝴蝶结衬衫</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Modern Lady
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥299.00</div>
+                                <div class="original-price">¥399.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 热销专区 -->
+        <div class="hot-section">
+            <div class="hot-header">
+                <div class="hot-icon">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div class="hot-header-text">热销专区</div>
+            </div>
+            
+            <div class="products-grid">
+                <!-- 商品1 -->
+                <div class="product-card">
+                    <div class="discount-tag">HOT</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1620799139652-715e4d5b232d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">牛仔裤休闲款男装</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Denim Co.
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥259.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品2 -->
+                <div class="product-card">
+                    <div class="discount-tag">热销</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1489976908522-aabafff16364?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">修身连衣裙女装</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Fashion House
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥289.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品3 -->
+                <div class="product-card">
+                    <div class="discount-tag">爆款</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">运动鞋休闲款</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Sports Gear Inc
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥349.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品4 -->
+                <div class="product-card">
+                    <div class="discount-tag">热门</div>
+                    <div class="product-image" style="background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
+                    <div class="product-info">
+                        <div class="product-name">简约女士手提包</div>
+                        <div class="vendor-name">
+                            <i class="fas fa-store"></i> Accessories Co.
+                        </div>
+                        <div class="price-info">
+                            <div>
+                                <div class="price-tag">¥399.00</div>
+                            </div>
+                            <div class="add-to-cart">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="nav-bar">
+            <div class="nav-item active">
                 <i class="fas fa-home"></i>
                 <span>首页</span>
             </div>
-            <div class="tab-item">
+            <div class="nav-item">
                 <i class="fas fa-list"></i>
                 <span>分类</span>
             </div>
-            <div class="tab-item">
+            <div class="nav-item">
                 <i class="fas fa-shopping-cart"></i>
                 <span>购物车</span>
             </div>
-            <div class="tab-item">
+            <div class="nav-item">
                 <i class="fas fa-user"></i>
                 <span>我的</span>
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Simple banner rotation simulation
         document.addEventListener('DOMContentLoaded', function() {
-            const dots = document.querySelectorAll('.banner-dot');
+            // 轮播图功能
+            let currentSlide = 0;
+            const slides = document.querySelectorAll('.hero-slide');
+            const dots = document.querySelectorAll('.carousel-dot');
+            const totalSlides = slides.length;
+            
+            function showSlide(index) {
+                // 移除所有slide的active类
+                slides.forEach(slide => slide.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                // 添加active类到当前slide和dot
+                slides[index].classList.add('active');
+                dots[index].classList.add('active');
+                currentSlide = index;
+            }
+            
+            // 为每个轮播点添加点击事件
             dots.forEach((dot, index) => {
-                dot.addEventListener('click', function() {
-                    document.querySelector('.banner-dot.active').classList.remove('active');
-                    this.classList.add('active');
+                dot.addEventListener('click', () => {
+                    showSlide(index);
                 });
             });
             
-            // Product card hover effect
+            // 自动轮播
+            setInterval(() => {
+                let nextSlide = (currentSlide + 1) % totalSlides;
+                showSlide(nextSlide);
+            }, 5000);
+            
+            // 产品卡片悬停效果
             const productCards = document.querySelectorAll('.product-card');
             productCards.forEach(card => {
                 card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-5px)';
+                    this.style.transform = 'translateY(-8px)';
+                    this.style.boxShadow = '0 12px 30px rgba(0, 0, 0, 0.15)';
                 });
                 
                 card.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
                 });
             });
             
-            // Simple active category simulation
-            const categoryItems = document.querySelectorAll('.category-item');
-            if(categoryItems.length > 0) {
-                categoryItems.forEach(item => {
-                    item.addEventListener('click', function() {
-                        document.querySelector('.category-item.active').classList.remove('active');
-                        this.classList.add('active');
-                    });
+            // 加入购物车按钮动画
+            const addToCartBtns = document.querySelectorAll('.add-to-cart');
+            addToCartBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 阻止事件冒泡
+                    
+                    const clone = btn.cloneNode(true);
+                    clone.style.position = 'absolute';
+                    clone.style.zIndex = '9999';
+                    clone.style.transition = 'all 0.8s ease';
+                    
+                    // 获取按钮在屏幕上的位置
+                    const rect = btn.getBoundingClientRect();
+                    clone.style.left = `${rect.left}px`;
+                    clone.style.top = `${rect.top}px`;
+                    
+                    document.body.appendChild(clone);
+                    
+                    // 动画到购物车位置
+                    setTimeout(() => {
+                        clone.style.left = '85%';
+                        clone.style.top = '95%';
+                        clone.style.transform = 'scale(0.5)';
+                        clone.style.opacity = '0.5';
+                    }, 10);
+                    
+                    // 移除克隆元素
+                    setTimeout(() => {
+                        clone.remove();
+                    }, 800);
                 });
-            }
+            });
+            
+            // 点击产品卡片进入详情页
+            productCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        // 这里通常会导航到商品详情页，用alert模拟
+                        alert('即将跳转到商品详情页');
+                    }, 300);
+                });
+            });
         });
     </script>
 </body>
-</html>

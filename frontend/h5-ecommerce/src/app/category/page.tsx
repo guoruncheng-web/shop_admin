@@ -1,449 +1,470 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import TabBar from '../components/TabBar';
 
-interface SubCategory {
-  id: number;
+type PrimaryCategory = {
+  key: string;
   name: string;
   icon: string;
-}
+};
 
-interface Product {
+type SubCategory = {
+  key: string;
+  name: string;
+  icon: string;
+};
+
+type Product = {
   id: number;
   name: string;
-  price: number;
-  originalPrice?: number;
+  price: string;
   image: string;
-  badge?: { type: 'hot' | 'discount'; text: string };
-}
+  badge?: 'hot' | 'new' | 'boom';
+};
 
-interface Category {
-  id: number;
-  name: string;
-  icon: string;
-  subCategories: SubCategory[];
-  products: Product[];
-}
+const primaryCategories: PrimaryCategory[] = [
+  { key: 'women', name: '女装', icon: '👗' },
+  { key: 'men', name: '男装', icon: '👔' },
+  { key: 'shoe', name: '鞋靴箱包', icon: '👜' },
+  { key: 'sport', name: '运动户外', icon: '🏃' },
+  { key: 'beauty', name: '内衣美妆', icon: '💄' },
+  { key: 'jewel', name: '配饰饰品', icon: '💍' },
+  { key: 'kids', name: '童装母婴', icon: '👶' },
+  { key: 'designer', name: '设计师款', icon: '🎨' },
+  { key: 'luxury', name: '奢侈品牌', icon: '👑' },
+  { key: 'plus', name: '大码专区', icon: '➕' },
+  { key: 'homewear', name: '居家服饰', icon: '🏠' },
+  { key: 'deal', name: '特惠专区', icon: '⭐' },
+  { key: 'new', name: '新品首发', icon: '🔥' },
+];
 
-const mockCategories: Category[] = [
-  {
-    id: 1,
-    name: '潮流女装',
-    icon: '👗',
-    subCategories: [
-      { id: 1, name: 'T恤/上衣', icon: '👕' },
-      { id: 2, name: '外套', icon: '🧥' },
-      { id: 3, name: '马甲', icon: '🦺' },
-      { id: 4, name: '连衣裙', icon: '👗' },
-      { id: 5, name: '裙装', icon: '👗' },
-      { id: 6, name: '裤装', icon: '👖' },
-    ],
-    products: [
-      { id: 1, name: '纯色简约衬衫 春季新款', price: 159, image: 'https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=200&h=170&crop=entropy' },
-      { id: 2, name: '纯色百搭针织衫', price: 129, image: 'https://images.unsplash.com/photo-1578587018452-892bace6fa90?w=200&h=170&crop=entropy' },
-      { id: 3, name: '修身直筒牛仔裤', price: 259, image: 'https://images.unsplash.com/photo-1506634572416-48cdfe530110?w=200&h=170&crop=entropy', badge: { type: 'hot', text: '热卖' } },
-      { id: 4, name: '休闲连帽卫衣', price: 169, originalPrice: 212, image: 'https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=200&h=170&crop=entropy', badge: { type: 'discount', text: '8折' } },
-      { id: 5, name: '简约休闲女式衬衫', price: 139, originalPrice: 185, image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&h=170&crop=entropy', badge: { type: 'discount', text: '75折' } },
-      { id: 6, name: '轻奢风衣外套', price: 299, originalPrice: 459, image: 'https://images.unsplash.com/photo-1617137968427-85924c800a22?w=200&h=170&crop=entropy', badge: { type: 'discount', text: '65折' } },
-    ],
-  },
-  {
-    id: 2,
-    name: '时尚男装',
-    icon: '👔',
-    subCategories: [
-      { id: 7, name: '衬衫', icon: '👔' },
-      { id: 8, name: 'T恤', icon: '👕' },
-      { id: 9, name: '夹克', icon: '🧥' },
-    ],
-    products: [],
-  },
-  {
-    id: 3,
-    name: '鞋靴箱包',
-    icon: '👞',
-    subCategories: [
-      { id: 10, name: '运动鞋', icon: '👟' },
-      { id: 11, name: '皮鞋', icon: '👞' },
-      { id: 12, name: '箱包', icon: '👜' },
-    ],
-    products: [],
-  },
-  {
-    id: 4,
-    name: '运动户外',
-    icon: '🏃',
-    subCategories: [],
-    products: [],
-  },
-  {
-    id: 5,
-    name: '内衣美妆',
-    icon: '💄',
-    subCategories: [],
-    products: [],
-  },
-  {
-    id: 6,
-    name: '配饰饰品',
-    icon: '💎',
-    subCategories: [],
-    products: [],
-  },
-  {
-    id: 7,
-    name: '童装母婴',
-    icon: '👶',
-    subCategories: [],
-    products: [],
-  },
-  {
-    id: 8,
-    name: '设计师款',
-    icon: '🎨',
-    subCategories: [],
-    products: [],
-  },
+const defaultSubcategories: SubCategory[] = [
+  { key: 'tops', name: 'T恤/上衣', icon: '👕' },
+  { key: 'coat', name: '外套', icon: '🧥' },
+  { key: 'vest', name: '马甲', icon: '🦺' },
+  { key: 'dress', name: '连衣裙', icon: '👗' },
+  { key: 'skirt', name: '裙装', icon: '🧣' },
+  { key: 'pants', name: '裤装', icon: '🩳' },
+];
+
+const hotProducts: Product[] = [
+  { id: 1, name: '纯色百搭针织衫 秋冬款', price: '¥129.00', image: 'https://picsum.photos/id/100/300/300', badge: 'hot' },
+  { id: 2, name: '修身直筒牛仔裤 显瘦百搭', price: '¥199.00', image: 'https://picsum.photos/id/101/300/300', badge: 'new' },
+  { id: 3, name: '字母印花连帽卫衣', price: '¥169.00', image: 'https://picsum.photos/id/102/300/300', badge: 'hot' },
+  { id: 4, name: '休闲款风衣外套 秋季', price: '¥299.00', image: 'https://picsum.photos/id/103/300/300', badge: 'boom' },
 ];
 
 export default function CategoryPage() {
-  const [activeCategory, setActiveCategory] = useState(0);
+  const [active, setActive] = useState<string>('women');
 
-  const currentCategory = mockCategories[activeCategory];
+  const banner = useMemo(() => {
+    const name = primaryCategories.find((c) => c.key === active)?.name ?? '女装';
+    return {
+      image: 'https://picsum.photos/id/237/600/300',
+      label: `精选${name} 满300减50`,
+    };
+  }, [active]);
+
+  const subcats = useMemo(() => defaultSubcategories, [active]);
 
   return (
     <>
-      <div style={{ maxWidth: 375, margin: '0 auto', minHeight: 'calc(100vh - 58px)', background: '#ffffff', paddingBottom: 58 }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '12px 16px',
-          background: 'white',
-          borderBottom: '1px solid #f5f5f5',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-        }}>
-          <div style={{
-            fontSize: '1.3rem',
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #e29692, #c57d7a)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}>
-            StyleHub
-          </div>
-          <div style={{ display: 'flex', gap: 16, fontSize: '1.1rem', color: '#666' }}>
-            <span>🔍</span>
-            <span>⚙️</span>
-          </div>
-        </div>
-
-        {/* Page Header */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          margin: '12px 8px',
-          padding: 12,
-          background: 'white',
-          borderRadius: 12,
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-        }}>
-          <div style={{
-            fontSize: '1.2rem',
-            fontWeight: 600,
-            position: 'relative',
-            paddingLeft: 10,
-          }}>
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              height: '65%',
-              width: 3,
-              background: '#e29692',
-              borderRadius: 10,
-            }} />
-            商品分类
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#666' }}>
-            筛选 ⚙️
-          </div>
-        </div>
-
-        {/* Category Container */}
-        <div style={{
-          display: 'flex',
-          height: 'calc(100vh - 58px - 80px)',
-          gap: 8,
-          padding: '0 8px',
-        }}>
-          {/* Left: Primary Categories */}
-          <div style={{
-            width: '30%',
+      <div
+        style={{
+          backgroundColor: '#f7f7f7',
+          color: '#333',
+          maxWidth: 375,
+          margin: '0 auto',
+          position: 'relative',
+          minHeight: '100vh',
+          paddingBottom: 70,
+          paddingTop: 60,
+        }}
+      >
+        {/* 页头（固定） */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: 12,
             background: '#fff',
-            borderRadius: 12,
-            overflowY: 'auto',
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            top: 0,
+            zIndex: 100,
             boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-            padding: '8px 0',
-          }}>
-            {mockCategories.map((category, index) => (
+            borderBottom: '1px solid #f5f5f5',
+            maxWidth: 375,
+            margin: '0 auto',
+          }}
+        >
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'background 0.3s',
+            }}
+            onMouseOver={(e) => ((e.currentTarget.style.background = '#f5f5f5'))}
+            onMouseOut={(e) => ((e.currentTarget.style.background = 'transparent'))}
+            aria-label="返回"
+          >
+            {/* ← */}
+          </button>
+          <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>商品分类</div>
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'background 0.3s',
+            }}
+            onMouseOver={(e) => ((e.currentTarget.style.background = '#f5f5f5'))}
+            onMouseOut={(e) => ((e.currentTarget.style.background = 'transparent'))}
+            aria-label="筛选"
+          >
+            {/* ☰ */}
+          </button>
+        </div>
+
+        {/* 搜索按钮条 */}
+        <div
+          style={{
+            background: '#f9f9f9',
+            border: '1px solid #e0e0e0',
+            borderRadius: 20,
+            padding: '8px 15px',
+            display: 'flex',
+            alignItems: 'center',
+            width: '80%',
+            minWidth: 160,
+            margin: '12px auto',
+            color: '#666',
+          }}
+        >
+          <span style={{ marginRight: 8 }}>🔍</span>
+          <span>搜索商品</span>
+        </div>
+
+        {/* 分类容器：左侧一级 + 右侧内容 */}
+        <div
+          style={{
+            display: 'flex',
+            height: 'calc(100vh - 150px)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* 左侧一级分类 */}
+          <div
+            style={{
+              width: '30%',
+              background: '#fff',
+              overflowY: 'auto',
+              borderRight: '1px solid #f5f5f5',
+              padding: '12px 0',
+            }}
+          >
+            {primaryCategories.map((c) => {
+              const isActive = c.key === active;
+              return (
+                <div
+                  key={c.key}
+                  onClick={() => setActive(c.key)}
+                  style={{
+                    padding: '12px 16px',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    borderLeft: isActive ? '3px solid #e29692' : '3px solid transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: isActive ? 'rgba(226,150,146,0.1)' : 'transparent',
+                    color: isActive ? '#e29692' : '#333',
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  <span style={{ marginRight: 8, fontSize: '1.1rem', color: '#e29692' }}>{c.icon}</span>
+                  <span>{c.name}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 右侧内容 */}
+          <div
+            style={{
+              width: '70%',
+              padding: 12,
+              overflowY: 'auto',
+            }}
+          >
+            {/* Banner */}
+            <div
+              style={{
+                height: 120,
+                borderRadius: 12,
+                overflow: 'hidden',
+                marginBottom: 16,
+                position: 'relative',
+              }}
+            >
+              <img
+                src={banner.image}
+                alt="分类Banner"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => {
+                  (e.currentTarget.style.display = 'none');
+                }}
+              />
               <div
-                key={category.id}
-                onClick={() => setActiveCategory(index)}
                 style={{
-                  padding: '12px 16px',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  borderLeft: activeCategory === index ? '3px solid #e29692' : '3px solid transparent',
-                  borderRight: '3px solid transparent',
-                  background: activeCategory === index ? 'rgba(226, 150, 146, 0.1)' : 'transparent',
-                  fontWeight: activeCategory === index ? 500 : 400,
-                  color: activeCategory === index ? '#e29692' : '#333',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  background: 'rgba(0,0,0,0.5)',
+                  color: '#fff',
+                  padding: '8px 12px',
+                  fontSize: '0.9rem',
                 }}
               >
-                <span style={{ fontSize: '1.2rem' }}>{category.icon}</span>
-                {category.name}
+                {banner.label}
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Right: Subcategories and Products */}
-          <div style={{
-            width: '70%',
-            overflowY: 'auto',
-            paddingRight: 4,
-          }}>
-            {/* Subcategories */}
-            {currentCategory.subCategories.length > 0 && (
-              <>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  margin: '16px 0 8px',
-                }}>
-                  <div style={{
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    paddingLeft: 4,
-                  }}>
-                    {currentCategory.name}热门
+            {/* 女装热门 */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                margin: '20px 0 12px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  position: 'relative',
+                  paddingLeft: 10,
+                }}
+              >
+                女装热门
+                <span
+                  style={{
+                    content: '""',
+                    position: 'absolute' as const,
+                    left: 0,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    height: '65%',
+                    width: 3,
+                    background: '#e29692',
+                    borderRadius: 10,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* 二级分类网格 */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 12,
+                marginBottom: 20,
+              }}
+            >
+              {subcats.map((s) => (
+                <div
+                  key={s.key}
+                  style={{
+                    background: '#fff',
+                    borderRadius: 12,
+                    padding: '16px 12px',
+                    textAlign: 'center' as const,
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-5px)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.08)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.05)';
+                  }}
+                  onClick={() => {
+                    // 可替换为路由跳转/筛选逻辑
+                    alert(`显示${s.name}分类的商品`);
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 50,
+                      height: 50,
+                      borderRadius: '50%',
+                      margin: '0 auto 12px',
+                      background: '#f5f5f5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.5rem',
+                      color: '#e29692',
+                    }}
+                  >
+                    {s.icon}
                   </div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 500 }}>{s.name}</div>
                 </div>
+              ))}
+            </div>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)',
-                  gap: 8,
-                }}>
-                  {currentCategory.subCategories.map((sub) => (
+            {/* 热销推荐 */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                margin: '20px 0 12px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  position: 'relative',
+                  paddingLeft: 10,
+                }}
+              >
+                热销推荐
+                <span
+                  style={{
+                    content: '""',
+                    position: 'absolute' as const,
+                    left: 0,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    height: '65%',
+                    width: 3,
+                    background: '#e29692',
+                    borderRadius: 10,
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: '0.9rem', color: '#666' }}>更多</div>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: 12,
+              }}
+            >
+              {hotProducts.map((p) => (
+                <div
+                  key={p.id}
+                  style={{
+                    background: '#fff',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    position: 'relative',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.08)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.05)';
+                  }}
+                  onClick={() => alert('跳转到商品详情')}
+                >
+                  {/* badge */}
+                  {p.badge ? (
                     <div
-                      key={sub.id}
                       style={{
-                        textAlign: 'center',
-                        padding: 8,
-                        background: '#fff',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        transition: 'all 0.3s',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        padding: '3px 10px',
+                        borderRadius: 12,
+                        fontSize: '0.7rem',
+                        color: '#fff',
+                        zIndex: 2,
+                        fontWeight: 500,
+                        background:
+                          p.badge === 'hot'
+                            ? '#e29692'
+                            : p.badge === 'new'
+                            ? '#2196f3'
+                            : '#ff6b6b',
                       }}
                     >
-                      <div style={{
-                        width: 50,
-                        height: 50,
-                        margin: '0 auto 8px',
-                        borderRadius: '50%',
-                        background: '#f5f5f5',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '1.5rem',
-                      }}>
-                        {sub.icon}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 500 }}>
-                        {sub.name}
-                      </div>
+                      {p.badge === 'hot' ? '热卖' : p.badge === 'new' ? '新款' : '爆款'}
                     </div>
-                  ))}
-                </div>
-              </>
-            )}
+                  ) : null}
 
-            {/* Products Section */}
-            {currentCategory.products.length > 0 && (
-              <>
-                {/* New Products */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  margin: '24px 0 8px',
-                }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, paddingLeft: 4 }}>
-                    新品推荐
+                  <div style={{ height: 160, overflow: 'hidden' }}>
+                    <img
+                      src={p.image}
+                      alt={p.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
+                      onError={(e) => {
+                        (e.currentTarget.style.display = 'none');
+                      }}
+                      onMouseOver={(e) => ((e.currentTarget.style.transform = 'scale(1.05)'))}
+                      onMouseOut={(e) => ((e.currentTarget.style.transform = 'none'))}
+                    />
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#666' }}>
-                    更多 →
-                  </div>
-                </div>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 8,
-                }}>
-                  {currentCategory.products.slice(0, 2).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-
-                {/* Hot Products */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  margin: '24px 0 8px',
-                }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, paddingLeft: 4 }}>
-                    热销排行
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#666' }}>
-                    更多 →
+                  <div style={{ padding: 12 }}>
+                    <div
+                      style={{
+                        fontSize: '0.9rem',
+                        marginBottom: 5,
+                        height: 40,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical' as const,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {p.name}
+                    </div>
+                    <div style={{ fontWeight: 'bold', color: '#e29692' }}>{p.price}</div>
                   </div>
                 </div>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 8,
-                }}>
-                  {currentCategory.products.slice(2, 4).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-
-                {/* Discount Products */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  margin: '24px 0 8px',
-                }}>
-                  <div style={{ fontSize: '1rem', fontWeight: 600, paddingLeft: 4 }}>
-                    折扣专区
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#666' }}>
-                    更多 →
-                  </div>
-                </div>
-
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: 8,
-                  marginBottom: 16,
-                }}>
-                  {currentCategory.products.slice(4, 6).map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              </>
-            )}
+              ))}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* 固定底部 TabBar（项目组件） */}
       <TabBar />
     </>
-  );
-}
-
-function ProductCard({ product }: { product: Product }) {
-  return (
-    <div style={{
-      background: 'white',
-      borderRadius: 10,
-      overflow: 'hidden',
-      transition: 'all 0.3s',
-      cursor: 'pointer',
-      boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
-      position: 'relative',
-    }}>
-      {product.badge && (
-        <div style={{
-          position: 'absolute',
-          top: 8,
-          left: 8,
-          padding: '2px 8px',
-          borderRadius: 12,
-          fontSize: '0.65rem',
-          color: 'white',
-          zIndex: 2,
-          fontWeight: 500,
-          background: product.badge.type === 'hot' ? '#e29692' : '#ff5722',
-        }}>
-          {product.badge.text}
-        </div>
-      )}
-      <div style={{
-        position: 'relative',
-        height: 150,
-        borderRadius: 10,
-        marginBottom: 8,
-        overflow: 'hidden',
-        background: '#f5f5f5',
-      }}>
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
-      </div>
-      <div style={{ padding: '0 8px 8px' }}>
-        <div style={{
-          fontSize: '0.85rem',
-          fontWeight: 500,
-          marginBottom: 5,
-          height: 38,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          lineHeight: 1.4,
-        }}>
-          {product.name}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontWeight: 700, color: '#e29692', fontSize: '0.95rem' }}>
-            ¥{product.price}
-          </div>
-          {product.originalPrice && (
-            <div style={{
-              fontSize: '0.75rem',
-              textDecoration: 'line-through',
-              color: '#666',
-            }}>
-              ¥{product.originalPrice}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
   );
 }

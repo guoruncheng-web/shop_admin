@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.scss';
 import { AuthGuard } from '@/providers/AuthGuard';
 
@@ -170,7 +170,7 @@ export default function Home() {
                 },
                 {
                   tag: 'SALE',
-                  img: 'https://images.unsplash.com/photo-1591369822092-7d8c9c6d0e58?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                  img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
                   name: '男士休闲裤',
                   vendor: "By Men's Choice",
                   price: '¥229',
@@ -179,7 +179,7 @@ export default function Home() {
                 },
                 {
                   tag: 'SALE',
-                  img: 'https://images.unsplash.com/photo-1541944171323-036b76efd0fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
                   name: '秋季外套女',
                   vendor: 'By Style Empire',
                   price: '¥319',
@@ -187,7 +187,7 @@ export default function Home() {
                   off: '42% OFF',
                 },
               ].map((p, idx) => (
-                <div key={idx} className={styles.productCard}>
+                <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
                   <div className={`${styles.tagRibbon} ${styles.discountTag}`}>{p.tag}</div>
                   <div className={styles.productImg}>
                     <img
@@ -229,7 +229,7 @@ export default function Home() {
                 },
                 {
                   tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1489976908522-aabafff16364?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
                   name: '修身连衣裙女',
                   vendor: 'By Fashion House',
                   price: '¥289',
@@ -243,13 +243,13 @@ export default function Home() {
                 },
                 {
                   tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1543294479-bfd055201d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
                   name: '女士手提包',
                   vendor: 'By Accessories Co.',
                   price: '¥399',
                 },
               ].map((p, idx) => (
-                <div key={idx} className={styles.productCard}>
+                <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
                   <div className={`${styles.tagRibbon} ${styles.hotTag}`}>{p.tag}</div>
                   <div className={styles.productImg}>
                     <img

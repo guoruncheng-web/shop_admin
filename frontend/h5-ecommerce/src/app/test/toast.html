@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="filename" content="passionate_confirmation.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>热情奔放确认弹窗 - Elegance购物平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fff8f0 0%, #ffefe9 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #3c1e0a;
+        }
+        
+        /* 主容器样式 */
+        .passionate-container {
+            width: 100%;
+            max-width: 400px;
+            min-height: 600px;
+            background: linear-gradient(135deg, #fff8f5 0%, #fff2e9 100%);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(230, 100, 50, 0.2);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* 演示按钮 */
+        .trigger-button {
+            padding: 18px 45px;
+            background: linear-gradient(to right, #e63946, #d64141);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 25px rgba(230, 57, 70, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        .trigger-button:hover {
+            transform: scale(1.07);
+            box-shadow: 0 12px 35px rgba(230, 57, 70, 0.5);
+        }
+        
+        .trigger-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shine 1.5s infinite;
+            z-index: 1;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 150%; }
+        }
+        
+        /* 弹窗背景遮罩 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(230, 100, 50, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 弹窗容器 */
+        .confirmation-modal {
+            width: 85%;
+            max-width: 400px;
+            background: linear-gradient(135deg, #fff1e6, #ffe8d8);
+            border-radius: 25px;
+            overflow: hidden;
+            transform: scale(0.8) translateY(30px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 60px rgba(230, 100, 50, 0.4);
+            position: relative;
+            border: 3px solid #ffe1c8;
+        }
+        
+        .modal-overlay.active .confirmation-modal {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+        
+        /* 弹窗顶部装饰条 */
+        .modal-header {
+            height: 15px;
+            background: linear-gradient(to right, #ff6b35, #e63946, #ff6b35);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modal-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: flameMove 3s infinite linear;
+        }
+        
+        @keyframes flameMove {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 弹窗内容区 */
+        .modal-content {
+            padding: 40px 30px 30px;
+            text-align: center;
+        }
+        
+        .modal-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: #e63946;
+            position: relative;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { 
+                transform: scale(1);
+                text-shadow: 0 0 0 rgba(230, 57, 70, 0);
+            }
+            50% { 
+                transform: scale(1.1);
+                text-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
+            }
+            100% { 
+                transform: scale(1);
+                text-shadow: 0 0 0 rgba(230, 57, 70, 0);
+            }
+        }
+        
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #e63946;
+            margin-bottom: 15px;
+            letter-spacing: 0.3px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-message {
+            color: #7a4f33;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+        
+        /* 弹窗操作区 */
+        .modal-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .modal-button {
+            min-width: 140px;
+            padding: 16px 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .cancel-button {
+            background: #ffd166;
+            color: #7a4f33;
+            box-shadow: 0 5px 20px rgba(255, 209, 102, 0.4);
+        }
+        
+        .cancel-button:hover {
+            background: #ffca52;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 209, 102, 0.6);
+        }
+        
+        .cancel-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shine 1.5s infinite;
+            z-index: -1;
+        }
+        
+        .confirm-button {
+            background: linear-gradient(to right, #e63946, #d64141);
+            color: white;
+            box-shadow: 0 5px 20px rgba(230, 57, 70, 0.5);
+        }
+        
+        .confirm-button:hover {
+            background: linear-gradient(to right, #d64141, #c9333c);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(230, 57, 70, 0.7);
+        }
+        
+        /* 关闭按钮 */
+        .close-button {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #ffd166;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e63946;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 5;
+            box-shadow: 0 3px 15px rgba(230, 57, 70, 0.3);
+        }
+        
+        .close-button:hover {
+            background: #e63946;
+            color: #ffd166;
+            transform: rotate(90deg) scale(1.1);
+        }
+        
+        /* 火焰装饰元素 */
+        .flame-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .flame {
+            position: absolute;
+            width: 20px;
+            height: 60px;
+            background: linear-gradient(to top, #ff9a44, #ff6b35, #e63946);
+            border-radius: 50% 50% 20% 20%;
+            filter: blur(2px);
+            animation: flameFloat 6s infinite ease-in-out;
+        }
+        
+        @keyframes flameFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .flame:nth-child(1) {
+            top: 15%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+        
+        .flame:nth-child(2) {
+            top: 30%;
+            right: 25%;
+            animation-delay: 0.5s;
+        }
+        
+        .flame:nth-child(3) {
+            bottom: 20%;
+            left: 30%;
+            animation-delay: 1s;
+        }
+        
+        .flame:nth-child(4) {
+            bottom: 35%;
+            right: 15%;
+            animation-delay: 1.5s;
+        }
+    </style>
+</head>
+<body>
+    <div class="passionate-container">
+        <!-- 火焰装饰元素 -->
+        <div class="flame-decoration">
+            <div class="flame"></div>
+            <div class="flame"></div>
+            <div class="flame"></div>
+            <div class="flame"></div>
+        </div>
+        
+        <!-- 触发按钮 -->
+        <button class="trigger-button" id="triggerButton">打开热情确认</button>
+        
+        <!-- 弹窗组件 -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="confirmation-modal">
+                <div class="modal-header"></div>
+                
+                <div class="close-button" id="closeButton">
+                    <i class="fas fa-times"></i>
+                </div>
+                
+                <div class="modal-content">
+                    <div class="modal-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    
+                    <h3 class="modal-title">热情确认！</h3>
+                    
+                    <p class="modal-message">
+                        您确定要进行这个激情四射的操作吗？这将永久改变您的购物体验，
+                        让您的时尚之旅更加火热和难忘！
+                    </p>
+                    
+                    <div class="modal-actions">
+                        <button class="modal-button cancel-button" id="cancelButton">暂时冷却</button>
+                        <button class="modal-button confirm-button" id="confirmButton">火热执行！</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取元素
+            const triggerBtn = document.getElementById('triggerButton');
+            const modalOverlay = document.getElementById('modalOverlay');
+            const closeBtn = document.getElementById('closeButton');
+            const cancelBtn = document.getElementById('cancelButton');
+            const confirmBtn = document.getElementById('confirmButton');
+            
+            // 打开弹窗
+            triggerBtn.addEventListener('click', function() {
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // 添加火焰喷射动画
+                triggerBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    triggerBtn.style.transform = '';
+                }, 300);
+            });
+            
+            // 关闭弹窗的函数
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            // 关闭弹窗的各个方式
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            
+            // 点击背景关闭弹窗
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // 确认操作
+            confirmBtn.addEventListener('click', function() {
+                const originalText = this.textContent;
+                this.textContent = '激情执行中...';
+                this.disabled = true;
+                
+                // 添加火焰动画效果
+                this.style.transform = 'scale(0.95)';
+                
+                // 模拟操作过程
+                setTimeout(() => {
+                    // 添加火焰喷射效果
+                    this.innerHTML = '<i class="fas fa-fire"></i> 火热完成！';
+                    this.style.background = 'linear-gradient(to right, #06d6a0, #118ab2)';
+                    
+                    // 添加庆祝动画
+                    const flames = document.querySelectorAll('.flame');
+                    flames.forEach(flame => {
+                        flame.style.animation = 'none';
+                        flame.style.transform = 'translateY(-100px) scale(2)';
+                        flame.style.opacity = '0';
+                        flame.style.transition = 'all 0.8s ease';
+                    });
+                    
+                    // 关闭弹窗
+                    setTimeout(() => {
+                        closeModal();
+                        
+                        // 重置按钮
+                        setTimeout(() => {
+                            this.textContent = originalText;
+                            this.disabled = false;
+                            this.style.transform = '';
+                            this.style.background = 'linear-gradient(to right, #e63946, #d64141)';
+                            
+                            // 重置火焰
+                            flames.forEach(flame => {
+                                flame.style.animation = '';
+                                flame.style.transform = '';
+                                flame.style.opacity = '1';
+                                flame.style.transition = '';
+                            });
+                        }, 300);
+                    }, 1500);
+                }, 1000);
+            });
+            
+            // ESC键关闭弹窗
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
+</body>

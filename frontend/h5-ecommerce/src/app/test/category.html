@@ -2,14 +2,21 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="filename" content="mobile_fashion_category_page.html">
-    <title>StyleHub - 分类</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="filename" content="category_page.html">
+    <title>商品分类 - StyleHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
         :root {
             --primary: #e29692;
+            --primary-light: #f9f0ef;
             --primary-dark: #c57d7a;
             --light: #f9f9f9;
             --light-gray: #f5f5f5;
@@ -19,44 +26,22 @@
             --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
             --shadow-md: 0 4px 10px rgba(0,0,0,0.08);
             --border-radius: 12px;
-            --spacing-xs: 0.5rem;
-            --spacing-sm: 0.8rem;
-            --spacing-md: 1.2rem;
-            --spacing-lg: 1.6rem;
-            --spacing-xl: 2rem;
-            --navigation-height: 58px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-        }
-
+        
         body {
-            background-color: #ffffff;
+            background-color: #f7f7f7;
             color: var(--dark);
             max-width: 375px;
-            min-height: 100vh;
             margin: 0 auto;
-            padding-bottom: var(--navigation-height);
             position: relative;
-            overflow-x: hidden;
+            padding-bottom: 70px;
         }
-
-        /* 页面容器 */
-        .page-container {
-            padding: var(--spacing-md) var(--spacing-sm);
-            min-height: calc(100vh - var(--navigation-height));
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .page-active {
-            display: block;
-        }
-
+        
         /* 页头 */
         .app-header {
             display: flex;
@@ -64,102 +49,125 @@
             align-items: center;
             padding: var(--spacing-sm);
             background: white;
-            border-bottom: 1px solid var(--light-gray);
             position: sticky;
             top: 0;
             z-index: 100;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--light-gray);
         }
-
-        .logo {
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            flex: 1;
+            text-align: center;
         }
-
-        /* 底部导航 */
-        .tab-bar {
-            position: fixed;
+        
+        .search-btn {
+            background: var(--light);
+            border: 1px solid var(--gray);
+            border-radius: 20px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            width: 80%;
+            min-width: 160px;
+            margin: var(--spacing-sm) auto;
+            color: var(--dark-gray);
+        }
+        
+        .search-btn i {
+            margin-right: 8px;
+        }
+        
+        /* 分类容器 */
+        .category-container {
+            display: flex;
+            height: calc(100vh - 150px);
+            overflow: hidden;
+        }
+        
+        /* 左侧一级分类 */
+        .primary-categories {
+            width: 30%;
+            background: white;
+            overflow-y: auto;
+            border-right: 1px solid var(--light-gray);
+            padding: var(--spacing-sm) 0;
+        }
+        
+        .category-item {
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-item i {
+            margin-right: 8px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        
+        .category-item:hover, .category-item.active {
+            background: rgba(226, 150, 146, 0.1);
+            border-left: 3px solid var(--primary);
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* 右侧内容区域 */
+        .category-content {
+            width: 70%;
+            padding: var(--spacing-sm);
+            overflow-y: auto;
+        }
+        
+        .category-banner {
+            height: 120px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: var(--spacing-md);
+            position: relative;
+        }
+        
+        .category-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .banner-label {
+            position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            width: 100%;
-            max-width: 375px;
-            margin: 0 auto;
-            height: var(--navigation-height);
-            background: rgba(255, 255, 255, 0.98);
-            display: flex;
-            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-            z-index: 1000;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: 0.9rem;
         }
-
-        .tab-item {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            color: var(--dark-gray);
-            padding: 8px 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .tab-icon {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
-            transition: color 0.3s ease;
-        }
-
-        .tab-label {
-            font-size: 0.7rem;
-            transition: color 0.3s ease;
-        }
-
-        .tab-indicator {
-            position: absolute;
-            top: 0;
-            height: 3px;
-            width: 50%;
-            background: var(--primary);
-            border-radius: 0 0 3px 3px;
-            transform: translateY(-3px);
-            opacity: 0;
-            transition: all 0.3s ease;
-        }
-
-        .tab-item.active {
-            color: var(--primary);
-        }
-
-        .tab-item.active .tab-indicator {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 分类页面专属样式 */
-        .category-page-header {
+        
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: var(--spacing-md);
-            padding: var(--spacing-sm);
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow-sm);
+            margin: var(--spacing-lg) 0 var(--spacing-sm);
         }
-
-        .category-page-title {
-            font-size: 1.2rem;
+        
+        .section-title {
+            font-size: 1.1rem;
             font-weight: 600;
             position: relative;
             padding-left: 10px;
         }
-
-        .category-page-title::before {
+        
+        .section-title::before {
             content: '';
             position: absolute;
             left: 0;
@@ -170,175 +178,117 @@
             background: var(--primary);
             border-radius: 10px;
         }
-
-        .category-container {
-            display: flex;
-            height: calc(100vh - var(--navigation-height) - 80px);
-            gap: var(--spacing-sm);
+        
+        .section-link {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
         }
-
-        /* 左侧一级分类导航 */
-        .primary-categories {
-            width: 30%;
-            background: #fff;
-            border-radius: 12px;
-            overflow-y: auto;
-            box-shadow: var(--shadow-sm);
-            padding: var(--spacing-sm) 0;
-        }
-
-        .primary-category-item {
-            padding: var(--spacing-sm) var(--spacing-md);
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-left: 3px solid transparent;
-            border-right: 3px solid transparent;
-        }
-
-        .primary-category-item:hover, 
-        .primary-category-item.active {
-            background: rgba(226, 150, 146, 0.1);
-            border-left: 3px solid var(--primary);
-            font-weight: 500;
-            color: var(--primary);
-        }
-
-        .category-icon {
-            width: 20px;
-            height: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: var(--spacing-xs);
-            color: var(--primary);
-        }
-
-        /* 右侧二级分类和商品展示 */
-        .secondary-categories {
-            width: 70%;
-            overflow-y: auto;
-            padding-right: var(--spacing-xs);
-        }
-
-        .section-header-category {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: var(--spacing-lg) 0 var(--spacing-sm);
-        }
-
-        .section-title-category {
-            font-size: 1rem;
-            font-weight: 600;
-            padding-left: var(--spacing-xs);
-        }
-
+        
+        /* 二级分类网格 */
         .subcategory-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
         }
-
+        
         .subcategory-item {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md) var(--spacing-sm);
             text-align: center;
-            padding: var(--spacing-sm);
-            background: #fff;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
             box-shadow: var(--shadow-sm);
+            transition: transform 0.3s;
+            cursor: pointer;
         }
-
+        
         .subcategory-item:hover {
-            transform: translateY(-3px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-md);
         }
-
+        
         .subcategory-icon {
             width: 50px;
             height: 50px;
-            margin: 0 auto var(--spacing-sm);
             border-radius: 50%;
-            background-color: var(--light-gray);
+            margin: 0 auto var(--spacing-sm);
+            background: var(--light-gray);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
             color: var(--primary);
         }
-
+        
         .subcategory-name {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 500;
         }
-
-        /* 商品网格 */
-        .products-grid {
+        
+        /* 热门商品区域 */
+        .hot-products {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: var(--spacing-sm);
         }
-
+        
         .product-card {
             background: white;
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             overflow: hidden;
-            transition: all 0.3s;
-            cursor: pointer;
             box-shadow: var(--shadow-sm);
-            position: relative;
+            transition: transform 0.3s;
         }
-
+        
         .product-card:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-md);
         }
-
+        
+        .product-image {
+            height: 160px;
+            overflow: hidden;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+        
         .product-badge {
             position: absolute;
             top: 8px;
             left: 8px;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 12px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: white;
             z-index: 2;
             font-weight: 500;
         }
-
-        .discount-badge {
-            background-color: #ff5722;
-        }
-
+        
         .hot-badge {
             background-color: var(--primary);
         }
-
-        .product-media {
-            position: relative;
-            height: 150px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            overflow: hidden;
-            background: var(--light-gray);
+        
+        .new-badge {
+            background-color: #2196f3;
         }
-
-        .product-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        
         .product-info {
-            padding: 0 8px 8px;
+            padding: var(--spacing-sm);
         }
-
+        
         .product-name {
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.9rem;
             margin-bottom: 5px;
-            height: 38px;
+            height: 40px;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
@@ -346,285 +296,286 @@
             -webkit-box-orient: vertical;
             line-height: 1.4;
         }
-
+        
         .product-price {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 375px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            flex: 1;
             display: flex;
             flex-direction: column;
-        }
-
-        .current-price {
-            font-weight: 700;
-            color: var(--primary);
-            font-size: 0.95rem;
-        }
-
-        .original-price {
-            font-size: 0.75rem;
-            text-decoration: line-through;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
             color: var(--dark-gray);
+            text-decoration: none;
+            transition: color 0.3s;
+            position: relative;
         }
-
-        /* 动画效果 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        .nav-btn.active {
+            color: var(--primary);
+        }
+        
+        .nav-btn i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        
+        .nav-label {
+            font-size: 0.7rem;
         }
     </style>
 </head>
 <body>
-    <!-- 分类页面 -->
-    <div id="category-page" class="page-container page-active">
-        <div class="app-header">
-            <div class="logo">StyleHub</div>
-            <div style="display: flex; gap: 16px;">
-                <i class="fas fa-search"></i>
-                <i class="fas fa-filter"></i>
+    <!-- 页头 -->
+    <div class="app-header">
+        <button>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">商品分类</div>
+        <button>
+            <i class="fas fa-filter"></i>
+        </button>
+    </div>
+    
+    <!-- 搜索框 -->
+    <div class="search-btn">
+        <i class="fas fa-search"></i>
+        <span>搜索商品</span>
+    </div>
+    
+    <!-- 分类内容 -->
+    <div class="category-container">
+        <!-- 左侧一级分类 -->
+        <div class="primary-categories">
+            <div class="category-item active">
+                <i class="fas fa-tshirt"></i>
+                <span>女装</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-male"></i>
+                <span>男装</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-shoe-prints"></i>
+                <span>鞋靴箱包</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-running"></i>
+                <span>运动户外</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-lips"></i>
+                <span>内衣美妆</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-gem"></i>
+                <span>配饰饰品</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-child"></i>
+                <span>童装母婴</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-paint-brush"></i>
+                <span>设计师款</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-crown"></i>
+                <span>奢侈品牌</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-tshirt"></i>
+                <span>大码专区</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-home"></i>
+                <span>居家服饰</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-star"></i>
+                <span>特惠专区</span>
+            </div>
+            <div class="category-item">
+                <i class="fas fa-fire"></i>
+                <span>新品首发</span>
             </div>
         </div>
-
-        <div class="category-page-header">
-            <div class="category-page-title">商品分类</div>
-            <div class="section-link">筛选 <i class="fas fa-sliders-h"></i></div>
-        </div>
-
-        <div class="category-container">
-            <!-- 左侧一级分类 -->
-            <div class="primary-categories">
-                <div class="primary-category-item active">
-                    <span class="category-icon"><i class="fas fa-tshirt"></i></span>
-                    潮流女装
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-male"></i></span>
-                    时尚男装
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-shoe-prints"></i></span>
-                    鞋靴箱包
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-running"></i></span>
-                    运动户外
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-lips"></i></span>
-                    内衣美妆
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-gem"></i></span>
-                    配饰饰品
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-child"></i></span>
-                    童装母婴
-                </div>
-                <div class="primary-category-item">
-                    <span class="category-icon"><i class="fas fa-paint-brush"></i></span>
-                    设计师款
+        
+        <!-- 右侧二级分类 -->
+        <div class="category-content">
+            <!-- 分类banner -->
+            <div class="category-banner">
+                <img src="https://picsum.photos/id/237/600/300" alt="秋季女装上新">
+                <div class="banner-label">
+                    精选秋装 满300减50
                 </div>
             </div>
             
-            <!-- 右侧二级分类和商品 -->
-            <div class="secondary-categories">
-                <!-- 女装热门分类 -->
-                <div class="section-header-category">
-                    <div class="section-title-category">女装热门</div>
+            <!-- 女装热门分类 -->
+            <div class="section-header">
+                <div class="section-title">女装热门</div>
+            </div>
+            
+            <div class="subcategory-grid">
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <div class="subcategory-name">T恤/上衣</div>
                 </div>
-                
-                <div class="subcategory-grid">
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-tshirt"></i></div>
-                        <div class="subcategory-name">T恤/上衣</div>
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-jacket"></i>
                     </div>
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-jacket"></i></div>
-                        <div class="subcategory-name">外套</div>
-                    </div>
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-vest"></i></div>
-                        <div class="subcategory-name">马甲</div>
-                    </div>
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-hat-cowboy"></i></div>
-                        <div class="subcategory-name">连衣裙</div>
-                    </div>
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-arrow-up"></i></div>
-                        <div class="subcategory-name">裙装</div>
-                    </div>
-                    <div class="subcategory-item">
-                        <div class="subcategory-icon"><i class="fas fa-socks"></i></div>
-                        <div class="subcategory-name">裤装</div>
-                    </div>
+                    <div class="subcategory-name">外套</div>
                 </div>
-                
-                <!-- 新品推荐 -->
-                <div class="section-header-category">
-                    <div class="section-title-category">新品推荐</div>
-                    <div class="section-link">更多 <i class="fas fa-angle-right"></i></div>
-                </div>
-                
-                <div class="products-grid">
-                    <div class="product-card">
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1479064555552-3ef4979f8908?w=200&h=170&crop=entropy" alt="衬衫">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">纯色简约衬衫 春季新款</div>
-                            <div class="product-price">
-                                <div class="current-price">¥159</div>
-                            </div>
-                        </div>
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-vest"></i>
                     </div>
-                    <div class="product-card">
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1578587018452-892bace6fa90?w=200&h=170&crop=entropy" alt="针织衫">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">纯色百搭针织衫</div>
-                            <div class="product-price">
-                                <div class="current-price">¥129</div>
-                            </div>
-                        </div>
+                    <div class="subcategory-name">马甲</div>
+                </div>
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-hat-cowboy"></i>
                     </div>
+                    <div class="subcategory-name">连衣裙</div>
                 </div>
-                
-                <!-- 热销排行 -->
-                <div class="section-header-category">
-                    <div class="section-title-category">热销排行</div>
-                    <div class="section-link">更多 <i class="fas fa-angle-right"></i></div>
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                    <div class="subcategory-name">裙装</div>
                 </div>
-                
-                <div class="products-grid">
-                    <div class="product-card">
+                <div class="subcategory-item">
+                    <div class="subcategory-icon">
+                        <i class="fas fa-socks"></i>
+                    </div>
+                    <div class="subcategory-name">裤装</div>
+                </div>
+            </div>
+            
+            <!-- 推荐商品 -->
+            <div class="section-header">
+                <div class="section-title">热销推荐</div>
+                <div class="section-link">更多</div>
+            </div>
+            
+            <div class="hot-products">
+                <div class="product-card">
+                    <div class="product-image">
                         <div class="product-badge hot-badge">热卖</div>
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1506634572416-48cdfe530110?w=200&h=170&crop=entropy" alt="牛仔裤">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">修身直筒牛仔裤</div>
-                            <div class="product-price">
-                                <div class="current-price">¥259</div>
-                            </div>
-                        </div>
+                        <img src="https://picsum.photos/id/100/300/300" alt="针织衫">
                     </div>
-                    <div class="product-card">
-                        <div class="product-badge discount-badge">8折</div>
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=200&h=170&crop=entropy" alt="卫衣">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">休闲连帽卫衣</div>
-                            <div class="product-price">
-                                <div class="current-price">¥169</div>
-                                <div class="original-price">¥212</div>
-                            </div>
-                        </div>
+                    <div class="product-info">
+                        <div class="product-name">纯色百搭针织衫 秋冬款</div>
+                        <div class="product-price">¥129.00</div>
                     </div>
                 </div>
-                
-                <!-- 折扣专区 -->
-                <div class="section-header-category">
-                    <div class="section-title-category">折扣专区</div>
-                    <div class="section-link">更多 <i class="fas fa-angle-right"></i></div>
-                </div>
-                
-                <div class="products-grid">
-                    <div class="product-card">
-                        <div class="product-badge discount-badge">75折</div>
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=200&h=170&crop=entropy" alt="衬衫">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">简约休闲女式衬衫</div>
-                            <div class="product-price">
-                                <div class="current-price">¥139</div>
-                                <div class="original-price">¥185</div>
-                            </div>
-                        </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge new-badge">新款</div>
+                        <img src="https://picsum.photos/id/101/300/300" alt="牛仔裤">
                     </div>
-                    <div class="product-card">
-                        <div class="product-badge discount-badge">65折</div>
-                        <div class="product-media">
-                            <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?w=200&h=170&crop=entropy" alt="风衣">
-                        </div>
-                        <div class="product-info">
-                            <div class="product-name">轻奢风衣外套</div>
-                            <div class="product-price">
-                                <div class="current-price">¥299</div>
-                                <div class="original-price">¥459</div>
-                            </div>
-                        </div>
+                    <div class="product-info">
+                        <div class="product-name">修身直筒牛仔裤 显瘦百搭</div>
+                        <div class="product-price">¥199.00</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge hot-badge">热卖</div>
+                        <img src="https://picsum.photos/id/102/300/300" alt="卫衣">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">字母印花连帽卫衣</div>
+                        <div class="product-price">¥169.00</div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="product-badge new-badge">爆款</div>
+                        <img src="https://picsum.photos/id/103/300/300" alt="风衣">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">休闲款风衣外套 秋季</div>
+                        <div class="product-price">¥299.00</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- 底部导航栏 -->
-    <div class="tab-bar">
-        <div class="tab-item" data-page="home-page">
-            <div class="tab-indicator"></div>
-            <i class="fas fa-home tab-icon"></i>
-            <span class="tab-label">首页</span>
-        </div>
-        <div class="tab-item active" data-page="category-page">
-            <div class="tab-indicator"></div>
-            <i class="fas fa-th-large tab-icon"></i>
-            <span class="tab-label">分类</span>
-        </div>
-        <div class="tab-item" data-page="cart-page">
-            <div class="tab-indicator"></div>
-            <i class="fas fa-shopping-cart tab-icon"></i>
-            <span class="tab-label">购物车</span>
-        </div>
-        <div class="tab-item" data-page="profile-page">
-            <div class="tab-indicator"></div>
-            <i class="fas fa-user tab-icon"></i>
-            <span class="tab-label">我的</span>
-        </div>
+    <div class="bottom-nav">
+        <a href="#" class="nav-btn">
+            <i class="fas fa-home"></i>
+            <span class="nav-label">首页</span>
+        </a>
+        <a href="#" class="nav-btn active">
+            <i class="fas fa-th-large"></i>
+            <span class="nav-label">分类</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="nav-label">购物车</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-user"></i>
+            <span class="nav-label">我的</span>
+        </a>
     </div>
-
+    
     <script>
-        // 页面切换功能
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', function() {
-                const pageId = this.getAttribute('data-page');
-                
-                // 更新导航栏状态
-                document.querySelectorAll('.tab-item').forEach(t => {
-                    t.classList.remove('active');
+        document.addEventListener('DOMContentLoaded', function() {
+            // 分类点击事件
+            const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    categoryItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 模拟内容变化
+                    const categoryName = this.querySelector('span').textContent;
+                    document.querySelector('.banner-label').textContent = `精选${categoryName} 满300减50`;
                 });
-                this.classList.add('active');
-                
-                // 注意：这里只是示例，实际应用中需要显示对应的页面
-                alert(`将切换到页面: ${pageId}`);
             });
-        });
-
-        // 一级分类点击事件
-        document.querySelectorAll('.primary-category-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.primary-category-item').forEach(i => {
-                    i.classList.remove('active');
+            
+            // 商品卡片点击事件
+            const productCards = document.querySelectorAll('.product-card');
+            productCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // 实际应用中跳转至商品详情页
+                    alert('跳转到商品详情');
                 });
-                this.classList.add('active');
-                
-                // 触发加载不同分类的内容
-                const categoryName = this.textContent.trim();
-                console.log(`切换到分类: ${categoryName}`);
+            });
+            
+            // 二级分类点击事件
+            const subcategories = document.querySelectorAll('.subcategory-item');
+            subcategories.forEach(item => {
+                item.addEventListener('click', function() {
+                    const categoryName = this.querySelector('.subcategory-name').textContent;
+                    alert(`显示${categoryName}分类的商品`);
+                });
             });
         });
-
-        // 商品卡片点击事件
-        document.querySelectorAll('.product-card').forEach(card => {
-            card.addEventListener('click', function() {
-                // 触发跳转到商品详情页
-                console.log("跳转到商品详情页");
-            });
-        });
-
-        // 初始设置 - 激活分类页面
-        document.querySelector('.tab-item.active').click();
     </script>
 </body>

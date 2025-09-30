@@ -1,705 +1,611 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Modal } from 'antd-mobile';
 import TabBar from '../components/TabBar';
 
-interface OrderStatus {
+type OrderStatus = {
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   count?: number;
-}
+};
 
-interface Product {
+type Product = {
   id: number;
   name: string;
-  price: number;
-  originalPrice?: number;
+  price: number | string;
   image: string;
-  discount?: string;
-}
+};
 
 const orderStatuses: OrderStatus[] = [
   { label: '待付款', icon: '💳', count: 2 },
-  { label: '待发货', icon: '🚚', count: 1 },
-  { label: '待收货', icon: '📦' },
-  { label: '待评价', icon: '💬', count: 5 },
+  { label: '待发货', icon: '📦', count: 1 },
+  { label: '待收货', icon: '🚚' },
+  { label: '待评价', icon: '💬', count: 3 },
   { label: '退款/售后', icon: '↩️' },
 ];
 
 const recommendProducts: Product[] = [
-  {
-    id: 1,
-    name: '进口羊绒女士大衣 冬季保暖长款风衣 优雅设计师款',
-    price: 899,
-    originalPrice: 1599,
-    image: 'https://images.unsplash.com/photo-1605901309584-818e25960a8f?w=500&q=80',
-    discount: '-45%',
-  },
-  {
-    id: 2,
-    name: '经典立领商务衬衫 纯棉舒适透气款 四季可穿',
-    price: 389,
-    originalPrice: 599,
-    image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=500&q=80',
-    discount: '-35%',
-  },
-  {
-    id: 3,
-    name: '薄纱款复古连衣裙 法式时尚方领 夏日度假系列',
-    price: 429,
-    originalPrice: 699,
-    image: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=500&q=80',
-  },
-  {
-    id: 4,
-    name: '复古方框墨镜 韩版潮流太阳镜 UV400防护',
-    price: 689,
-    image: 'https://images.unsplash.com/photo-1527215850255-dfe04f8b10ce?w=500&q=80',
-    discount: '新品',
-  },
+  { id: 1, name: '修身休闲时尚夹克 2023新款', price: '¥289.00', image: 'https://picsum.photos/id/1004/300/300' },
+  { id: 2, name: '纯棉字母连帽卫衣女款', price: '¥159.00', image: 'https://picsum.photos/id/1013/300/300' },
+  { id: 3, name: '直筒修身弹力牛仔裤', price: '¥229.00', image: 'https://picsum.photos/id/1028/300/300' },
+  { id: 4, name: '春夏女士V领百搭连衣裙', price: '¥199.00', image: 'https://picsum.photos/id/1033/300/300' },
 ];
 
 export default function MePage() {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 800);
-  };
-
+  const [confirm1, setConfirm1] = useState(false);
+  const [confirm2, setConfirm2] = useState(false);
   return (
     <>
-      <div style={{
-        maxWidth: 420,
-        margin: '0 auto',
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #fcfaf7 0%, #f8f5f0 100%)',
-        position: 'relative',
-        paddingBottom: 70,
-      }}>
-        {/* Decorative Element */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          right: -50,
-          width: 200,
-          height: 200,
-          background: 'linear-gradient(45deg, #e0cda8, #a78a5c)',
-          borderRadius: '50%',
-          filter: 'blur(40px)',
-          opacity: 0.3,
-          zIndex: 0,
-        }} />
-
-        {/* User Header */}
-        <div style={{
+      {/* 页面容器 */}
+      <div
+        style={{
+          backgroundColor: '#f7f7f7',
+          color: '#333',
+          maxWidth: 375,
+          margin: '0 auto',
           position: 'relative',
-          padding: '35px 20px 28px',
-          background: 'linear-gradient(to bottom, rgba(248, 245, 240, 0.9) 0%, rgba(255, 255, 255, 1) 90%)',
-          borderBottom: '1px solid rgba(229, 224, 215, 0.4)',
-          overflow: 'hidden',
-          zIndex: 2,
-        }}>
-          {/* User Info */}
-          <div style={{
+          minHeight: '100vh',
+          paddingBottom: 100,
+          paddingTop: 60,
+        }}
+      >
+        {/* 页头 */}
+        <div
+          style={{
             display: 'flex',
-            gap: 22,
-            marginBottom: 30,
-            padding: 10,
-            position: 'relative',
-            zIndex: 1,
-          }}>
-            {/* Avatar */}
-            <div style={{
-              width: 96,
-              height: 96,
-              borderRadius: '50%',
-              position: 'relative',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: 16,
+            background: '#fff',
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            top: 0,
+            top: 0,
+            zIndex: 100,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+            borderBottom: '1px solid #f5f5f5',
+          }}
+        >
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              border: '4px solid transparent',
-              background: 'linear-gradient(#f8f5f0, #f8f5f0), linear-gradient(120deg, #a78a5c, #e0cda8, #a78a5c)',
-              backgroundOrigin: 'border-box',
-              backgroundClip: 'content-box, border-box',
-              overflow: 'hidden',
-              boxShadow: '0 8px 30px rgba(0, 0, 0, 0.08)',
-            }}>
-              <div style={{
-                fontFamily: '"Playfair Display", serif',
-                fontSize: '2.8rem',
-                fontWeight: 700,
-                color: '#c4a376',
-                textShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-              }}>
-                M
-              </div>
-              <div style={{
-                position: 'absolute',
-                bottom: 2,
-                right: 2,
-                width: 32,
-                height: 32,
-                background: 'linear-gradient(135deg, #a78a5c, #e0cda8)',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '0.9rem',
-                boxShadow: '0 4px 8px rgba(167, 138, 92, 0.25)',
-                cursor: 'pointer',
-              }}>
-                ✏️
-              </div>
-            </div>
+              borderRadius: '50%',
+              transition: 'background 0.3s',
+            }}
+            onMouseOver={(e) => ((e.currentTarget.style.background = '#f5f5f5'))}
+            onMouseOut={(e) => ((e.currentTarget.style.background = 'transparent'))}
+            aria-label="返回"
+          >
+            {/* ← */}
+          </button>
+          <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>个人中心</div>
+          <button
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              width: 44,
+              height: 44,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'background 0.3s',
+            }}
+            onMouseOver={(e) => ((e.currentTarget.style.background = '#f5f5f5'))}
+            onMouseOut={(e) => ((e.currentTarget.style.background = 'transparent'))}
+            aria-label="通知"
+          >
+            🔔
+          </button>
+        </div>
 
-            {/* User Details */}
-            <div style={{ flex: 1, paddingTop: 12 }}>
-              <div style={{
-                fontSize: '1.7rem',
-                fontFamily: '"Playfair Display", serif',
-                fontWeight: 600,
-                marginBottom: 12,
-                letterSpacing: '0.5px',
-                position: 'relative',
-                display: 'inline-block',
-              }}>
-                张茗月
-                <div style={{
-                  position: 'absolute',
-                  bottom: -6,
-                  left: 0,
-                  width: 90,
-                  height: 2,
-                  background: 'linear-gradient(to right, #c4a376, transparent)',
-                }} />
-              </div>
-              <div style={{
-                fontFamily: '"Poppins", sans-serif',
-                background: 'linear-gradient(45deg, #a78a5c, #c4a376, #e0cda8)',
-                color: 'white',
+        {/* 用户信息卡片 */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #e29692, #c57d7a)',
+            padding: 24,
+            color: '#fff',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            marginBottom: 24,
+          }}
+        >
+          <div
+            style={{
+              content: '""',
+              position: 'absolute',
+              top: -50,
+              right: -50,
+              width: 150,
+              height: 150,
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+            }}
+          />
+          <div style={{ position: 'relative', width: 100, height: 100, margin: '0 auto 12px' }}>
+            <img
+              src="https://picsum.photos/id/64/200/200"
+              alt="用户头像"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                border: '3px solid rgba(255,255,255,0.3)',
+                objectFit: 'cover',
+                background: '#fff',
+              }}
+              onError={(e) => {
+                (e.currentTarget.style.display = 'none');
+              }}
+            />
+            {/* 占位 */}
+            {/* <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                background: '#f0f0f0',
+                color: '#999',
+                fontSize: '2rem',
+                borderRadius: '50%',
+              }}
+            >
+              👤
+            </div> */}
+          </div>
+          <div>
+            <div style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: 8 }}>张美丽</div>
+            <div>138****1234</div>
+            <div
+              style={{
+                background: '#ffd700',
+                color: '#333',
                 padding: '6px 16px',
                 borderRadius: 20,
-                fontSize: '0.8rem',
+                fontSize: '0.9rem',
                 fontWeight: 500,
-                display: 'inline-block',
-                position: 'relative',
-                overflow: 'hidden',
-                boxShadow: '0 5px 15px rgba(167, 138, 92, 0.25)',
-                marginBottom: 15,
-              }}>
-                铂金会员
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  color: '#5c5c5c',
-                  fontSize: '0.92rem',
-                }}>
-                  <span style={{ width: 20, color: '#c4a376', textAlign: 'center' }}>📱</span>
-                  138****4567
-                </div>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  color: '#5c5c5c',
-                  fontSize: '0.92rem',
-                }}>
-                  <span style={{ width: 20, color: '#c4a376', textAlign: 'center' }}>✉️</span>
-                  mingyue@example.com
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div style={{
-            display: 'flex',
-            background: 'rgba(255, 255, 255, 0.8)',
-            borderRadius: 14,
-            padding: '22px 10px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-            gap: 5,
-          }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: 5 }}>
-              <div style={{
-                fontSize: '1.3rem',
-                fontWeight: 700,
-                color: '#a78a5c',
-                letterSpacing: '0.5px',
-              }}>
-                ¥4,289
-              </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: '#888',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginTop: 4,
-              }}>
-                账户余额
-              </div>
-            </div>
-            <div style={{
-              width: 1,
-              background: 'linear-gradient(to bottom, transparent, #e5e0d7 30%, #e5e0d7 70%, transparent)',
-              margin: '5px 0',
-            }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: 5 }}>
-              <div style={{
-                fontSize: '1.3rem',
-                fontWeight: 700,
-                color: '#a78a5c',
-                letterSpacing: '0.5px',
-              }}>
-                5,680
-              </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: '#888',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginTop: 4,
-              }}>
-                积分
-              </div>
-            </div>
-            <div style={{
-              width: 1,
-              background: 'linear-gradient(to bottom, transparent, #e5e0d7 30%, #e5e0d7 70%, transparent)',
-              margin: '5px 0',
-            }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: 5 }}>
-              <div style={{
-                fontSize: '1.3rem',
-                fontWeight: 700,
-                color: '#a78a5c',
-                letterSpacing: '0.5px',
-              }}>
-                12
-              </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: '#888',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginTop: 4,
-              }}>
-                优惠券
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div style={{ display: 'flex', gap: 16, marginTop: 22, padding: '0 10px' }}>
-            <div style={{
-              flex: 1,
-              padding: '16px 0',
-              fontFamily: '"Poppins", sans-serif',
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              cursor: 'pointer',
-            }}>
-              <div style={{ fontSize: '1.6rem', color: '#a78a5c', marginBottom: 10 }}>👛</div>
-              <span style={{ fontSize: '0.9rem', color: '#5c5c5c' }}>我的钱包</span>
-            </div>
-            <div style={{
-              flex: 1,
-              padding: '16px 0',
-              fontFamily: '"Poppins", sans-serif',
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              cursor: 'pointer',
-            }}>
-              <div style={{ fontSize: '1.6rem', color: '#a78a5c', marginBottom: 10 }}>⚙️</div>
-              <span style={{ fontSize: '0.9rem', color: '#5c5c5c' }}>设置</span>
-            </div>
-            <div style={{
-              flex: 1,
-              padding: '16px 0',
-              fontFamily: '"Poppins", sans-serif',
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              cursor: 'pointer',
-            }}>
-              <div style={{ fontSize: '1.6rem', color: '#a78a5c', marginBottom: 10 }}>🎧</div>
-              <span style={{ fontSize: '0.9rem', color: '#5c5c5c' }}>专属客服</span>
+                display: 'inline-flex',
+                alignItems: 'center',
+                margin: '10px auto',
+                gap: 6,
+              }}
+            >
+              👑 铂金会员
             </div>
           </div>
         </div>
 
-        {/* Content Area */}
-        <div style={{ padding: '20px 20px' }}>
-          {/* Membership Section */}
-          <h2 style={{
-            fontFamily: '"Playfair Display", serif',
-            fontSize: '1.45rem',
-            fontWeight: 600,
-            color: '#a78a5c',
-            marginBottom: 28,
-            position: 'relative',
-            paddingLeft: 15,
-            letterSpacing: '0.8px',
-          }}>
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 6,
-              height: 26,
-              width: 5,
-              background: 'linear-gradient(to bottom, #c4a376, #a78a5c 80%)',
-              borderRadius: 3,
-            }} />
-            会员权益
-          </h2>
-
-          <div style={{
+        {/* 会员卡片 3列 */}
+        <div
+          style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 10,
-            marginBottom: 35,
-          }}>
-            <div style={{
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              padding: '25px 0 18px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: 3,
-                background: 'linear-gradient(to right, #e0cda8, #c4a376, #a78a5c)',
-              }} />
-              <div style={{ fontSize: '2rem', color: '#a78a5c', marginBottom: 15 }}>🎁</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#a78a5c' }}>8</div>
-              <div style={{ fontSize: '0.87rem', color: '#5c5c5c', letterSpacing: '0.5px', marginTop: 5 }}>
-                红包
+            gap: 12,
+            padding: '0 16px',
+            marginBottom: 24,
+          }}
+        >
+          {[
+            { icon: '🎁', title: '我的红包', value: '5个未使用' },
+            { icon: '🎫', title: '我的优惠券', value: '3张可用' },
+            { icon: '🪙', title: '我的积分', value: '1250分' },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: '#fff',
+                borderRadius: 12,
+                padding: 12,
+                textAlign: 'center',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                cursor: 'pointer',
+                transition: 'transform 0.3s, box-shadow 0.3s',
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.08)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.05)';
+              }}
+            >
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: '#f9f0ef',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 12px',
+                  fontSize: '1.3rem',
+                  color: '#e29692',
+                }}
+              >
+                {item.icon}
               </div>
+              <div style={{ fontSize: '0.95rem', fontWeight: 500, marginBottom: 4 }}>{item.title}</div>
+              <div style={{ fontSize: '0.85rem', color: '#666' }}>{item.value}</div>
             </div>
-            <div style={{
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              padding: '25px 0 18px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: 3,
-                background: 'linear-gradient(to right, #e0cda8, #c4a376, #a78a5c)',
-              }} />
-              <div style={{ fontSize: '2rem', color: '#a78a5c', marginBottom: 15 }}>🎫</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#a78a5c' }}>12</div>
-              <div style={{ fontSize: '0.87rem', color: '#5c5c5c', letterSpacing: '0.5px', marginTop: 5 }}>
-                优惠券
-              </div>
+          ))}
+        </div>
+
+        {/* 我的订单状态 */}
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 16,
+            margin: '0 16px 24px',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.08)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: '1.1rem', fontWeight: 600, position: 'relative', paddingLeft: 10 }}>
+              我的订单
+              <span
+                style={{
+                  content: '""',
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  height: '65%',
+                  width: 3,
+                  background: '#e29692',
+                  borderRadius: 10,
+                }}
+              />
             </div>
-            <div style={{
-              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-              border: '1px solid rgba(229, 224, 215, 0.8)',
-              borderRadius: 14,
-              padding: '25px 0 18px',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: 3,
-                background: 'linear-gradient(to right, #e0cda8, #c4a376, #a78a5c)',
-              }} />
-              <div style={{ fontSize: '2rem', color: '#a78a5c', marginBottom: 15 }}>💎</div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: '#a78a5c' }}>5,680</div>
-              <div style={{ fontSize: '0.87rem', color: '#5c5c5c', letterSpacing: '0.5px', marginTop: 5 }}>
-                积分
-              </div>
-            </div>
+            <div style={{ fontSize: '0.9rem', color: '#666' }}>查看全部</div>
           </div>
 
-          {/* Orders Section */}
-          <h2 style={{
-            fontFamily: '"Playfair Display", serif',
-            fontSize: '1.45rem',
-            fontWeight: 600,
-            color: '#a78a5c',
-            marginBottom: 28,
-            position: 'relative',
-            paddingLeft: 15,
-            letterSpacing: '0.8px',
-          }}>
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 6,
-              height: 26,
-              width: 5,
-              background: 'linear-gradient(to bottom, #c4a376, #a78a5c 80%)',
-              borderRadius: 3,
-            }} />
-            我的订单
-          </h2>
-
-          <div style={{
-            background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-            border: '1px solid rgba(229, 224, 215, 0.8)',
-            borderRadius: 14,
-            padding: '25px 18px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-            marginBottom: 35,
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 25,
-            }}>
-              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#a78a5c', letterSpacing: '0.5px' }}>
-                全部订单
-              </div>
-              <div style={{ fontSize: '0.9rem', color: '#c4a376', fontWeight: 500, cursor: 'pointer' }}>
-                查看全部 →
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(5, 1fr)',
-              gap: 6,
-            }}>
-              {orderStatuses.map((status, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '10px 0',
-                    borderRadius: 14,
-                    cursor: 'pointer',
-                  }}
-                >
-                  <div style={{ position: 'relative', marginBottom: 12 }}>
-                    <div style={{
-                      width: 58,
-                      height: 58,
-                      borderRadius: '50%',
-                      background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8) 0%, rgba(247, 243, 237, 0.8) 100%)',
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+            {orderStatuses.map((status, idx) => (
+              <div
+                key={idx}
+                style={{
+                  textAlign: 'center',
+                  borderRadius: 12,
+                  padding: '8px 0',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+              >
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      position: 'relative',
-                      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.05)',
-                      border: '2px solid',
-                      borderImage: 'linear-gradient(135deg, #e0cda8, #c4a376) 1',
-                    }}>
-                      <div style={{ fontSize: '1.4rem' }}>{status.icon}</div>
-                    </div>
-                    {status.count && (
-                      <div style={{
+                      margin: '0 auto 8px',
+                      background: '#f5f5f5',
+                      borderRadius: '50%',
+                      fontSize: '1.1rem',
+                      color: '#e29692',
+                    }}
+                  >
+                    {status.icon}
+                  </div>
+                  {status.count ? (
+                    <div
+                      style={{
                         position: 'absolute',
                         top: -5,
-                        right: -5,
-                        background: 'linear-gradient(to bottom, #ff5252, #d64141)',
-                        color: 'white',
-                        fontSize: '0.7rem',
-                        width: 24,
-                        height: 24,
+                        right: 15,
+                        background: '#ff5500',
+                        color: '#fff',
+                        width: 20,
+                        height: 20,
                         borderRadius: '50%',
+                        fontSize: '0.7rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontWeight: 600,
-                        boxShadow: '0 3px 8px rgba(214, 65, 65, 0.3)',
-                      }}>
-                        {status.count}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: '#5c5c5c' }}>
-                    {status.label}
-                  </div>
+                      }}
+                    >
+                      {status.count}
+                    </div>
+                  ) : null}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommend Section */}
-          <div style={{ marginTop: 15 }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 25,
-            }}>
-              <h2 style={{
-                fontFamily: '"Playfair Display", serif',
-                fontSize: '1.45rem',
-                fontWeight: 600,
-                color: '#a78a5c',
-                position: 'relative',
-                paddingLeft: 15,
-                letterSpacing: '0.8px',
-                margin: 0,
-              }}>
-                <span style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 6,
-                  height: 26,
-                  width: 5,
-                  background: 'linear-gradient(to bottom, #c4a376, #a78a5c 80%)',
-                  borderRadius: 3,
-                }} />
-                猜你喜欢
-              </h2>
-              <div
-                onClick={handleRefresh}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  fontSize: '0.95rem',
-                  color: '#c4a376',
-                  background: 'rgba(196, 163, 118, 0.1)',
-                  padding: '8px 18px',
-                  borderRadius: 50,
-                  cursor: 'pointer',
-                }}
-              >
-                <span>{isRefreshing ? '加载中...' : '换一批'}</span>
-                <span>{isRefreshing ? '⏳' : '🔄'}</span>
+                <div style={{ fontSize: '0.75rem', color: '#333' }}>{status.label}</div>
               </div>
-            </div>
+            ))}
+          </div>
+        </div>
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 22,
-            }}>
-              {recommendProducts.map((product) => (
+        {/* 功能导航列表 */}
+        <div style={{ background: '#fff', borderRadius: 12, margin: '0 16px 24px', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }}>
+          {[
+            { icon: '❤️', name: '我的收藏' },
+            { icon: '📍', name: '地址管理' },
+            { icon: '🛡️', name: '账户安全' },
+            { icon: '🎧', name: '客服中心' },
+          ].map((item, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: 16,
+                borderBottom: idx === 3 ? 'none' : '1px solid #f5f5f5',
+                cursor: 'pointer',
+                transition: 'background 0.3s',
+              }}
+              onMouseOver={(e) => ((e.currentTarget.style.background = '#f5f5f5'))}
+              onMouseOut={(e) => ((e.currentTarget.style.background = 'transparent'))}
+            >
+              <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div
-                  key={product.id}
                   style={{
-                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95))',
-                    border: '1px solid rgba(229, 224, 215, 0.7)',
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                    width: 28,
+                    height: 28,
+                    background: '#f9f0ef',
+                    borderRadius: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12,
+                    color: '#e29692',
+                  }}
+                >
+                  {item.icon}
+                </div>
+                <div style={{ fontWeight: 500 }}>{item.name}</div>
+              </div>
+              <div>›</div>
+            </div>
+          ))}
+        </div>
+
+
+
+        {/* 退出登录 */}
+        <div style={{ padding: '0 16px 16px' }}>
+          <button
+            onClick={() => {
+              setConfirm1(true);
+            }}
+            style={{
+              width: '100%',
+              padding: 14,
+              border: 'none',
+              borderRadius: 12,
+              fontSize: '1rem',
+              fontWeight: 700,
+              color: '#fff',
+              cursor: 'pointer',
+              background: 'linear-gradient(90deg, #e63946, #d64141)',
+              boxShadow: '0 8px 20px rgba(230, 57, 70, 0.25)',
+            }}
+          >
+            退出登录
+          </button>
+        </div>
+
+        {/* 确认退出 - 受控弹窗（适配 React 19） */}
+        <Modal
+          visible={typeof confirm1 !== 'undefined' ? confirm1 : false}
+          onClose={() => setConfirm1(false)}
+          closeOnAction={false}
+          maskStyle={{
+            background: 'linear-gradient(135deg, rgba(255,153,102,0.55), rgba(230,57,70,0.6))',
+          }}
+          bodyStyle={{
+            background: '#1f1f1f',
+            color: '#fff',
+            borderRadius: 16,
+          }}
+          title={
+            <div style={{ fontWeight: 800, color: '#ff6b35', textAlign: 'center', paddingTop: 8 }}>
+              确定要退出登录吗？
+            </div>
+          }
+          content={
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 1.6, textAlign: 'center' }}>
+              退出后将无法接收订单更新与消息提醒
+              <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                <button
+                  onClick={() => setConfirm1(false)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    border: 'none',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg, #ffd166, #ffca52)',
+                    color: '#7a4f33',
+                    fontWeight: 700,
                     cursor: 'pointer',
                   }}
                 >
-                  <div style={{
-                    height: 180,
-                    backgroundImage: `url(${product.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    position: 'relative',
-                  }}>
-                    {product.discount && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 14,
-                        right: 14,
-                        padding: '4px 14px',
-                        background: 'linear-gradient(to right, #c9333c, #b42828)',
-                        color: 'white',
-                        fontSize: '0.85rem',
-                        fontWeight: 600,
-                        borderRadius: 50,
-                        boxShadow: '0 4px 10px rgba(180, 40, 40, 0.25)',
-                      }}>
-                        {product.discount}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{
-                    padding: '18px 14px',
-                    borderTop: '1px solid rgba(229, 224, 215, 0.4)',
-                  }}>
-                    <div style={{
-                      fontSize: '0.97rem',
-                      fontWeight: 500,
-                      color: '#2a2a2a',
-                      marginBottom: 12,
-                      lineHeight: 1.4,
-                      height: 45,
+                  再想想
+                </button>
+                <button
+                  onClick={() => {
+                    setConfirm1(false);
+                    setConfirm2(true);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    border: 'none',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg, #e63946, #d64141)',
+                    color: '#fff',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  继续退出
+                </button>
+              </div>
+            </div>
+          }
+        />
+        <Modal
+          visible={typeof confirm2 !== 'undefined' ? confirm2 : false}
+          onClose={() => setConfirm2(false)}
+          closeOnAction={false}
+          maskStyle={{
+            background: 'linear-gradient(135deg, rgba(255,153,102,0.55), rgba(230,57,70,0.6))',
+          }}
+          bodyStyle={{
+            background: '#1f1f1f',
+            color: '#fff',
+            borderRadius: 16,
+          }}
+          title={
+            <div style={{ fontWeight: 800, color: '#ff6b35', textAlign: 'center', paddingTop: 8 }}>
+              再次确认
+            </div>
+          }
+          content={
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14, lineHeight: 1.6, textAlign: 'center' }}>
+              退出后需要重新登录，是否继续？
+              <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                <button
+                  onClick={() => setConfirm2(false)}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    border: 'none',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg, #ffd166, #ffca52)',
+                    color: '#7a4f33',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  取消
+                </button>
+                <button
+                  onClick={() => {
+                    try { localStorage.removeItem('token'); sessionStorage.removeItem('token'); } catch {}
+                    window.location.href = '/login';
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: '12px 0',
+                    border: 'none',
+                    borderRadius: 10,
+                    background: 'linear-gradient(90deg, #e63946, #d64141)',
+                    color: '#fff',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                  }}
+                >
+                  确认退出
+                </button>
+              </div>
+            </div>
+          }
+        />
+
+        {/* 猜你喜欢 */}
+        <div style={{ padding: '0 16px 24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: '1.1rem', fontWeight: 600, position: 'relative', paddingLeft: 10 }}>
+              猜你喜欢
+              <span
+                style={{
+                  content: '""',
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  height: '65%',
+                  width: 3,
+                  background: '#e29692',
+                  borderRadius: 10,
+                }}
+              />
+            </div>
+            <div style={{ fontSize: '0.9rem', color: '#666' }}>更多推荐</div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {recommendProducts.map((p) => (
+              <div
+                key={p.id}
+                style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                  transition: 'transform 0.3s, box-shadow 0.3s',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                  e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.08)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'none';
+                  e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.05)';
+                }}
+              >
+                <div style={{ height: 150, position: 'relative', overflow: 'hidden', background: '#f5f5f5' }}>
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
+                    onError={(e) => {
+                      (e.currentTarget.style.display = 'none');
+                    }}
+                    onMouseOver={(e) => ((e.currentTarget.style.transform = 'scale(1.05)'))}
+                    onMouseOut={(e) => ((e.currentTarget.style.transform = 'none'))}
+                  />
+                </div>
+                <div style={{ padding: 12 }}>
+                  <div
+                    style={{
+                      fontSize: '0.9rem',
+                      marginBottom: 4,
+                      height: 40,
                       overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
-                    }}>
-                      {product.name}
-                    </div>
-                    <div style={{ fontFamily: '"Poppins", sans-serif' }}>
-                      <span style={{
-                        fontSize: '1.1rem',
-                        fontWeight: 700,
-                        color: '#a78a5c',
-                      }}>
-                        ¥{product.price}
-                      </span>
-                      {product.originalPrice && (
-                        <span style={{
-                          fontSize: '0.85rem',
-                          color: '#888',
-                          textDecoration: 'line-through',
-                          marginLeft: 7,
-                        }}>
-                          ¥{product.originalPrice}
-                        </span>
-                      )}
-                    </div>
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {p.name}
                   </div>
+                  <div style={{ fontWeight: 'bold', color: '#e29692' }}>{p.price}</div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 固定底部导航（项目已有 TabBar 组件） */}
+        <div style={{ position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 100 }}>
+          <div style={{ maxWidth: 375, margin: '0 auto' }}>
+            <TabBar />
           </div>
         </div>
       </div>
-      <TabBar />
     </>
   );
 }
