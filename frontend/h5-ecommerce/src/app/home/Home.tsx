@@ -70,6 +70,68 @@ function SimpleCarousel({ items }: { items: Array<{ image: string; title: string
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'home' | 'category' | 'cart' | 'me'>('home');
 
+  // 首页数据（从本地 Mock 接口 /api/home 获取）
+  const [home, setHome] = useState<any | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/home', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error('home api not ok'))))
+      .then((json) => {
+        if (!cancelled && json && json.data) {
+          setHome(json.data);
+        }
+      })
+      .catch(() => {
+        // 静默失败，保持本地默认数据
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 将接口 banners 转为轮播需要的结构，优先使用接口数据
+  const apiBannerItems =
+    home?.banners?.map((b: { img: string; link?: string }) => ({
+      image: b.img,
+      title: '',
+      buttonText: '立即查看',
+    })) ?? null;
+
+  // 分类（品牌区改为展示分类）
+  const apiCategories: Array<{ id: string; name: string; icon: string }> | null = home?.categories ?? null;
+
+  // 推荐商品拆两组：折扣专区与热销专区
+  type Rec = { id: string; title: string; price: number; originPrice?: number; img: string };
+  const recs: Rec[] | null = home?.recommends ?? null;
+
+  // 计算折扣百分比
+  const toDiscount = (r: Rec) => {
+    if (!r.originPrice || r.originPrice <= r.price) return null;
+    const off = Math.round((1 - r.price / r.originPrice) * 100);
+    return `${off}% OFF`;
+  };
+
+  const discountList =
+    recs?.slice(0, 4).map((r) => ({
+      tag: 'SALE',
+      img: r.img,
+      name: r.title,
+      vendor: 'By Fashion Hub',
+      price: `¥${r.price}`,
+      original: r.originPrice ? `¥${r.originPrice}` : '',
+      off: toDiscount(r) ?? '',
+    })) ?? null;
+
+  const hotList =
+    recs?.slice(2, 6).map((r) => ({
+      tag: 'HOT',
+      img: r.img,
+      name: r.title,
+      vendor: 'By Popular',
+      price: `¥${r.price}`,
+    })) ?? null;
+
   const bannerItems = [
     {
       image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
@@ -112,33 +174,49 @@ export default function Home() {
           {/* Banner Carousel */}
           <div className={styles.bannerCarousel}>
             <div className={styles.bannerInner}>
-              <SimpleCarousel items={bannerItems} />
+              <SimpleCarousel items={apiBannerItems ?? bannerItems} />
             </div>
           </div>
 
-          {/* Brands Section */}
+          {/* Categories Section (from API) */}
           <div className={styles.section}>
             <div className={styles.sectionTitle}>
-              <h2>品牌精选</h2>
+              <h2>热门分类</h2>
               <span className={styles.viewAll}>查看全部</span>
             </div>
             <div className={styles.brandsGrid}>
-              <div className={styles.brandItem}>
-                <img src="/brands/zara.svg" alt="ZARA" />
-                <p>ZARA</p>
-              </div>
-              <div className={styles.brandItem}>
-                <img src="/brands/hm.svg" alt="H&M" />
-                <p>HM</p>
-              </div>
-              <div className={styles.brandItem}>
-                <img src="/brands/uniqlo.svg" alt="UNIQLO" />
-                <p>UNIQLO</p>
-              </div>
-              <div className={styles.brandItem}>
-                <img src="/brands/nike.svg" alt="NIKE" />
-                <p>NIKE</p>
-              </div>
+              {(apiCategories ?? []).slice(0, 8).map((c) => (
+                <div key={c.id} className={styles.brandItem} style={{ cursor: 'pointer' }}>
+                  <img
+                    src={c.icon}
+                    alt={c.name}
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/placeholder.svg';
+                    }}
+                  />
+                  <p>{c.name}</p>
+                </div>
+              ))}
+              {(!apiCategories || apiCategories.length === 0) && (
+                <>
+                  <div className={styles.brandItem}>
+                    <img src="/brands/zara.svg" alt="ZARA" />
+                    <p>ZARA</p>
+                  </div>
+                  <div className={styles.brandItem}>
+                    <img src="/brands/hm.svg" alt="H&M" />
+                    <p>HM</p>
+                  </div>
+                  <div className={styles.brandItem}>
+                    <img src="/brands/uniqlo.svg" alt="UNIQLO" />
+                    <p>UNIQLO</p>
+                  </div>
+                  <div className={styles.brandItem}>
+                    <img src="/brands/nike.svg" alt="NIKE" />
+                    <p>NIKE</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -149,44 +227,7 @@ export default function Home() {
               <span className={styles.viewAll}>查看全部</span>
             </div>
             <div className={styles.productGrid}>
-              {[
-                {
-                  tag: 'SALE',
-                  img: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '女式丝质衬衫',
-                  vendor: 'By Fashion Hub',
-                  price: '¥189',
-                  original: '¥329',
-                  off: '42% OFF',
-                },
-                {
-                  tag: 'SALE',
-                  img: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '休闲束腰连衣裙',
-                  vendor: 'By Designers Co.',
-                  price: '¥279',
-                  original: '¥499',
-                  off: '44% OFF',
-                },
-                {
-                  tag: 'SALE',
-                  img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '男士休闲裤',
-                  vendor: "By Men's Choice",
-                  price: '¥229',
-                  original: '¥399',
-                  off: '42% OFF',
-                },
-                {
-                  tag: 'SALE',
-                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '秋季外套女',
-                  vendor: 'By Style Empire',
-                  price: '¥319',
-                  original: '¥549',
-                  off: '42% OFF',
-                },
-              ].map((p, idx) => (
+              {(discountList ?? []).map((p, idx) => (
                 <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
                   <div className={`${styles.tagRibbon} ${styles.discountTag}`}>{p.tag}</div>
                   <div className={styles.productImg}>
@@ -203,12 +244,76 @@ export default function Home() {
                     <div className={styles.vendorName}>{p.vendor}</div>
                     <div className={styles.productPrice}>
                       <div className={styles.currentPrice}>{p.price}</div>
-                      <div className={styles.originalPrice}>{p.original}</div>
-                      <div className={styles.discountPercent}>{p.off}</div>
+                      {p.original ? <div className={styles.originalPrice}>{p.original}</div> : null}
+                      {p.off ? <div className={styles.discountPercent}>{p.off}</div> : null}
                     </div>
                   </div>
                 </div>
               ))}
+              {!discountList && (
+                <>
+                  {[
+                    {
+                      tag: 'SALE',
+                      img: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '女式丝质衬衫',
+                      vendor: 'By Fashion Hub',
+                      price: '¥189',
+                      original: '¥329',
+                      off: '42% OFF',
+                    },
+                    {
+                      tag: 'SALE',
+                      img: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '休闲束腰连衣裙',
+                      vendor: 'By Designers Co.',
+                      price: '¥279',
+                      original: '¥499',
+                      off: '44% OFF',
+                    },
+                    {
+                      tag: 'SALE',
+                      img:'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '男士休闲裤',
+                      vendor: "By Men's Choice",
+                      price: '¥229',
+                      original: '¥399',
+                      off: '42% OFF',
+                    },
+                    {
+                      tag: 'SALE',
+                      img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '秋季外套女',
+                      vendor: 'By Style Empire',
+                      price: '¥319',
+                      original: '¥549',
+                      off: '42% OFF',
+                    },
+                  ].map((p, idx) => (
+                    <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
+                      <div className={`${styles.tagRibbon} ${styles.discountTag}`}>{p.tag}</div>
+                      <div className={styles.productImg}>
+                        <img
+                          src={p.img}
+                          alt={p.name}
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      <div className={styles.productDetails}>
+                        <div className={styles.productName}>{p.name}</div>
+                        <div className={styles.vendorName}>{p.vendor}</div>
+                        <div className={styles.productPrice}>
+                          <div className={styles.currentPrice}>{p.price}</div>
+                          <div className={styles.originalPrice}>{p.original}</div>
+                          <div className={styles.discountPercent}>{p.off}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
@@ -219,36 +324,7 @@ export default function Home() {
               <span className={styles.viewAll}>查看全部</span>
             </div>
             <div className={styles.productGrid}>
-              {[
-                {
-                  tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '牛仔裤休闲款男',
-                  vendor: 'By Denim Co.',
-                  price: '¥259',
-                },
-                {
-                  tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '修身连衣裙女',
-                  vendor: 'By Fashion House',
-                  price: '¥289',
-                },
-                {
-                  tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '运动鞋休闲款',
-                  vendor: 'By Sports Gear Inc',
-                  price: '¥349',
-                },
-                {
-                  tag: 'HOT',
-                  img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-                  name: '女士手提包',
-                  vendor: 'By Accessories Co.',
-                  price: '¥399',
-                },
-              ].map((p, idx) => (
+              {(hotList ?? []).map((p, idx) => (
                 <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
                   <div className={`${styles.tagRibbon} ${styles.hotTag}`}>{p.tag}</div>
                   <div className={styles.productImg}>
@@ -269,6 +345,60 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+              {!hotList && (
+                <>
+                  {[
+                    {
+                      tag: 'HOT',
+                      img: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '牛仔裤休闲款男',
+                      vendor: 'By Denim Co.',
+                      price: '¥259',
+                    },
+                    {
+                      tag: 'HOT',
+                      img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '修身连衣裙女',
+                      vendor: 'By Fashion House',
+                      price: '¥289',
+                    },
+                    {
+                      tag: 'HOT',
+                      img: 'https://images.unsplash.com/photo-1582552938357-32b906df40cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '运动鞋休闲款',
+                      vendor: 'By Sports Gear Inc',
+                      price: '¥349',
+                    },
+                    {
+                      tag: 'HOT',
+                      img: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+                      name: '女士手提包',
+                      vendor: 'By Accessories Co.',
+                      price: '¥399',
+                    },
+                  ].map((p, idx) => (
+                    <div key={idx} className={styles.productCard} onClick={() => (window.location.href = '/goodDetails')} style={{ cursor: 'pointer' }}>
+                      <div className={`${styles.tagRibbon} ${styles.hotTag}`}>{p.tag}</div>
+                      <div className={styles.productImg}>
+                        <img
+                          src={p.img}
+                          alt={p.name}
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/placeholder.svg';
+                          }}
+                        />
+                      </div>
+                      <div className={styles.productDetails}>
+                        <div className={styles.productName}>{p.name}</div>
+                        <div className={styles.vendorName}>{p.vendor}</div>
+                        <div className={styles.productPrice}>
+                          <div className={styles.currentPrice}>{p.price}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
           </>) : activeTab === 'category' ? (

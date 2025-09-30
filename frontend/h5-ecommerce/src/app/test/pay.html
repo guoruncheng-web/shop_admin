@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="filename" content="checkout_page.html">
+    <title>结算商品 - StyleHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #e29692;
+            --primary-light: #f9f0ef;
+            --primary-dark: #c57d7a;
+            --light: #f9f9f9;
+            --light-gray: #f5f5f5;
+            --gray: #e0e0e0;
+            --dark: #333;
+            --dark-gray: #666;
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 10px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+        }
+        
+        body {
+            background-color: #f7f7f7;
+            color: var(--dark);
+            max-width: 375px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        
+        /* 页头 */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            flex: 1;
+            text-align: center;
+        }
+        
+        /* 主要内容区域 */
+        .checkout-container {
+            padding: var(--spacing-sm);
+        }
+        
+        /* 订单摘要 */
+        .summary-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-lg);
+            position: relative;
+            padding-left: 10px;
+        }
+        
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 65%;
+            width: 3px;
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        .order-products {
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .product-item {
+            display: flex;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .product-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            background: var(--light-gray);
+            overflow: hidden;
+            margin-right: var(--spacing-sm);
+            flex-shrink: 0;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+        
+        .product-price-quantity {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+        }
+        
+        .summary-total {
+            text-align: right;
+            padding-top: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .item-count {
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .total-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        /* 收货地址 */
+        .address-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            border: 1px solid var(--gray);
+        }
+        
+        .address-card.active {
+            border-color: var(--primary);
+            border-width: 2px;
+        }
+        
+        .address-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .address-name {
+            font-weight: 600;
+        }
+        
+        .default-tag {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        
+        .address-detail {
+            line-height: 1.6;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .edit-address {
+            color: var(--primary);
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        
+        /* 支付方式 */
+        .payment-methods {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .payment-method:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-icon {
+            width: 40px;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .payment-name {
+            flex: 1;
+        }
+        
+        .payment-selector {
+            width: 20px;
+            height: 20px;
+            border: 1px solid var(--gray);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .payment-selector.selected::after {
+            content: '';
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+        
+        /* 优惠选择 */
+        .coupon-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .discount-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm) 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .discount-item:last-child {
+            border-bottom: none;
+        }
+        
+        .discount-name {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+        
+        .discount-icon {
+            width: 30px;
+            height: 30px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .discount-select {
+            padding: 5px 15px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+        
+        /* 账单明细 */
+        .bill-details {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .bill-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--spacing-xs) 0;
+        }
+        
+        .bill-total {
+            border-top: 1px solid var(--light-gray);
+            margin-top: var(--spacing-sm);
+            padding-top: var(--spacing-sm);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .total-price {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        /* 提交按钮 */
+        .submit-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: var(--spacing-sm);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            max-width: 375px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            opacity: 0.9;
+            box-shadow: 0 5px 15px rgba(226,150,146,0.4);
+        }
+        
+        .agreement {
+            text-align: center;
+            margin-top: var(--spacing-sm);
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+        }
+        
+        .agreement a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <div class="app-header">
+        <button>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">结算商品</div>
+        <button>
+            <i class="fas fa-home"></i>
+        </button>
+    </div>
+    
+    <!-- 结算内容 -->
+    <div class="checkout-container">
+        <!-- 订单摘要 -->
+        <div class="summary-card">
+            <div class="section-title">订单摘要</div>
+            <div class="order-products">
+                <div class="product-item">
+                    <div class="product-image">
+                        <img src="https://picsum.photos/id/300/200/200" alt="西装外套">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">休闲格纹西装外套 2023秋季新款时尚气质宽松百搭</div>
+                        <div class="product-price-quantity">¥389 × 1</div>
+                    </div>
+                </div>
+                <div class="product-item">
+                    <div class="product-image">
+                        <img src="https://picsum.photos/id/301/200/200" alt="牛仔裤">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-name">修身直筒牛仔裤 显瘦百搭</div>
+                        <div class="product-price-quantity">¥199 × 1</div>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-total">
+                <div class="item-count">共2件商品</div>
+                <div class="total-price">合计: ¥588.00</div>
+            </div>
+        </div>
+        
+        <!-- 收货地址 -->
+        <div class="address-card active">
+            <div class="address-header">
+                <div class="address-name">张美丽</div>
+                <div class="default-tag">默认</div>
+            </div>
+            <div class="address-detail">
+                <div>138****1234</div>
+                <div>上海市浦东新区张江高科技园区123号创新大厦201室</div>
+            </div>
+            <div class="edit-address">
+                <i class="fas fa-edit"></i> 修改地址
+            </div>
+        </div>
+        
+        <!-- 支付方式 -->
+        <div class="payment-methods">
+            <div class="section-title">支付方式</div>
+            <div class="payment-method">
+                <div class="payment-icon">
+                    <i class="fab fa-alipay" style="font-size: 2rem; color: #108ee9;"></i>
+                </div>
+                <div class="payment-name">支付宝支付</div>
+                <div class="payment-selector selected"></div>
+            </div>
+            <div class="payment-method">
+                <div class="payment-icon">
+                    <i class="fab fa-weixin" style="font-size: 2rem; color: #09bb07;"></i>
+                </div>
+                <div class="payment-name">微信支付</div>
+                <div class="payment-selector"></div>
+            </div>
+            <div class="payment-method">
+                <div class="payment-icon">
+                    <i class="fas fa-credit-card" style="font-size: 1.6rem; color: #333;"></i>
+                </div>
+                <div class="payment-name">银行卡支付</div>
+                <div class="payment-selector"></div>
+            </div>
+        </div>
+        
+        <!-- 优惠选择 -->
+        <div class="coupon-section">
+            <div class="section-title">优惠选择</div>
+            <div class="discount-item">
+                <div class="discount-name">
+                    <div class="discount-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div>优惠券</div>
+                </div>
+                <div class="discount-select">1张可用</div>
+            </div>
+            <div class="discount-item">
+                <div class="discount-name">
+                    <div class="discount-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div>积分</div>
+                </div>
+                <div class="discount-select">1280分可用</div>
+            </div>
+        </div>
+        
+        <!-- 账单明细 -->
+        <div class="bill-details">
+            <div class="bill-row">
+                <div>商品总额</div>
+                <div>¥588.00</div>
+            </div>
+            <div class="bill-row">
+                <div>运费</div>
+                <div>¥0.00</div>
+            </div>
+            <div class="bill-row">
+                <div>优惠券</div>
+                <div>-¥50.00</div>
+            </div>
+            <div class="bill-row bill-total">
+                <div>实付款</div>
+                <div class="total-price">¥538.00</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提交订单栏 -->
+    <div class="submit-section">
+        <button class="submit-btn">提交订单</button>
+        <div class="agreement">
+            提交订单即表示同意<a href="#">用户协议</a>和<a href="#">隐私政策</a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 支付方式选择
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    const selector = this.querySelector('.payment-selector');
+                    if (!selector.classList.contains('selected')) {
+                        // 移除其他选择
+                        document.querySelectorAll('.payment-selector').forEach(s => {
+                            s.classList.remove('selected');
+                        });
+                        selector.classList.add('selected');
+                    }
+                });
+            });
+            
+            // 地址选择
+            const addressCard = document.querySelector('.address-card');
+            addressCard.addEventListener('click', function() {
+                alert('跳转到地址管理页面');
+            });
+            
+            // 优惠券选择
+            const discountItems = document.querySelectorAll('.discount-select');
+            discountItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    alert('选择优惠券/积分');
+                });
+            });
+            
+            // 提交订单按钮
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.addEventListener('click', function() {
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    alert('订单提交成功！');
+                    this.innerHTML = '提交订单';
+                    this.disabled = false;
+                }, 1500);
+            });
+        });
+    </script>
+</body>

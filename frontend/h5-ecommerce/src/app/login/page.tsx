@@ -50,6 +50,9 @@ export default function LoginPage() {
       } catch {}
       setLoading(false);
       alert('登录成功！');
+
+
+
       window.location.href = '/';
     }, 1200);
   };
