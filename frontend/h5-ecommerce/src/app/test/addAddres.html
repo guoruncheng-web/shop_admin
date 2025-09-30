@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="filename" content="new_address_page.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建地址 - Elegance购物平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-beige: #f8f5f0;
+            --secondary-beige: #f4f0e9;
+            --accent-gold: #c4a376;
+            --gold-dark: #a78a5c;
+            --gold-light: #e0cda8;
+            --text-dark: #2a2a2a;
+            --text-medium: #5c5c5c;
+            --text-light: #888888;
+            --border-color: #e5e0d7;
+            --radius: 18px;
+            --radius-card: 14px;
+            --radius-input: 12px;
+            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-beige);
+            background-image: radial-gradient(circle at 10% 20%, rgba(240, 236, 228, 0.3) 0%, transparent 80%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .address-form-container {
+            max-width: 420px;
+            min-height: 812px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.98);
+            background-image: radial-gradient(ellipse at 90% 20%, rgba(240, 236, 228, 0.2) 10%, transparent 90%);
+            position: relative;
+            overflow-x: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius);
+        }
+
+        /* 顶部装饰元素 */
+        .gold-arc {
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 40px solid rgba(196, 163, 118, 0.1);
+            z-index: 0;
+        }
+
+        /* 页面头部 */
+        .form-header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 20px;
+            background: linear-gradient(to bottom, rgba(248, 245, 240, 0.95), rgba(255, 255, 255, 0.98));
+            backdrop-filter: blur(5px);
+            z-index: 10;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
+        }
+
+        .back-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(196, 163, 118, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            background: rgba(196, 163, 118, 0.2);
+            transform: translateX(-3px);
+        }
+
+        .page-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+            letter-spacing: 0.5px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .save-btn {
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(196, 163, 118, 0.25);
+        }
+
+        .save-btn:hover {
+            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(196, 163, 118, 0.35);
+        }
+
+        /* 表单内容 */
+        .form-content {
+            padding: 25px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-illustration {
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .location-icon {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(196, 163, 118, 0.1), rgba(196, 163, 118, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 2.2rem;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .illustration-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--gold-dark);
+            letter-spacing: 0.8px;
+        }
+
+        .illustration-subtext {
+            font-size: 0.95rem;
+            color: var(--text-medium);
+            max-width: 280px;
+            margin: 10px auto;
+        }
+
+        /* 地址表单 */
+        .address-form {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border: 1px solid rgba(229, 224, 215, 0.6);
+            border-radius: var(--radius-card);
+            padding: 25px 22px;
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .address-form:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .address-form:before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+            border-radius: var(--radius-card) var(--radius-card) 0 0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-medium);
+            padding-left: 5px;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            border: 1px solid rgba(229, 224, 215, 0.8);
+            border-radius: var(--radius-input);
+            font-size: 1.05rem;
+            background: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
+            color: var(--text-dark);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-gold);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(196, 163, 118, 0.2), inset 0 2px 8px rgba(0, 0, 0, 0.03);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 45px;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+
+        .form-col {
+            flex: 1;
+        }
+
+        /* 地址标签 */
+        .tags-section {
+            margin: 25px 0;
+        }
+
+        .tags-title {
+            font-size: 1.05rem;
+            color: var(--text-medium);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tags-title i {
+            color: var(--accent-gold);
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag-item {
+            padding: 8px 18px;
+            border: 1px solid rgba(229, 224, 215, 0.8);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tag-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(196, 163, 118, 0.1), transparent);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .tag-item.selected:before {
+            opacity: 1;
+        }
+
+        .tag-item.selected {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .tag-icon {
+            margin-right: 5px;
+        }
+
+        .tag-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .add-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border: 1px dashed var(--accent-gold);
+            border-radius: 30px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(196, 163, 118, 0.05);
+        }
+
+        .add-tag:hover {
+            background: rgba(196, 163, 118, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* 设置默认地址 */
+        .default-section {
+            background: rgba(196, 163, 118, 0.05);
+            border-radius: var(--radius-input);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(229, 224, 215, 0.6);
+        }
+
+        .toggle-container {
+            position: relative;
+            width: 52px;
+            height: 26px;
+            border-radius: 15px;
+            background: rgba(229, 224, 215, 0.8);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .toggle-container.active {
+            background: var(--accent-gold);
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: left 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-container.active .toggle-knob {
+            left: 29px;
+        }
+
+        .toggle-label {
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        /* 底部导航 */
+        .nav-fixed {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border-top: 1px solid rgba(229, 224, 215, 0.8);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 420px;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            background: rgba(196, 163, 118, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            color: var(--gold-dark);
+            margin-bottom: 5px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-icon {
+            transform: translateY(-3px);
+            background: linear-gradient(to bottom, var(--accent-gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--gold-dark);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="address-form-container">
+        <div class="gold-arc"></div>
+        
+        <!-- 页面头部 -->
+        <div class="form-header">
+            <div class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h1 class="page-title">新建地址</h1>
+            <button class="save-btn">保存</button>
+        </div>
+        
+        <!-- 表单内容 -->
+        <div class="form-content">
+            <!-- 顶部图例 -->
+            <div class="form-illustration">
+                <div class="location-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="illustration-text">添加新地址</div>
+                <p class="illustration-subtext">请确保信息准确完整，以便我们能够顺利送达您的包裹</p>
+            </div>
+            
+            <!-- 地址表单 -->
+            <div class="address-form">
+                <!-- 收货人信息 -->
+                <div class="form-group">
+                    <label class="form-label">收货人姓名</label>
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" class="form-input" placeholder="请输入收货人姓名">
+                </div>
+                
+                <!-- 手机号码 -->
+                <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <i class="fas fa-mobile-alt input-icon"></i>
+                    <input type="tel" class="form-input" placeholder="请输入11位手机号码">
+                </div>
+                
+                <!-- 区域选择 -->
+                <div class="form-group">
+                    <label class="form-label">选择地区</label>
+                    <i class="fas fa-map input-icon"></i>
+                    <input type="text" class="form-input" placeholder="省/市/区/县">
+                </div>
+                
+                <!-- 详细地址 -->
+                <div class="form-group">
+                    <label class="form-label">详细地址</label>
+                    <i class="fas fa-location-arrow input-icon"></i>
+                    <input type="text" class="form-input" placeholder="街道、小区、楼栋号、房间号">
+                </div>
+                
+                <!-- 分两列 -->
+                <div class="form-row">
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">邮政编码</label>
+                            <i class="fas fa-mail-bulk input-icon"></i>
+                            <input type="text" class="form-input" placeholder="邮政编码">
+                        </div>
+                    </div>
+                    
+                    <div class="form-col">
+                        <div class="form-group">
+                            <label class="form-label">门牌号</label>
+                            <i class="fas fa-home input-icon"></i>
+                            <input type="text" class="form-input" placeholder="单元号/门牌号">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 地址标签 -->
+                <div class="tags-section">
+                    <div class="tags-title">
+                        <i class="fas fa-tags"></i> 地址标签
+                    </div>
+                    <div class="tags-container">
+                        <div class="tag-item selected">
+                            <i class="fas fa-home tag-icon"></i>家
+                        </div>
+                        <div class="tag-item">
+                            <i class="fas fa-building tag-icon"></i>公司
+                        </div>
+                        <div class="tag-item">
+                            <i class="fas fa-school tag-icon"></i>学校
+                        </div>
+                        <div class="tag-item">
+                            <i class="fas fa-hotel tag-icon"></i>酒店
+                        </div>
+                        <div class="add-tag">
+                            <i class="fas fa-plus"></i> 自定义
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 设为默认地址 -->
+                <div class="default-section">
+                    <div class="toggle-container active">
+                        <span class="toggle-knob"></span>
+                    </div>
+                    <div class="toggle-label">设为默认收货地址</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="nav-fixed">
+            <div class="nav-item">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-label">首页</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-list nav-icon"></i>
+                <span class="nav-label">分类</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-shopping-cart nav-icon"></i>
+                <span class="nav-label">购物车</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">我的</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 标签选择功能
+            const tagItems = document.querySelectorAll('.tag-item:not(.add-tag)');
+            tagItems.forEach(tag => {
+                tag.addEventListener('click', function() {
+                    tagItems.forEach(t => t.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 添加标签功能
+            document.querySelector('.add-tag').addEventListener('click', function() {
+                const newTag = prompt('请输入新标签名称:');
+                if (newTag && newTag.trim() !== '') {
+                    const tagsContainer = document.querySelector('.tags-container');
+                    const newTagElement = document.createElement('div');
+                    newTagElement.className = 'tag-item';
+                    newTagElement.innerHTML = `<i class="fas fa-tag tag-icon"></i>${newTag}`;
+                    
+                    // 添加点击事件
+                    newTagElement.addEventListener('click', function() {
+                        tagItems.forEach(t => t.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                    
+                    // 插入在"自定义"前面
+                    tagsContainer.insertBefore(newTagElement, this);
+                }
+            });
+            
+            // 切换开关功能
+            const toggle = document.querySelector('.toggle-container');
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+            });
+            
+            // 保存按钮效果
+            const saveBtn = document.querySelector('.save-btn');
+            saveBtn.addEventListener('click', function() {
+                const originalText = this.textContent;
+                this.textContent = '保存中...';
+                this.disabled = true;
+                
+                // 模拟保存过程
+                setTimeout(() => {
+                    this.textContent = '保存成功!';
+                    this.style.background = 'linear-gradient(to right, #2aae67, #1e8d4e)';
+                    
+                    // 返回到上一页
+                    setTimeout(() => {
+                        alert('地址保存成功！');
+                        this.textContent = originalText;
+                        this.disabled = false;
+                        this.style.background = 'linear-gradient(to right, var(--gold-light), var(--accent-gold))';
+                    }, 800);
+                }, 1500);
+            });
+            
+            // 输入获取焦点时加亮效果
+            const inputs = document.querySelectorAll('.form-input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentNode.querySelector('.form-label').style.color = 'var(--accent-gold)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentNode.querySelector('.form-label').style.color = 'var(--text-medium)';
+                });
+            });
+        });
+    </script>
+</body>

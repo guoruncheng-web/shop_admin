@@ -9,12 +9,17 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.9.0",
+    "@swc/helpers": "^0.5.17",
     "antd-mobile": "^5.37.1",
+    "axios": "^1.12.2",
     "clsx": "^2.1.1",
+    "msw": "^2.11.3",
     "next": "15.5.3",
     "next-with-less": "^3.0.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -23,6 +28,7 @@
     "@types/node": "^20.19.17",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-redux": "^7.1.34",
     "autoprefixer": "^10.4.21",
     "css-loader": "^7.1.2",
     "eslint": "^9",

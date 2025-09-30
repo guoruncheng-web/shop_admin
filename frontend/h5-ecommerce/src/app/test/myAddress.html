@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="filename" content="luxury_address_manager.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的地址 - Elegance购物平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-beige: #f8f5f0;
+            --secondary-beige: #f4f0e9;
+            --accent-gold: #c4a376;
+            --gold-dark: #a78a5c;
+            --gold-light: #e0cda8;
+            --text-dark: #2a2a2a;
+            --text-medium: #5c5c5c;
+            --text-light: #888888;
+            --border-color: #e5e0d7;
+            --radius: 18px;
+            --radius-card: 14px;
+            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-beige);
+            color: var(--text-dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .luxury-address-container {
+            max-width: 420px;
+            min-height: 812px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.98);
+            position: relative;
+            overflow-x: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius);
+        }
+
+        /* 顶部装饰元素 */
+        .gold-dot {
+            position: absolute;
+            top: 110px;
+            right: 30px;
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(45deg, var(--gold-light) 0%, var(--accent-gold) 100%);
+            border-radius: 50%;
+            filter: blur(35px);
+            opacity: 0.1;
+            z-index: 0;
+        }
+
+        /* 顶部导航 */
+        .address-header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 18px;
+            background: linear-gradient(to bottom, rgba(248, 245, 240, 0.9), rgba(255, 255, 255, 0.8));
+            backdrop-filter: blur(8px);
+            z-index: 20;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
+        }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+            text-align: center;
+            flex: 1;
+        }
+
+        .add-btn {
+            background: rgba(196, 163, 118, 0.1);
+            color: var(--accent-gold);
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .add-btn:hover {
+            background: rgba(196, 163, 118, 0.2);
+        }
+
+        /* 地址列表 */
+        .address-list {
+            padding: 15px 18px;
+            padding-bottom: 150px;
+        }
+
+        .address-section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .address-section-title i {
+            color: var(--accent-gold);
+        }
+
+        .address-item {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border: 1px solid rgba(229, 224, 215, 0.6);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            margin-bottom: 18px;
+            position: relative;
+            transition: var(--transition);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .address-item:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-3px);
+        }
+
+        .address-item.active {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 2px rgba(196, 163, 118, 0.3);
+        }
+
+        .default-label {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: linear-gradient(45deg, var(--gold-light), var(--accent-gold));
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .receiver-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .receiver-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .receiver-phone {
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+
+        .address-details {
+            line-height: 1.6;
+            color: var(--text-medium);
+            margin-bottom: 18px;
+            padding-right: 30px;
+        }
+
+        .address-tag {
+            display: inline-block;
+            background: rgba(196, 163, 118, 0.1);
+            color: var(--accent-gold);
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .address-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            border-top: 1px dashed rgba(229, 224, 215, 0.6);
+            padding-top: 12px;
+        }
+
+        .action-link {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 5px 0;
+            transition: var(--transition);
+        }
+
+        .action-link:hover {
+            color: var(--gold-dark);
+        }
+
+        .action-link.default {
+            font-weight: 600;
+        }
+
+        /* 添加地址按钮 */
+        .floating-add-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--gold-light), var(--accent-gold));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 6px 18px rgba(196, 163, 118, 0.3);
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .floating-add-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 10px 25px rgba(196, 163, 118, 0.4);
+        }
+
+        /* 底部导航 */
+        .premium-navbar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(245, 242, 236, 0.95));
+            border-top: 1px solid rgba(229, 224, 215, 0.8);
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 420px;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            background: rgba(196, 163, 118, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            color: var(--gold-dark);
+            margin-bottom: 5px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-icon {
+            transform: translateY(-3px);
+            background: linear-gradient(to bottom, var(--accent-gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-label {
+            color: var(--gold-dark);
+            font-weight: 600;
+        }
+        
+        /* 添加/编辑地址模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .address-modal {
+            background: white;
+            width: 90%;
+            max-width: 420px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-overlay.active .address-modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-medium);
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .form-input:focus {
+            border-color: var(--accent-gold);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(196, 163, 118, 0.2);
+        }
+        
+        .half-width {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .half-width .form-group {
+            flex: 1;
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .form-checkbox input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-gold);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .form-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: var(--radius-card);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+        
+        .cancel-btn {
+            background: #f5f5f5;
+            color: var(--text-medium);
+        }
+        
+        .cancel-btn:hover {
+            background: #e9e9e9;
+        }
+        
+        .save-btn {
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
+        }
+    </style>
+</head>
+<body>
+    <div class="luxury-address-container">
+        <div class="gold-dot"></div>
+        
+        <!-- 顶部导航 -->
+        <div class="address-header">
+            <div class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="header-title">我的地址</div>
+            <button class="add-btn" id="addAddressBtn">添加地址</button>
+        </div>
+        
+        <!-- 地址列表 -->
+        <div class="address-list">
+            <div class="address-section-title">
+                <i class="fas fa-bookmark"></i> 默认地址
+            </div>
+            
+            <!-- 默认地址 -->
+            <div class="address-item active">
+                <div class="default-label">默认地址</div>
+                <div class="receiver-info">
+                    <div class="receiver-name">张明</div>
+                    <div class="receiver-phone">138****1234</div>
+                </div>
+                <div class="address-details">
+                    北京市朝阳区三里屯路11号院2号楼1508室 (邮编：100027)
+                </div>
+                <div>
+                    <span class="address-tag">家</span>
+                    <span class="address-tag">工作日</span>
+                </div>
+                <div class="address-actions">
+                    <a class="action-link edit-address" data-id="1">编辑</a>
+                    <a class="action-link" style="color: #e53e3e;">删除</a>
+                </div>
+            </div>
+            
+            <div class="address-section-title">
+                <i class="fas fa-map-marker-alt"></i> 其他地址
+            </div>
+            
+            <!-- 其他地址 -->
+            <div class="address-item">
+                <div class="receiver-info">
+                    <div class="receiver-name">李思思</div>
+                    <div class="receiver-phone">135****5678</div>
+                </div>
+                <div class="address-details">
+                    上海市浦东新区陆家嘴环路166号未来资产大厦3201室 (邮编：200120)
+                </div>
+                <div>
+                    <span class="address-tag">公司</span>
+                </div>
+                <div class="address-actions">
+                    <a class="action-link edit-address" data-id="2">编辑</a>
+                    <a class="action-link default">设为默认</a>
+                    <a class="action-link" style="color: #e53e3e;">删除</a>
+                </div>
+            </div>
+            
+            <div class="address-item">
+                <div class="receiver-info">
+                    <div class="receiver-name">王大伟</div>
+                    <div class="receiver-phone">186****8901</div>
+                </div>
+                <div class="address-details">
+                    广州市天河区天河路208号天河城购物中心A座28楼2802室 (邮编：510620)
+                </div>
+                <div>
+                    <span class="address-tag">父母家</span>
+                    <span class="address-tag">节假日</span>
+                </div>
+                <div class="address-actions">
+                    <a class="action-link edit-address" data-id="3">编辑</a>
+                    <a class="action-link default">设为默认</a>
+                    <a class="action-link" style="color: #e53e3e;">删除</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 添加地址按钮 -->
+        <div class="floating-add-btn" id="floatingAddBtn">
+            <i class="fas fa-plus"></i>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="premium-navbar">
+            <div class="nav-item">
+                <i class="fas fa-home nav-icon"></i>
+                <span class="nav-label">首页</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-list nav-icon"></i>
+                <span class="nav-label">分类</span>
+            </div>
+            <div class="nav-item">
+                <i class="fas fa-shopping-cart nav-icon"></i>
+                <span class="nav-label">购物车</span>
+            </div>
+            <div class="nav-item active">
+                <i class="fas fa-user nav-icon"></i>
+                <span class="nav-label">我的</span>
+            </div>
+        </div>
+        
+        <!-- 地址编辑模态框 -->
+        <div class="modal-overlay" id="addressModal">
+            <div class="address-modal">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle">添加新地址</div>
+                    <div class="close-modal" id="closeModal">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">收货人</label>
+                        <input type="text" class="form-input" placeholder="姓名">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">手机号码</label>
+                        <input type="tel" class="form-input" placeholder="11位手机号码">
+                    </div>
+                    
+                    <div class="half-width">
+                        <div class="form-group">
+                            <label class="form-label">所在地区</label>
+                            <input type="text" class="form-input" placeholder="省/市/区">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">邮政编码</label>
+                            <input type="text" class="form-input" placeholder="邮政编码">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">详细地址</label>
+                        <input type="text" class="form-input" placeholder="街道、小区、楼栋号等">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">地址标签</label>
+                        <div class="option-values">
+                            <div class="option-value selected">家</div>
+                            <div class="option-value">公司</div>
+                            <div class="option-value">学校</div>
+                            <div class="option-value">父母家</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="setDefault" checked>
+                        <label for="setDefault">设为默认地址</label>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button class="form-btn cancel-btn" id="cancelBtn">取消</button>
+                        <button class="form-btn save-btn">保存地址</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模态框控制
+            const modal = document.getElementById('addressModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalOverlay = document.querySelector('.modal-overlay');
+            const closeModalBtn = document.getElementById('closeModal');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const addAddressBtn = document.getElementById('addAddressBtn');
+            const floatingAddBtn = document.getElementById('floatingAddBtn');
+            const editAddressLinks = document.querySelectorAll('.edit-address');
+            
+            // 打开模态框
+            function openModal(title) {
+                modalTitle.textContent = title;
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            // 关闭模态框
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            // 添加地址按钮事件
+            addAddressBtn.addEventListener('click', () => openModal('添加新地址'));
+            floatingAddBtn.addEventListener('click', () => openModal('添加新地址'));
+            
+            // 编辑地址按钮事件
+            editAddressLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const addressId = this.getAttribute('data-id');
+                    openModal('编辑地址');
+                });
+            });
+            
+            // 关闭模态框事件
+            closeModalBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            
+            // 地址标签选择
+            const optionValues = document.querySelectorAll('.option-value');
+            optionValues.forEach(option => {
+                option.addEventListener('click', function() {
+                    if (this.classList.contains('selected')) {
+                        return;
+                    }
+                    
+                    // 找到同一组中的其他选项
+                    const siblings = Array.from(this.parentNode.children).filter(
+                        child => child !== this
+                    );
+                    
+                    // 移除所有同一组的选中状态
+                    siblings.forEach(sib => sib.classList.remove('selected'));
+                    
+                    // 设置当前选中
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 表单提交
+            document.querySelector('.save-btn').addEventListener('click', function() {
+                // 这里应该有表单验证逻辑
+                alert('地址保存成功！');
+                closeModal();
+            });
+            
+            // 设为默认地址
+            document.querySelectorAll('.action-link.default').forEach(link => {
+                link.addEventListener('click', function() {
+                    document.querySelector('.address-item.active').classList.remove('active');
+                    this.closest('.address-item').classList.add('active');
+                    alert('已设为默认地址！');
+                });
+            });
+            
+            // 删除地址
+            document.querySelectorAll('.action-link[style*="color: #e53e3e"]').forEach(link => {
+                link.addEventListener('click', function() {
+                    if (confirm('确定要删除这个地址吗？')) {
+                        const item = this.closest('.address-item');
+                        item.style.opacity = '0';
+                        setTimeout(() => {
+                            item.remove();
+                        }, 300);
+                    }
+                });
+            });
+        });
+    </script>
+</body>

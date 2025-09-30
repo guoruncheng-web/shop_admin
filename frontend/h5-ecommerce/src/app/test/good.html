@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="filename" content="luxury_product_detail.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奢华连衣裙 - Elegance购物平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-beige: #f8f5f0;
+            --secondary-beige: #f4f0e9;
+            --accent-gold: #c4a376;
+            --gold-dark: #a78a5c;
+            --gold-light: #e0cda8;
+            --text-dark: #2a2a2a;
+            --text-medium: #5c5c5c;
+            --text-light: #888888;
+            --border-color: #e5e0d7;
+            --radius: 18px;
+            --radius-card: 14px;
+            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--primary-beige);
+            background-image: radial-gradient(circle at 20% 30%, rgba(240, 236, 228, 0.3) 10%, transparent 90%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .luxury-detail-container {
+            max-width: 420px;
+            min-height: 812px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.98);
+            background-image: radial-gradient(ellipse at 85% 15%, rgba(240, 236, 228, 0.2) 10%, transparent 90%);
+            position: relative;
+            overflow-x: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius);
+        }
+
+        /* 顶部装饰元素 */
+        .gold-dot {
+            position: absolute;
+            top: 75px;
+            right: 25px;
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(45deg, var(--gold-light) 0%, var(--accent-gold) 100%);
+            border-radius: 50%;
+            filter: blur(35px);
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        /* 顶部导航 */
+        .detail-header {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 18px;
+            background: linear-gradient(to bottom, rgba(248, 245, 240, 0.9), rgba(255, 255, 255, 0.8));
+            backdrop-filter: blur(8px);
+            z-index: 20;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
+        }
+
+        .nav-action {
+            display: flex;
+            gap: 16px;
+            z-index: 2;
+        }
+
+        .nav-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(196, 163, 118, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .nav-icon:hover {
+            background: rgba(196, 163, 118, 0.25);
+            transform: translateY(-3px);
+        }
+
+        /* 商品图片轮播 */
+        .gallery-section {
+            max-width: 100%;
+            height: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gallery-main {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .main-image.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 1;
+        }
+
+        .main-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-thumbnails {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .thumbnail {
+            width: 60px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .thumbnail.active {
+            border-color: var(--accent-gold);
+        }
+
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 商品基本信息 */
+        .product-info-section {
+            padding: 25px 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand-label {
+            display: inline-block;
+            background: rgba(196, 163, 118, 0.1);
+            color: var(--accent-gold);
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .product-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.3;
+            margin-bottom: 10px;
+        }
+
+        .product-subtitle {
+            color: var(--text-medium);
+            font-size: 1rem;
+            margin-bottom: 18px;
+        }
+
+        .prices {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .current-price {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 700;
+            color: var(--gold-dark);
+        }
+
+        .original-price {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            text-decoration: line-through;
+        }
+
+        .discount-badge {
+            background: linear-gradient(45deg, #c9333c, #b42828);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .reviews {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .stars i {
+            color: #FFD700;
+            font-size: 0.9rem;
+        }
+
+        .rating-count {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+
+        .sales-count {
+            margin-left: 10px;
+            font-size: 0.85rem;
+            color: var(--text-medium);
+        }
+
+        /* 商户信息 */
+        .seller-card {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border: 1px solid rgba(229, 224, 215, 0.6);
+            border-radius: var(--radius-card);
+            padding: 18px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-xs);
+            transition: var(--transition);
+        }
+
+        .seller-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-3px);
+        }
+
+        .seller-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--gold-light), var(--accent-gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.4rem;
+        }
+
+        .seller-info {
+            flex: 1;
+        }
+
+        .seller-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--gold-dark);
+        }
+
+        .seller-rating {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .seller-rating i {
+            color: var(--accent-gold);
+        }
+
+        .contact-btn {
+            background: none;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .contact-btn:hover {
+            background: rgba(196, 163, 118, 0.1);
+        }
+
+        /* 规格选择区 */
+        .spec-section {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border: 1px solid rgba(229, 224, 215, 0.6);
+            border-radius: var(--radius-card);
+            padding: 22px 18px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .spec-section:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .spec-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--gold-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .spec-title i {
+            color: var(--accent-gold);
+        }
+
+        .spec-option-group {
+            margin-bottom: 22px;
+        }
+
+        .option-name {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            margin-bottom: 10px;
+        }
+
+        .option-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .option-value {
+            padding: 8px 15px;
+            border: 1px solid rgba(229, 224, 215, 0.8);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .option-value.selected {
+            background: rgba(196, 163, 118, 0.1);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+            font-weight: 500;
+        }
+
+        .option-value.disabled {
+            color: var(--text-light);
+            text-decoration: line-through;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .spec-hint {
+            font-size: 0.85rem;
+            color: var(--text-medium);
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+
+        .spec-hint i {
+            color: var(--accent-gold);
+            margin-right: 5px;
+        }
+
+        /* 商品描述导航 */
+        .desc-nav {
+            display: flex;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.6);
+            margin-bottom: 22px;
+        }
+
+        .desc-nav-item {
+            padding: 10px 0;
+            margin-right: 28px;
+            font-weight: 500;
+            color: var(--text-medium);
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .desc-nav-item.active {
+            color: var(--gold-dark);
+            font-weight: 600;
+        }
+
+        .desc-nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--gold-light), var(--gold-dark));
+        }
+
+        .desc-content {
+            padding: 0 10px;
+            margin-bottom: 100px;
+        }
+
+        .content-section {
+            display: none;
+            padding: 10px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .detail-content p {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-medium);
+        }
+
+        .detail-content img {
+            width: 100%;
+            border-radius: var(--radius-card);
+            margin: 10px 0 20px;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .specs-table td {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.6);
+        }
+
+        .spec-name {
+            color: var(--text-medium);
+            width: 30%;
+        }
+
+        .spec-value {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .reviews-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .review-card {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(229, 224, 215, 0.6);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--gold-light), var(--accent-gold));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .review-rating i {
+            color: #FFD700;
+        }
+
+        .review-content {
+            margin-top: 5px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-medium);
+        }
+
+        .review-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .review-image {
+            border-radius: 8px;
+            overflow: hidden;
+            height: 80px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* 底部操作栏 */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 420px;
+            margin: 0 auto;
+            background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
+            border-top: 1px solid rgba(229, 224, 215, 0.6);
+            display: flex;
+            align-items: center;
+            padding: 15px 18px;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+            color: var(--text-medium);
+            font-size: 0.8rem;
+            transition: var(--transition);
+        }
+
+        .action-btn i {
+            font-size: 1.4rem;
+            margin-bottom: 5px;
+            color: var(--accent-gold);
+        }
+
+        .action-btn .badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e53e3e;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-btn {
+            flex: 1;
+            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
+            color: white;
+            border-radius: 8px;
+            padding: 14px 20px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 15px;
+        }
+
+        .cart-btn:hover {
+            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(196, 163, 118, 0.3);
+        }
+
+        .buy-btn {
+            flex: 1;
+            background: var(--text-dark);
+            color: white;
+            border-radius: 8px;
+            padding: 14px 20px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .buy-btn:hover {
+            background: #333;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="luxury-detail-container">
+        <div class="gold-dot"></div>
+        
+        <!-- 顶部导航 -->
+        <div class="detail-header">
+            <div class="nav-action">
+                <div class="nav-icon">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+            </div>
+            <div class="nav-action">
+                <div class="nav-icon">
+                    <i class="far fa-heart"></i>
+                </div>
+                <div class="nav-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 商品图片轮播 -->
+        <div class="gallery-section">
+            <div class="gallery-main">
+                <div class="main-image active">
+                    <img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="商品图片1">
+                </div>
+                <div class="main-image">
+                    <img src="https://images.unsplash.com/photo-1560243563-062bfc001d68?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="商品图片2">
+                </div>
+                <div class="main-image">
+                    <img src="https://images.unsplash.com/photo-1534451884241-d5c12b9a7a0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="商品图片3">
+                </div>
+                <div class="main-image">
+                    <img src="https://images.unsplash.com/photo-1529903384028-929ae5cccce0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="商品图片4">
+                </div>
+            </div>
+            
+            <div class="gallery-thumbnails">
+                <div class="thumbnail active">
+                    <img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="缩略图1">
+                </div>
+                <div class="thumbnail">
+                    <img src="https://images.unsplash.com/photo-1560243563-062bfc001d68?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="缩略图2">
+                </div>
+                <div class="thumbnail">
+                    <img src="https://images.unsplash.com/photo-1534451884241-d5c12b9a7a0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="缩略图3">
+                </div>
+                <div class="thumbnail">
+                    <img src="https://images.unsplash.com/photo-1529903384028-929ae5cccce0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="缩略图4">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 商品基本信息 -->
+        <div class="product-info-section">
+            <div class="brand-label">CHANEL风格复刻</div>
+            <h1 class="product-title">法式复古方领泡泡袖连衣裙</h1>
+            <p class="product-subtitle">经典小香风设计· 真丝混纺材质· 高级优雅</p>
+            
+            <div class="prices">
+                <div class="current-price">¥1,299</div>
+                <div class="original-price">¥1,899</div>
+                <div class="discount-badge">立省¥600</div>
+            </div>
+            
+            <div class="reviews">
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star-half-alt"></i>
+                </div>
+                <div class="rating-count">4.5分</div>
+                <div class="sales-count">已售886件</div>
+            </div>
+        </div>
+        
+        <!-- 商户信息 -->
+        <div class="seller-card">
+            <div class="seller-avatar">F</div>
+            <div class="seller-info">
+                <div class="seller-name">Fashion House优选店</div>
+                <div class="seller-rating">
+                    <i class="fas fa-star"></i>
+                    <span>4.9分 店铺评分</span>
+                </div>
+            </div>
+            <button class="contact-btn">进入店铺</button>
+        </div>
+        
+        <!-- 规格选择区 -->
+        <div class="spec-section">
+            <div class="spec-title"><i class="fas fa-tshirt"></i> 选择规格</div>
+            
+            <div class="spec-option-group">
+                <div class="option-name">颜色</div>
+                <div class="option-values">
+                    <div class="option-value selected">米白色</div>
+                    <div class="option-value">香槟金</div>
+                    <div class="option-value">雾霾蓝</div>
+                    <div class="option-value disabled">樱桃粉</div>
+                </div>
+            </div>
+            
+            <div class="spec-option-group">
+                <div class="option-name">尺码</div>
+                <div class="option-values">
+                    <div class="option-value disabled">XS</div>
+                    <div class="option-value">S</div>
+                    <div class="option-value selected">M</div>
+                    <div class="option-value">L</div>
+                    <div class="option-value disabled">XL</div>
+                </div>
+            </div>
+            
+            <div class="spec-hint">
+                <i class="fas fa-ruler-combined"></i>
+                推荐选择比平常大一个尺码，此款尺寸偏小
+            </div>
+        </div>
+        
+        <!-- 商品描述导航 -->
+        <div class="desc-nav">
+            <div class="desc-nav-item active" data-target="detail">商品详情</div>
+            <div class="desc-nav-item" data-target="spec">产品参数</div>
+            <div class="desc-nav-item" data-target="reviews">产品评价(568)</div>
+        </div>
+        
+        <div class="desc-content">
+            <!-- 商品详情 -->
+            <div class="content-section active" id="detail">
+                <div class="detail-content">
+                    <p>这款法式复古方领连衣裙采用高端真丝混纺面料，质地柔滑舒适，垂坠感强。经典方领设计展现优雅颈部线条，泡泡袖设计增添复古浪漫气息。</p>
+                    
+                    <img src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="材质特写">
+                    
+                    <p>精心裁剪的修身版型，腰部微收设计凸显身材曲线，后置隐形式拉链设计，既提升了穿脱便利性，又不破坏整体美感。</p>
+                    <p>裙长至膝盖以上5cm，适合多种场合穿着，无论是日常出街还是参加晚宴，都能展现不凡品位。不规则的裙摆剪裁增添设计感，行走间展现优雅灵动之美。</p>
+                    
+                    <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="模特展示">
+                    
+                    <p>面料特点：70%真丝+30%聚酯纤维，兼具丝绸质感和日常易打理性。内衬采用透气棉质面料，提供舒适穿着体验。手工缝制的珍珠装饰与品牌特质一脉相承。</p>
+                </div>
+            </div>
+            
+            <!-- 产品参数 -->
+            <div class="content-section" id="spec">
+                <table class="specs-table">
+                    <tr>
+                        <td class="spec-name">品牌</td>
+                        <td class="spec-value">CHANEL风格复刻系列</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">型号</td>
+                        <td class="spec-value">F20230801</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">材质</td>
+                        <td class="spec-value">70%真丝+30%聚酯纤维</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">尺寸（cm）</td>
+                        <td class="spec-value">肩宽39，胸围92-98，腰围70-76，裙长89</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">领型</td>
+                        <td class="spec-value">方领</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">袖型</td>
+                        <td class="spec-value">泡泡袖</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">袖长</td>
+                        <td class="spec-value">短袖</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">款式</td>
+                        <td class="spec-value">修身</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">设计元素</td>
+                        <td class="spec-value">不规则裙摆、珍珠装饰</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">适用场景</td>
+                        <td class="spec-value">日常/约会/宴会/度假</td>
+                    </tr>
+                    <tr>
+                        <td class="spec-name">产地</td>
+                        <td class="spec-value">杭州</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <!-- 产品评价 -->
+            <div class="content-section" id="reviews">
+                <div class="reviews-container">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-user">
+                                <div class="user-avatar">L</div>
+                                <div class="user-name">Linda Chen</div>
+                            </div>
+                            <div class="review-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            这条裙子的质感远远超出了我的预期！收到实物比图片还要漂亮，丝质光滑有光泽，上身非常显气质。我穿的M码很合身，长度刚好在膝盖上方3cm。参加朋友婚礼好多人都问我哪里买的，绝对的高性价比，推荐！
+                        </div>
+                        <div class="review-images">
+                            <div class="review-image" style="background-image: url('https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80')"></div>
+                            <div class="review-image" style="background-image: url('https://images.unsplash.com/photo-1520607959665-5518d31b5a3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80')"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-user">
+                                <div class="user-avatar">M</div>
+                                <div class="user-name">Miya Zhang</div>
+                            </div>
+                            <div class="review-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            裙子整体不错，版型很好有质感，让我有不一样的时尚感！四星是因为泡泡袖的部分对我这种肩宽的人显得太过夸张，建议肩宽的妹子慎重考虑。颜色超级美，米白色很高级。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部操作栏 -->
+        <div class="action-bar">
+            <div class="action-btn" style="position: relative;">
+                <i class="far fa-heart"></i>
+                <span>收藏</span>
+                <span class="badge" style="display:none">1</span>
+            </div>
+            <div class="action-btn" style="position: relative;">
+                <i class="fas fa-shopping-cart"></i>
+                <span>购物车</span>
+                <span class="badge">3</span>
+            </div>
+            <div class="cart-btn">加入购物车</div>
+            <div class="buy-btn">立即购买</div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 图片轮播功能
+            const thumbnails = document.querySelectorAll('.thumbnail');
+            const mainImages = document.querySelectorAll('.main-image');
+            
+            thumbnails.forEach((thumb, index) => {
+                thumb.addEventListener('click', function() {
+                    // 更新缩略图激活状态
+                    document.querySelector('.thumbnail.active').classList.remove('active');
+                    this.classList.add('active');
+                    
+                    // 更新主图
+                    document.querySelector('.main-image.active').classList.remove('active');
+                    mainImages[index].classList.add('active');
+                });
+            });
+            
+            // 描述导航切换
+            const descNavItems = document.querySelectorAll('.desc-nav-item');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            descNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // 更新导航激活状态
+                    document.querySelector('.desc-nav-item.active').classList.remove('active');
+                    this.classList.add('active');
+                    
+                    // 更新内容显示
+                    document.querySelector('.content-section.active').classList.remove('active');
+                    document.getElementById(targetId).classList.add('active');
+                });
+            });
+            
+            // 规格选择功能
+            const optionValues = document.querySelectorAll('.option-value');
+            optionValues.forEach(option => {
+                if (!option.classList.contains('disabled')) {
+                    option.addEventListener('click', function() {
+                        if (this.classList.contains('selected')) {
+                            return;
+                        }
+                        
+                        // 找到同一组中的其他选项
+                        const siblings = Array.from(this.parentNode.children).filter(
+                            child => child !== this
+                        );
+                        
+                        // 移除所有同一组的选中状态
+                        siblings.forEach(sib => sib.classList.remove('selected'));
+                        
+                        // 设置当前选中
+                        this.classList.add('selected');
+                    });
+                }
+            });
+            
+            // 收藏按钮切换
+            const favoriteBtn = document.querySelector('.action-btn .fa-heart');
+            favoriteBtn.addEventListener('click', function() {
+                this.classList.toggle('far');
+                this.classList.toggle('fas');
+            });
+            
+            // 加入购物车按钮
+            const addToCartBtn = document.querySelector('.cart-btn');
+            addToCartBtn.addEventListener('click', function() {
+                const originalText = this.textContent;
+                this.textContent = '添加成功!';
+                this.style.background = 'linear-gradient(to right, #2aae67, #1e8d4e)';
+                
+                // 显示收藏小红点
+                document.querySelector('.action-btn .badge').style.display = 'flex';
+                
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.style.background = 'linear-gradient(to right, var(--gold-light), var(--accent-gold))';
+                }, 1500);
+            });
+        });
+    </script>
+</body>

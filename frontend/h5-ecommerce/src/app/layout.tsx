@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "../config/theme";
+import { ReduxProvider } from "../providers/ReduxProvider";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
@@ -31,9 +32,11 @@ export default function RootLayout({
           backgroundColor: '#fff'
         }}
       >
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

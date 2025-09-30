@@ -209,3 +209,10 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+// 移动端响应式
+@mixin mobile {
+  @media (max-width: $breakpoint-sm) {
+    @content;
+  }
+}
