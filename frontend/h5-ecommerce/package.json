@@ -13,6 +13,7 @@
     "@swc/helpers": "^0.5.17",
     "antd-mobile": "^5.37.1",
     "axios": "^1.12.2",
+    "axios-mock-adapter": "^2.1.0",
     "clsx": "^2.1.1",
     "msw": "^2.11.3",
     "next": "15.5.3",
