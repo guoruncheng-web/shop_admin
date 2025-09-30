@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HM">
+  <rect x="1" y="1" width="118" height="58" rx="10" fill="#ffffff" stroke="#e8e4db"/>
+  <!-- 使用矢量路径绘制，避免 & 字符带来的解析问题 -->
+  <g fill="#d64d4d">
+    <!-- 简化的 H -->
+    <rect x="30" y="18" width="6" height="24" rx="2"/>
+    <rect x="46" y="18" width="6" height="24" rx="2"/>
+    <rect x="30" y="28" width="22" height="4" rx="2"/>
+    <!-- 简化的 M -->
+    <rect x="64" y="18" width="6" height="24" rx="2"/>
+    <polygon points="70,18 76,26 82,18 88,18 88,42 82,42 82,27 76,34 70,27 70,42 64,42 64,18" />
+  </g>
+</svg>

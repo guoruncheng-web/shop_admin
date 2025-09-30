@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="60" viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="1" width="118" height="58" rx="10" fill="#ffffff" stroke="#e8e4db"/>
+  <rect x="35" y="12" width="50" height="36" rx="6" fill="#e60012"/>
+  <text x="60" y="36" text-anchor="middle" font-family="Poppins, Arial, sans-serif" font-size="16" fill="#ffffff" font-weight="700">UNIQLO</text>
+</svg>

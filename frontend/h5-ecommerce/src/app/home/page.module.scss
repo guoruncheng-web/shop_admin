@@ -1,64 +1,360 @@
-// 变量定义
-$primary-color: #b8860b;
-$primary-light: #c49a2b;
-$success-color: #5cb85c;
-$text-primary: #333333;
-$text-secondary: #666666;
-$bg-primary: #f5f5dc;
-$bg-secondary: #ffffff;
-$spacing-xs: 4px;
-$spacing-sm: 8px;
-$spacing-md: 16px;
-$spacing-lg: 24px;
-$spacing-xl: 32px;
-$border-radius: 8px;
-$font-size-sm: 14px;
-$font-size-md: 16px;
-$font-size-lg: 18px;
-$font-size-xl: 20px;
-$font-size-xxl: 24px;
+// 设计稿主题色与尺寸（全部用 px，交由 postcss-pxtorem 转换）
+$primary-beige: #f5f1e9;
+$secondary-beige: #faf7f2;
+$accent-gold: #c4a376;
+$text-dark: #2a2a2a;
+$text-medium: #5a5a5a;
+$text-light: #8d8d8d;
+$border-color: #e8e4db;
+$sale-red: #d64d4d;
+$hover-gold: #b18c5a;
 
-.home {
-  min-height: 100vh;
-  background-color: $bg-primary;
-  padding: $spacing-md;
+$radius: 12px;
+$container-padding: 20px; // 1.25rem ≈ 20px
 
-  .title {
-    padding: $spacing-lg;
-    font-size: $font-size-xxl;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    margin-bottom: $spacing-md;
-    background: linear-gradient(135deg, $primary-color, $primary-light);
-    border-radius: $border-radius;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+.phoneContainer {
+  width: 100%;
+  // max-width: 375px;
+  width: 100%;
+  min-height: 812px;
+  margin: 0 auto;
+  background-color: $primary-beige;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+  color: $text-dark;
+  background-clip: padding-box;
+}
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-    }
+/* Header */
+.appHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px $container-padding 8px; // 1.5rem 1.25rem 0.5rem
+  background-color: $secondary-beige;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; // 1.5rem
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.icons {
+  display: flex;
+  gap: 19px; // 1.2rem
+  i {
+    font-size: 22px; // 1.4rem
+  }
+}
+
+/* Search Bar */
+.searchBar {
+  margin: 16px $container-padding;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    width: 100%;
+    height: 44px;
+    line-height: 44px;
+    padding: 0 16px 0 48px; // 让文字垂直居中，左侧为图标预留
+    border: none;
+    background: #fff;
+    border-radius: $radius;
+    font-size: 16px; // 1rem
+    color: $text-medium;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    outline: none;
+  }
+}
+
+.searchIcon {
+  position: absolute;
+  left: 16px; // 1rem
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-light;
+  pointer-events: none; // 避免遮挡点击
+}
+
+/* Page Content */
+.pageContent {
+  height: calc(100% - 150px);
+  overflow-y: auto;
+  background-color: $secondary-beige;
+  padding-bottom: 64px; // 4rem
+}
+
+/* Banner Carousel */
+.bannerCarousel {
+  /* 外层仅负责左右间距与垂直间距，不做圆角裁剪 */
+  margin-bottom: 24px; // 1.5rem
+  padding: 0 $container-padding;
+}
+
+.bannerInner {
+  border-radius: $radius;
+  overflow: hidden;
+  height: 180px;
+}
+
+/* Ensure antd-mobile Swiper internal elements inherit rounding and are clipped */
+.bannerInner :global(.adm-swiper) {
+  border-radius: $radius;
+  overflow: hidden;
+}
+.bannerInner :global(.adm-swiper-track) {
+  border-radius: inherit;
+  overflow: hidden;
+}
+.bannerInner :global(.adm-swiper-slide) {
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.bannerSlide {
+  height: 100%;
+  border-radius: $radius;
+  background-position: center;
+  background-size: cover;
+  position: relative;
+  transition: transform 0.5s ease;
+}
+
+.bannerSlideContent {
+  position: absolute;
+  bottom: 24px; // 1.5rem
+  left: 24px; // 1.5rem
+  max-width: 60%;
+
+  h3 {
+    font-size: 24px; // 1.5rem
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    margin-bottom: 8px; // 0.5rem
+  }
+}
+
+.bannerSlideBtn {
+  background-color: rgba(255, 255, 255, 0.85);
+  color: $text-dark;
+  border: none;
+  padding: 8px 16px; // 0.5rem 1rem
+  border-radius: 20px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.bannerNav {
+  display: flex;
+  justify-content: center;
+  gap: 8px; // 0.5rem
+  margin-top: 16px; // 1rem
+}
+
+.bannerDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.bannerDotActive {
+  background-color: $accent-gold;
+}
+
+/* Section */
+.section {
+  padding: 24px $container-padding; // 1.5rem 1.25rem
+}
+
+.sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px; // 1rem
+
+  h2 {
+    font-size: 22px; // 1.35rem ≈ 21.6
+    font-weight: 600;
+  }
+}
+
+.viewAll {
+  color: $accent-gold;
+  font-size: 14px; // 0.9rem
+}
+
+/* Brands Grid */
+.brandsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px; // 0.75rem
+  margin: 0 auto;
+}
+
+.brandItem {
+  background: #fff;
+  border-radius: $radius;
+  padding: 12px; // 0.75rem
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   }
 
-  .content {
-    padding: $spacing-lg;
-    background: $bg-secondary;
-    border-radius: $border-radius;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    color: $text-primary;
-    transition: transform 0.3s ease;
-
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    }
-
-    p {
-      font-size: $font-size-md;
-      color: $text-secondary;
-      margin-bottom: $spacing-md;
-      line-height: 1.6;
-    }
+  img {
+    height: 50px;
+    width: 90%;
+    object-fit: contain;
+    margin: 0 auto 8px;
+    display: block;
   }
+
+  p {
+    font-size: 11.2px; // 0.7rem
+    font-weight: 500;
+  }
+}
+
+/* Product Grid */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px; // 1rem
+}
+
+.productCard {
+  background: #fff;
+  border-radius: $radius;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.tagRibbon {
+  position: absolute;
+  top: 12px; // 0.75rem
+  right: 12px; // 0.75rem
+  padding: 4px 10px; // 0.25rem 0.6rem
+  border-radius: 4px;
+  font-size: 11.2px; // 0.7rem
+  font-weight: 600;
+  z-index: 1;
+}
+
+.discountTag {
+  background-color: $sale-red;
+  color: #fff;
+}
+
+.hotTag {
+  background-color: $accent-gold;
+  color: #fff;
+}
+
+.productImg {
+  width: 100%;
+  height: 170px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+.productDetails {
+  padding: 14px; // 0.9rem
+}
+
+.productName {
+  font-size: 15.2px; // 0.95rem
+  font-weight: 500;
+  margin-bottom: 5px; // 0.3rem ≈ 5px
+  height: 40px;
+  overflow: hidden;
+}
+
+.productPrice {
+  display: flex;
+  align-items: center;
+  gap: 8px; // 0.5rem
+  margin-top: 4px; // 0.25rem
+}
+
+.currentPrice {
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.originalPrice {
+  font-size: 12.8px; // 0.8rem
+  color: $text-light;
+  text-decoration: line-through;
+}
+
+.discountPercent {
+  font-size: 11.2px; // 0.7rem
+  font-weight: 600;
+  color: $sale-red;
+}
+
+.vendorName {
+  font-size: 11.2px; // 0.7rem
+  color: $accent-gold;
+  margin-top: 5px; // 0.3rem
+}
+
+/* Bottom Tab Bar */
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: $secondary-beige;
+  border-top: 1px solid $border-color;
+  max-width: 375px;
+  margin: 0 auto;
+  z-index: 100;
+}
+
+.tabItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px; // 0.75rem
+  color: $text-light;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  padding: 8px; // 0.5rem
+
+  i {
+    font-size: 22px; // 1.4rem
+    margin-bottom: 4px; // 0.25rem
+  }
+}
+
+.tabItemActive {
+  color: $accent-gold;
 }
