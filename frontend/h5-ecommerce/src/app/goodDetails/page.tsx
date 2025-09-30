@@ -51,20 +51,23 @@ export default function GoodDetails() {
   };
 
   return (
-    <div style={{ background: '#f7f7f7', minHeight: '100vh', paddingBottom: 100, maxWidth: 375, margin: '0 auto', position: 'relative' }}>
+    <div style={{ background: '#f7f7f7', minHeight: '100vh', paddingTop: 56, paddingBottom: 'calc(100px + env(safe-area-inset-bottom))', maxWidth: 375, margin: '0 auto', position: 'relative' }}>
       {/* 顶部导航栏（固定） */}
       <div
         style={{
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 100,
-          background: '#fff',
+          background: 'rgba(20,20,20,0.25)',
+          backdropFilter: 'saturate(140%) blur(8px)',
           padding: 12,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '1px solid #f0f0f0',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.12)',
         }}
       >
         <button
@@ -161,10 +164,11 @@ export default function GoodDetails() {
             <div
               key={i}
               style={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: i === activeIndex ? '#fff' : 'rgba(255,255,255,0.6)',
+                width: i === activeIndex ? 14 : 6,
+                height: 6,
+                borderRadius: 6,
+                background: i === activeIndex ? '#ff6b35' : 'rgba(255,255,255,0.7)',
+                boxShadow: '0 0 0 2px rgba(0,0,0,0.15)',
               }}
             />
           ))}
@@ -179,7 +183,7 @@ export default function GoodDetails() {
         <div className="product-price" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <div className="current-price" style={{ fontSize: '1.4rem', fontWeight: 700, color: '#e29692' }}>¥{price.toFixed(2)}</div>
           <div className="original-price" style={{ fontSize: '1rem', color: '#666', textDecoration: 'line-through' }}>¥{original.toFixed(2)}</div>
-          <div className="discount" style={{ background: '#ffebee', color: '#e53935', padding: '3px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600 }}>
+          <div className="discount" style={{ background: '#ffe7e9', color: '#e53935', padding: '2px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700 }}>
             {discount}
           </div>
         </div>
@@ -369,14 +373,14 @@ export default function GoodDetails() {
           <div
             className="add-to-cart"
             onClick={() => alert('商品已成功加入购物车!')}
-            style={{ flex: 1, background: '#e29692', padding: '15px 0', textAlign: 'center', cursor: 'pointer' }}
+            style={{ flex: 1, background: 'linear-gradient(90deg,#ff9a44,#ff6b35)', color: '#fff', padding: '15px 0', textAlign: 'center', cursor: 'pointer' }}
           >
             加入购物车
           </div>
           <div
             className="buy-now"
             onClick={() => alert('即将跳转到订单确认页面!')}
-            style={{ flex: 1, background: '#c57d7a', padding: '15px 0', textAlign: 'center', cursor: 'pointer' }}
+            style={{ flex: 1, background: 'linear-gradient(90deg,#e63946,#d64141)', color: '#fff', padding: '15px 0', textAlign: 'center', cursor: 'pointer' }}
           >
             立即购买
           </div>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="filename" content="my_orders.html">
+    <title>我的订单 - StyleHub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        :root {
+            --primary: #e29692;
+            --primary-light: #f9f0ef;
+            --primary-dark: #c57d7a;
+            --light: #f9f9f9;
+            --light-gray: #f5f5f5;
+            --gray: #e0e0e0;
+            --dark: #333;
+            --dark-gray: #666;
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 10px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+        }
+        
+        body {
+            background-color: #f7f7f7;
+            color: var(--dark);
+            max-width: 375px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+        
+        /* 页头 */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .header-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            flex: 1;
+            text-align: center;
+        }
+        
+        /* 订单筛选 */
+        .order-filter {
+            display: flex;
+            overflow-x: auto;
+            padding: var(--spacing-sm);
+            background: white;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-sm);
+            position: sticky;
+            top: 56px;
+            z-index: 90;
+            gap: 1px;
+            scrollbar-width: none;
+        }
+        
+        .order-filter::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .filter-item {
+            padding: var(--spacing-sm) var(--spacing-md);
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+            min-width: 70px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .filter-item.active {
+            color: var(--primary);
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .filter-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        .tab-count {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+            margin-left: 5px;
+        }
+        
+        .active .tab-count {
+            color: var(--primary);
+        }
+        
+        /* 订单卡片 */
+        .order-list {
+            padding: var(--spacing-sm);
+        }
+        
+        .order-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+        
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .order-id {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+        
+        .order-status {
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 3px 10px;
+            border-radius: 15px;
+        }
+        
+        .status-pending {
+            background: #ffecb3;
+            color: #8d6e00;
+        }
+        
+        .status-paid {
+            background: #c8e6c9;
+            color: #33691e;
+        }
+        
+        .status-shipped {
+            background: #bbdefb;
+            color: #0d47a1;
+        }
+        
+        .status-completed {
+            background: #d7ccc8;
+            color: #5d4037;
+        }
+        
+        .status-canceled {
+            background: #ffccbc;
+            color: #bf360c;
+        }
+        
+        .order-details {
+            display: flex;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .order-products {
+            flex: 1;
+        }
+        
+        .product-item {
+            display: flex;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .product-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 8px;
+            background: var(--light-gray);
+            overflow: hidden;
+            margin-right: var(--spacing-sm);
+            flex-shrink: 0;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            flex: 1;
+        }
+        
+        .product-name {
+            font-size: 0.9rem;
+            margin-bottom: 3px;
+            line-height: 1.4;
+        }
+        
+        .product-price-quantity {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+        }
+        
+        .more-products {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-left: var(--spacing-sm);
+        }
+        
+        .order-summary {
+            border-top: 1px dashed var(--light-gray);
+            padding-top: var(--spacing-sm);
+            text-align: right;
+        }
+        
+        .total-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .order-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-sm);
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid var(--gray);
+            background: white;
+        }
+        
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .action-btn.primary:hover {
+            box-shadow: 0 3px 8px rgba(226,150,146,0.3);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+        }
+        
+        .empty-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto var(--spacing-md);
+            border-radius: 50%;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+        }
+        
+        .empty-title {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+        }
+        
+        .empty-description {
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        .browse-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 24px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* 底部导航栏 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 375px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+        
+        .nav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+            color: var(--dark-gray);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .nav-btn.active {
+            color: var(--primary);
+        }
+        
+        .nav-btn i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+        
+        .nav-label {
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <div class="app-header">
+        <button>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">我的订单</div>
+        <button>
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    
+    <!-- 订单筛选 -->
+    <div class="order-filter">
+        <div class="filter-item active">
+            全部 <span class="tab-count">8</span>
+        </div>
+        <div class="filter-item">
+            待付款 <span class="tab-count">2</span>
+        </div>
+        <div class="filter-item">
+            待发货 <span class="tab-count">1</span>
+        </div>
+        <div class="filter-item">
+            待收货 <span class="tab-count">3</span>
+        </div>
+        <div class="filter-item">
+            待评价 <span class="tab-count">2</span>
+        </div>
+        <div class="filter-item">
+            已完成 <span class="tab-count">5</span>
+        </div>
+        <div class="filter-item">
+            已取消 <span class="tab-count">1</span>
+        </div>
+    </div>
+    
+    <!-- 订单列表 -->
+    <div class="order-list">
+        <!-- 待付款订单 -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-id">订单号: OD202309151234</div>
+                <div class="order-status status-pending">待付款</div>
+            </div>
+            <div class="order-details">
+                <div class="order-products">
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/230/200/200" alt="休闲西装外套">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">休闲格纹西装外套 2023新款时尚气质宽松百搭</div>
+                            <div class="product-price-quantity">¥389 × 1</div>
+                        </div>
+                    </div>
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/231/200/200" alt="牛仔裤">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">修身直筒牛仔裤 显瘦百搭</div>
+                            <div class="product-price-quantity">¥199 × 1</div>
+                        </div>
+                    </div>
+                    <span class="more-products">共2件商品</span>
+                </div>
+            </div>
+            <div class="order-summary">
+                <div class="total-price">合计: ¥588.00</div>
+                <div class="order-actions">
+                    <button class="action-btn">取消订单</button>
+                    <button class="action-btn primary">立即支付</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 待发货订单 -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-id">订单号: OD202309150987</div>
+                <div class="order-status status-paid">待发货</div>
+            </div>
+            <div class="order-details">
+                <div class="order-products">
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/232/200/200" alt="连衣裙">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">法式气质长袖连衣裙 2023秋季新款</div>
+                            <div class="product-price-quantity">¥289 × 1</div>
+                        </div>
+                    </div>
+                    <span class="more-products">共1件商品</span>
+                </div>
+            </div>
+            <div class="order-summary">
+                <div class="total-price">合计: ¥289.00</div>
+                <div class="order-actions">
+                    <button class="action-btn">联系客服</button>
+                    <button class="action-btn">提醒发货</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 待收货订单 -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-id">订单号: OD202309141235</div>
+                <div class="order-status status-shipped">待收货</div>
+            </div>
+            <div class="order-details">
+                <div class="order-products">
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/233/200/200" alt="卫衣">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">字母印花连帽卫衣 男女款 2023新款</div>
+                            <div class="product-price-quantity">¥169 × 2</div>
+                        </div>
+                    </div>
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/234/200/200" alt="衬衫">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">纯棉休闲女士衬衫 夏季款</div>
+                            <div class="product-price-quantity">¥129 × 1</div>
+                        </div>
+                    </div>
+                    <span class="more-products">共3件商品</span>
+                </div>
+            </div>
+            <div class="order-summary">
+                <div class="total-price">合计: ¥467.00</div>
+                <div class="order-actions">
+                    <button class="action-btn">查看物流</button>
+                    <button class="action-btn primary">确认收货</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 已完成订单 -->
+        <div class="order-card">
+            <div class="order-header">
+                <div class="order-id">订单号: OD202309101234</div>
+                <div class="order-status status-completed">已完成</div>
+            </div>
+            <div class="order-details">
+                <div class="order-products">
+                    <div class="product-item">
+                        <div class="product-image">
+                            <img src="https://picsum.photos/id/235/200/200" alt="风衣">
+                        </div>
+                        <div class="product-info">
+                            <div class="product-name">中长款风衣外套 秋季新款时尚气质</div>
+                            <div class="product-price-quantity">¥399 × 1</div>
+                        </div>
+                    </div>
+                    <span class="more-products">共1件商品</span>
+                </div>
+            </div>
+            <div class="order-summary">
+                <div class="total-price">合计: ¥399.00</div>
+                <div class="order-actions">
+                    <button class="action-btn">申请售后</button>
+                    <button class="action-btn">再次购买</button>
+                    <button class="action-btn">评价商品</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 空状态 -->
+        <!-- 
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-box-open"></i>
+            </div>
+            <div class="empty-title">您还没有相关订单</div>
+            <div class="empty-description">去商城逛逛，发现心仪的商品吧</div>
+            <button class="browse-btn">去逛逛</button>
+        </div>
+        -->
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav">
+        <a href="#" class="nav-btn">
+            <i class="fas fa-home"></i>
+            <span class="nav-label">首页</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-th-large"></i>
+            <span class="nav-label">分类</span>
+        </a>
+        <a href="#" class="nav-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="nav-label">购物车</span>
+        </a>
+        <a href="#" class="nav-btn active">
+            <i class="fas fa-user"></i>
+            <span class="nav-label">我的</span>
+        </a>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 筛选标签切换
+            const filterItems = document.querySelectorAll('.filter-item');
+            filterItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    filterItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 实际应用中这里会筛选订单
+                    const statusText = this.textContent.trim();
+                    console.log(`显示: ${statusText}订单`);
+                });
+            });
+            
+            // 订单卡片点击事件
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // 如果不是按钮点击，则跳转到订单详情
+                    if (!e.target.closest('.action-btn')) {
+                        const orderId = this.querySelector('.order-id').textContent;
+                        alert(`跳转到订单详情: ${orderId}`);
+                    }
+                });
+            });
+            
+            // 操作按钮点击事件
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const actionText = this.textContent;
+                    alert(`执行操作: ${actionText}`);
+                    
+                    // 特殊操作处理
+                    if (actionText === '立即支付') {
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+                        setTimeout(() => {
+                            alert('支付成功！');
+                            this.innerHTML = '立即支付';
+                        }, 1500);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
