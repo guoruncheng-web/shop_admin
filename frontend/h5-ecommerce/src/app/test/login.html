@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="filename" content="fashion_ecommerce_login.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>登录 - Elegance购物平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Variables & Resets */
+        :root {
+            --primary-beige: #f5f1e9;
+            --secondary-beige: #faf7f2;
+            --accent-gold: #c4a376;
+            --text-dark: #2a2a2a;
+            --text-medium: #5a5a5a;
+            --text-light: #8d8d8d;
+            --sale-red: #d64d4d;
+            --hover-gold: #b18c5a;
+            --container-padding: 1.25rem;
+            --radius: 15px;
+            --input-height: 54px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            background: linear-gradient(135deg, #f8f5f0 0%, #f0eae1 100%);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Page Container */
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            min-height: 700px;
+            background-color: var(--secondary-beige);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        /* Login Header */
+        .login-header {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(rgba(196, 163, 118, 0.1), rgba(196, 163, 118, 0.05)), 
+                        url('https://images.unsplash.com/photo-1574589507218-a09dbba62d90?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80') center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 0 var(--container-padding);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .login-subtitle {
+            font-size: 1.1rem;
+            font-weight: 300;
+            max-width: 320px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            opacity: 0.9;
+        }
+
+        /* Back Button */
+        .back-btn {
+            position: absolute;
+            top: 30px;
+            left: 25px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-3px);
+        }
+
+        /* Login Form */
+        .login-form {
+            padding: 40px var(--container-padding) 30px;
+        }
+
+        .welcome-text {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .welcome-text:after {
+            content: '';
+            width: 60px;
+            height: 3px;
+            background: var(--accent-gold);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .input-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            padding-left: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            height: var(--input-height);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: var(--radius);
+            padding: 0 20px 0 50px;
+            font-size: 1.05rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 5px 15px rgba(196, 163, 118, 0.1);
+            outline: none;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 20px;
+            top: 42px;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .remember-me input {
+            margin-right: 8px;
+        }
+
+        .forgot-password {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .forgot-password:hover {
+            color: var(--hover-gold);
+        }
+
+        .login-button {
+            width: 100%;
+            height: var(--input-height);
+            background: linear-gradient(to right, #c4a376, #b18c5a);
+            border: none;
+            border-radius: var(--radius);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(196, 163, 118, 0.3);
+        }
+
+        .login-button:hover {
+            background: linear-gradient(to right, #b18c5a, #9e7a4c);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(196, 163, 118, 0.4);
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1rem;
+        }
+
+        .signup-link a {
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 5px;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Social Login */
+        .social-login {
+            position: relative;
+            text-align: center;
+            margin: 35px 0 25px;
+        }
+
+        .divider {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--text-light);
+            opacity: 0.2;
+            margin: 0 15px;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .social-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        .social-icon.weixin {
+            color: #2aae67;
+        }
+
+        .social-icon.qq {
+            color: #12b7f5;
+        }
+
+        .social-icon.weibo {
+            color: #e6162d;
+        }
+
+        /* Animation elements */
+        .decoration-circle {
+            position: absolute;
+            z-index: -1;
+        }
+
+        .circle-1 {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(196, 163, 118, 0.1) 0%, rgba(196, 163, 118, 0.05) 100%);
+            top: -30px;
+            left: -70px;
+        }
+
+        .circle-2 {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(196, 163, 118, 0.08) 0%, rgba(196, 163, 118, 0.03) 100%);
+            bottom: 100px;
+            right: -50px;
+        }
+
+        /* Loading animation */
+        .form-loader {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            display: none;
+            overflow: hidden;
+        }
+
+        .form-loader.active {
+            display: block;
+        }
+
+        .loader-progress {
+            height: 100%;
+            width: 30%;
+            background: var(--accent-gold);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .login-header {
+                height: 180px;
+            }
+            .welcome-text {
+                font-size: 1.5rem;
+            }
+            .input-group input {
+                padding: 0 15px 0 45px;
+            }
+            .input-icon {
+                left: 15px;
+            }
+            .social-icon {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Decoration Elements -->
+        <div class="decoration-circle circle-1"></div>
+        <div class="decoration-circle circle-2"></div>
+        
+        <!-- Header Section -->
+        <div class="login-header">
+            <div class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="logo">Elegance</div>
+            <p class="login-subtitle">欢迎回到高端时尚购物平台</p>
+        </div>
+        
+        <!-- Login Form -->
+        <div class="login-form">
+            <h2 class="welcome-text">登录您的账号</h2>
+            
+            <div class="input-group">
+                <label for="phone">手机号码</label>
+                <i class="fas fa-mobile-alt input-icon"></i>
+                <input type="tel" id="phone" placeholder="请输入手机号码">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">密码</label>
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            
+            <div class="options-row">
+                <div class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <label for="remember">记住我</label>
+                </div>
+                <a href="#" class="forgot-password">忘记密码?</a>
+            </div>
+            
+            <button class="login-button" id="loginButton">登录</button>
+            <div class="form-loader" id="loader">
+                <div class="loader-progress"></div>
+            </div>
+            
+            <p class="signup-link">还没有账号? <a href="#">注册新账号</a></p>
+            
+            <div class="social-login">
+                <div class="divider">使用其他方式登录</div>
+                <div class="social-icons">
+                    <div class="social-icon weixin">
+                        <i class="fab fa-weixin"></i>
+                    </div>
+                    <div class="social-icon qq">
+                        <i class="fab fa-qq"></i>
+                    </div>
+                    <div class="social-icon weibo">
+                        <i class="fab fa-weibo"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginButton = document.getElementById('loginButton');
+            const loader = document.getElementById('loader');
+
+            // 登录按钮模拟加载状态
+            loginButton.addEventListener('click', function() {
+                // 显示加载动画
+                loginButton.textContent = '登录中...';
+                loginButton.disabled = true;
+                loader.classList.add('active');
+                
+                // 模拟登录过程
+                setTimeout(function() {
+                    loginButton.textContent = '登录成功!';
+                    loginButton.style.background = 'linear-gradient(to right, #2aae67, #1e8d4e)';
+                    
+                    // 1秒后重置按钮状态
+                    setTimeout(function() {
+                        loginButton.textContent = '登录';
+                        loginButton.disabled = false;
+                        loginButton.style.background = 'linear-gradient(to right, #c4a376, #b18c5a)';
+                        loader.classList.remove('active');
+                    }, 1500);
+                }, 2000);
+            });
+            
+            // 返回按钮效果
+            const backBtn = document.querySelector('.back-btn');
+            backBtn.addEventListener('click', function() {
+                document.querySelector('.login-container').style.transform = 'translateX(-100%)';
+                document.querySelector('.login-container').style.opacity = '0';
+                
+                // 模拟返回动画
+                setTimeout(function() {
+                    alert('返回首页或上一个页面');
+                }, 300);
+            });
+            
+            // 社交图标悬停动画
+            document.querySelectorAll('.social-icon').forEach(icon => {
+                icon.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-8px)';
+                });
+                
+                icon.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+    </script>
+</body>

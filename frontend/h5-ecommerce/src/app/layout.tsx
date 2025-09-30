@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "../config/theme";
-import { RemProvider } from "@/components/RemProvider";
-import "antd-mobile/es/global";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
@@ -33,11 +31,9 @@ export default function RootLayout({
           backgroundColor: '#fff'
         }}
       >
-        <RemProvider designWidth={1200} baseFontSize={16}>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
-        </RemProvider>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

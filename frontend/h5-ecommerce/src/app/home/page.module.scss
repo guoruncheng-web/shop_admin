@@ -1,0 +1,64 @@
+// 变量定义
+$primary-color: #b8860b;
+$primary-light: #c49a2b;
+$success-color: #5cb85c;
+$text-primary: #333333;
+$text-secondary: #666666;
+$bg-primary: #f5f5dc;
+$bg-secondary: #ffffff;
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$border-radius: 8px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-xxl: 24px;
+
+.home {
+  min-height: 100vh;
+  background-color: $bg-primary;
+  padding: $spacing-md;
+
+  .title {
+    padding: $spacing-lg;
+    font-size: $font-size-xxl;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: $spacing-md;
+    background: linear-gradient(135deg, $primary-color, $primary-light);
+    border-radius: $border-radius;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .content {
+    padding: $spacing-lg;
+    background: $bg-secondary;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    color: $text-primary;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    p {
+      font-size: $font-size-md;
+      color: $text-secondary;
+      margin-bottom: $spacing-md;
+      line-height: 1.6;
+    }
+  }
+}

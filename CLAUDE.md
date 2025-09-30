@@ -202,3 +202,39 @@ The project supports multiple environments with different configurations:
 - 现在后端只有建立了后台的项目 '/Users/mac/test/cursor1/cursor_shop/backend' 这是数据库文件 '/Users/mac/test/cursor1/cursor_shop/database'
 - '/Users/mac/test/cursor1/cursor_shop/frontend/vben-admin' 这是后台前端项目 。'/Users/mac/test/cursor1/cursor_shop/frontend/h5-ecommerce' 这是项目的h5 webSite电商商城项目
 - 我问你之前服务都已经启动了 不用你自己启动
+
+# h5-ecommerce
+
+# 移动端服装电商平台设计稿(多商户)
+1. 主题:米白高级
+2. 底部tarBar需要有四个, 首页，分类，购物车，个人
+3. 首页布局
+- banne是个轮播图用来
+- 品牌 点击品牌可以到商品列表
+- 折扣专区 显示 显示带有折扣标签的前4个商品 点击商品可以到商品详情
+- 热销专区 显示 显示带有热销标签的前4个商品 点击商品可以到商品详情
+4. 分类布局(分类分为两级分类)
+- 分为左右两侧
+- 左侧为分类页面可以滚动
+- 右侧为分类对应的二级分类以及每个二级分类下面的商品,点击分类可以到商品详情
+5. 购物车布局
+- 展示各家店铺下面的商品订单
+6. 个人信息页面
+6.1. 展示个人信息
+6.2. 会员中心
+- 红包 
+- 优惠卷
+- 积分
+6.3. 我的订单
+- 待付款
+- 待发货
+- 待收货
+- 待评价
+- 退款/售后
+- 猜你喜欢专区
+
+7. 登录页面
+- 网站logo
+- 平台名称
+- 手机号 验证码 登录表单
+- 登录按钮
