@@ -6,12 +6,19 @@ import { ReduxProvider } from '@/providers/ReduxProvider';
 
 /**
  * 启用 Mock 策略：
- * - 显式设置 NEXT_PUBLIC_ENABLE_MOCK=true 时启用
- * - 或在开发环境（NODE_ENV=development）默认启用
+ * - 显式设置 NEXT_PUBLIC_ENABLE_MOCK=false 时禁用
+ * - 没有配置后端 API 时默认启用
+ * - 开发环境默认启用
  */
+const hasBackendApi = process.env.NEXT_PUBLIC_API_BASE_URL &&
+  !process.env.NEXT_PUBLIC_API_BASE_URL.includes('localhost');
+
 const enableMock =
-  process.env.NEXT_PUBLIC_ENABLE_MOCK === 'true' ||
-  process.env.NODE_ENV === 'development';
+  process.env.NEXT_PUBLIC_ENABLE_MOCK === 'false'
+    ? false
+    : (process.env.NEXT_PUBLIC_ENABLE_MOCK === 'true' ||
+       process.env.NODE_ENV === 'development' ||
+       !hasBackendApi);
 
 export function AppBootstrap({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {

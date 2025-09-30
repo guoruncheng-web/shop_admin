@@ -47,9 +47,12 @@ function LoginContent() {
       showToast('请输入手机号和密码');
       return;
     }
+
     setLoading(true);
     dispatch(loginStart());
+
     try {
+      // 发送登录请求（Mock 或真实后端会自动处理）
       const res = await authAPI.login({ username: phone, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -59,9 +62,9 @@ function LoginContent() {
         router.push(redirectUrl);
       }, 1500);
     } catch (err: any) {
-      console.error(err);
+      console.error('登录失败:', err);
       dispatch(loginFailure(err?.message || '登录失败'));
-      showToast(err?.message || '登录失败');
+      showToast(err?.response?.data?.message || err?.message || '登录失败，请重试');
       setLoading(false);
     }
   };
@@ -105,6 +108,22 @@ function LoginContent() {
         {/* Login Form */}
         <div className={styles.loginForm}>
           <h2 className={styles.welcomeText}>登录您的账号</h2>
+
+          {/* Demo Mode Notice - 显示 Mock 模式提示 */}
+          {!process.env.NEXT_PUBLIC_API_BASE_URL && (
+            <div style={{
+              background: 'rgba(196, 163, 118, 0.1)',
+              border: '1px solid rgba(196, 163, 118, 0.3)',
+              borderRadius: 10,
+              padding: '12px 16px',
+              marginBottom: 20,
+              fontSize: '0.85rem',
+              color: '#5a5a5a',
+              textAlign: 'center',
+            }}>
+              💡 演示模式：输入任意手机号和密码即可登录
+            </div>
+          )}
 
           <div className={styles.inputGroup}>
             <label htmlFor="phone">手机号码</label>

@@ -2,876 +2,740 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="filename" content="luxury_shopping_cart.html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的购物车 - Elegance购物平台</title>
+    <meta name="filename" content="shopping_cart_fixed.html">
+    <title>购物车 - StyleHub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-beige: #f8f5f0;
-            --secondary-beige: #f4f0e9;
-            --accent-gold: #c4a376;
-            --gold-dark: #a78a5c;
-            --gold-light: #e0cda8;
-            --text-dark: #2a2a2a;
-            --text-medium: #5c5c5c;
-            --text-light: #888888;
-            --border-color: #e5e0d7;
-            --section-padding: 8px;
-            --radius: 18px;
-            --radius-card: 14px;
-            --transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            --shadow-xs: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.08);
-            --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.15);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
         }
-
+        
+        :root {
+            --primary: #e29692;
+            --primary-light: #f9f0ef;
+            --primary-dark: #c57d7a;
+            --light: #f9f9f9;
+            --light-gray: #f5f5f5;
+            --gray: #e0e0e0;
+            --dark: #333;
+            --dark-gray: #666;
+            --shadow-sm: 0 2px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 10px rgba(0,0,0,0.08);
+            --border-radius: 12px;
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 20px;
+            --spacing-xl: 24px;
+        }
+        
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--primary-beige);
-            background-image: radial-gradient(circle at 80% 20%, rgba(240, 236, 228, 0.3) 10%, transparent 90%);
-            color: var(--text-dark);
-            line-height: 1.55;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px;
-        }
-
-        .luxury-cart-container {
+            background-color: #f7f7f7;
+            color: var(--dark);
             max-width: 375px;
-            min-height: 812px;
             margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.98);
-            background-image: radial-gradient(ellipse at 25% 10%, rgba(240, 236, 228, 0.3) 10%, transparent 90%);
             position: relative;
-            overflow-x: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
-            border-radius: var(--radius);
-        }
-
-        /* 顶部装饰元素 */
-        .decor-element {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(45deg, var(--gold-light) 0%, var(--accent-gold) 100%);
-            opacity: 0.1;
-            border-radius: 50%;
-            z-index: 0;
-            filter: blur(25px);
-        }
-
-        /* 顶部导航 */
-        .cart-header {
-            position: relative;
-            padding: 24px 18px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 2;
-            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
-        }
-
-        .back-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(196, 163, 118, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-gold);
-        }
-
-        .cart-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.55rem;
-            font-weight: 600;
-            color: var(--gold-dark);
-        }
-
-        .edit-btn {
-            font-size: 0.95rem;
-            background: rgba(196, 163, 118, 0.1);
-            color: var(--accent-gold);
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .edit-btn:hover {
-            background: rgba(196, 163, 118, 0.2);
-        }
-
-        /* 购物车内容 */
-        .cart-content {
-            padding: 0 15px;
             padding-bottom: 120px;
         }
-
-        /* 店铺分组 */
-        .store-group {
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border: 1px solid rgba(229, 224, 215, 0.6);
-            border-radius: var(--radius-card);
-            margin-top: 20px;
-            box-shadow: var(--shadow-xs);
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .store-group:hover {
-            box-shadow: var(--shadow-hover);
-            transform: translateY(-3px);
-        }
-
-        /* 店铺头部 */
-        .store-header {
-            padding: 15px;
+        
+        /* 页头 - 修复1 */
+        .app-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            background: rgba(196, 163, 118, 0.05);
-            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
-        }
-
-        .store-info {
-            display: flex;
             align-items: center;
-            gap: 10px;
+            padding: var(--spacing-sm);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--light-gray);
         }
-
-        .store-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(45deg, var(--gold-light), var(--accent-gold));
+        
+        .app-header button {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 1.1rem;
+            border-radius: 50%;
+            transition: background 0.3s;
         }
-
-        .store-name {
+        
+        .app-header button:hover {
+            background: var(--light-gray);
+        }
+        
+        .header-title {
+            font-size: 1.2rem;
             font-weight: 600;
-            color: var(--gold-dark);
+            color: var(--dark);
+            flex: 1;
+            text-align: center;
         }
-
-        .store-notice {
-            font-size: 0.8rem;
-            color: var(--text-medium);
+        
+        /* 主体内容 */
+        .cart-container {
+            padding: var(--spacing-sm);
         }
-
-        /* 商品项 */
+        
+        /* 顶部操作栏 - 修复2 */
+        .cart-actions-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .select-all {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .checkbox.active::after {
+            content: '';
+            width: 12px;
+            height: 6px;
+            border-left: 2px solid var(--primary);
+            border-bottom: 2px solid var(--primary);
+            transform: rotate(-45deg);
+        }
+        
+        .edit-btn {
+            color: var(--primary);
+            background: none;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .edit-btn:hover {
+            background: var(--primary-light);
+        }
+        
+        /* 店铺商品区 - 修复3 */
+        .cart-store-section {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--spacing-md);
+            overflow: hidden;
+        }
+        
+        .store-header {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .store-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-xs);
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+        
+        .store-name {
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .store-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .store-action-btn {
+            color: var(--dark-gray);
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .store-action-btn:hover {
+            background: var(--light-gray);
+        }
+        
+        /* 商品项 - 修复4 */
         .cart-item {
             display: flex;
-            padding: 18px;
-            border-bottom: 1px solid rgba(229, 224, 215, 0.4);
+            padding: var(--spacing-sm);
+            border-bottom: 1px solid var(--light-gray);
+            align-items: stretch;
         }
-
-        .item-image-container {
-            width: 100px;
-            height: 120px;
-            border-radius: var(--radius-cat);
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-select {
+            display: flex;
+            align-items: center;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .item-image {
+            width: 90px;
+            height: 110px;
+            border-radius: 8px;
             overflow: hidden;
-            margin-right: 15px;
-            position: relative;
-            box-shadow: var(--shadow-xs);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light-gray);
         }
-
-        .item-image-container img {
+        
+        .item-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s;
         }
-
-        .item-discount {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: linear-gradient(45deg, #c9333c, #b42828);
-            color: white;
-            font-size: 0.75rem;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-weight: 600;
+        
+        .item-image:hover img {
+            transform: scale(1.05);
         }
-
-        .item-details {
-            flex: 1;
-        }
-
-        .item-name {
-            font-weight: 500;
-            font-size: 1rem;
-            margin-bottom: 6px;
-            line-height: 1.3;
-        }
-
-        .item-spec {
-            font-size: 0.85rem;
-            color: var(--text-medium);
-            margin-bottom: 12px;
-        }
-
-        .item-spec span {
-            margin-right: 10px;
-        }
-
-        .item-price-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .price-quantity {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .item-price {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--gold-dark);
-        }
-
-        .original-price {
-            font-size: 0.85rem;
-            color: var(--text-light);
-            text-decoration: line-through;
-        }
-
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .quantity-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-gold);
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .quantity-btn:hover {
-            background: rgba(196, 163, 118, 0.1);
-        }
-
-        .quantity-value {
-            width: 30px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 12px;
-        }
-
-        .action-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            background: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-gold);
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .action-btn:hover {
-            background: rgba(196, 163, 118, 0.1);
-        }
-
-        /* 店铺小结 */
-        .store-summary {
-            padding: 15px;
-            background: rgba(196, 163, 118, 0.03);
-            border-top: 1px solid rgba(229, 224, 215, 0.4);
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .summary-label {
-            color: var(--text-medium);
-        }
-
-        .summary-value {
-            font-weight: 500;
-            color: var(--gold-dark);
-        }
-
-        .store-action {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .store-action-btn {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            border-radius: var(--radius-cat);
-            border: 1px solid rgba(229, 224, 215, 0.8);
-            background: white;
-            color: var(--accent-gold);
-            font-weight: 500;
-            transition: var(--transition);
-        }
-
-        .store-action-btn:hover {
-            background: rgba(196, 163, 118, 0.1);
-        }
-
-        .store-action-btn.primary {
-            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
-            color: white;
-            font-weight: 600;
-        }
-
-        .store-action-btn.primary:hover {
-            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
-        }
-
-        /* 结算栏 */
-        .checkout-bar {
-            position: fixed;
-            bottom: 70px;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(245, 242, 236, 0.95));
-            border-top: 1px solid rgba(229, 224, 215, 0.8);
-            max-width: 375px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 10;
-        }
-
-        .total-summary {
-            flex: 1;
-        }
-
-        .total-label {
-            font-size: 0.9rem;
-            color: var(--text-medium);
-            margin-bottom: 3px;
-        }
-
-        .total-price {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--gold-dark);
-            font-family: 'Playfair Display', serif;
-        }
-
-        .checkout-btn {
-            padding: 14px 30px;
-            border-radius: var(--radius-cat);
-            background: linear-gradient(to right, var(--gold-light), var(--accent-gold));
-            color: white;
-            font-weight: 600;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 5px 15px rgba(196, 163, 118, 0.3);
-        }
-
-        .checkout-btn:hover {
-            background: linear-gradient(to right, var(--accent-gold), var(--gold-dark));
-            transform: translateY(-2px);
-            box-shadow: 0 7px 20px rgba(196, 163, 118, 0.4);
-        }
-
-        .checkout-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* 底部导航 */
-        .premium-navbar {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            height: 70px;
-            background: linear-gradient(to top, rgba(255, 255, 255, 0.9), rgba(245, 242, 236, 0.95));
-            border-top: 1px solid rgba(229, 224, 215, 0.8);
-            position: fixed;
-            bottom: 0;
+        
+        .item-image .image-placeholder {
             width: 100%;
-            max-width: 375px;
-            z-index: 10;
-        }
-
-        .nav-item {
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 8px 15px;
-            border-radius: var(--radius);
-            transition: var(--transition);
+            justify-content: center;
+            background: #f0f0f0;
+            color: #999;
+            font-size: 0.8rem;
         }
-
-        .nav-item.active {
-            background: rgba(196, 163, 118, 0.1);
+        
+        .item-info {
+            flex: 1;
+            padding: 0 var(--spacing-xs);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-
-        .nav-icon {
-            font-size: 1.4rem;
-            color: var(--gold-dark);
-            margin-bottom: 5px;
-            transition: var(--transition);
-        }
-
-        .nav-item.active .nav-icon {
-            transform: translateY(-3px);
-            background: linear-gradient(to bottom, var(--accent-gold), var(--gold-dark));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .nav-label {
-            font-size: 0.72rem;
+        
+        .item-name {
+            font-size: 0.95rem;
             font-weight: 500;
-            color: var(--text-light);
-            transition: var(--transition);
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
-
-        .nav-item.active .nav-label {
-            color: var(--gold-dark);
+        
+        .item-attributes {
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .item-price {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .item-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: var(--spacing-sm);
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--gray);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border: none;
+            font-size: 1rem;
+            color: var(--dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--light-gray);
+        }
+        
+        .quantity-value {
+            padding: 0 var(--spacing-xs);
+            min-width: 30px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .remove-btn {
+            color: var(--dark-gray);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+        
+        .remove-btn:hover {
+            background: var(--light-gray);
+            color: #ff4d4f;
+        }
+        
+        /* 优惠信息 - 修复5 */
+        .promotion-section {
+            padding: var(--spacing-sm);
+            background: var(--light);
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .promotion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .promotion-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--spacing-xs);
+            color: white;
+            font-size: 0.8rem;
+        }
+        
+        .promotion-title {
+            font-weight: 500;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        .promotion-options {
+            margin-top: var(--spacing-sm);
+        }
+        
+        .promotion-option {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm);
+            background: white;
+            border-radius: var(--border-radius);
+            margin-bottom: var(--spacing-xs);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .promotion-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        
+        .promotion-value {
+            color: var(--primary);
+            font-weight: 500;
+            margin-right: var(--spacing-sm);
+        }
+        
+        .edit-btn {
+            padding: 4px 12px;
+            border-radius: 16px;
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        
+        /* 结算栏 - 修复6 */
+        .checkout-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 375px;
+            margin: 0 auto;
+            background: white;
+            padding: var(--spacing-sm);
+            border-top: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .total-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .total-text {
+            font-size: 0.9rem;
+        }
+        
+        .total-amount {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        
+        .checkout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 24px;
             font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .checkout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(226, 150, 146, 0.4);
+        }
+        
+        .checkout-btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <div class="luxury-cart-container">
-        <div class="decor-element"></div>
-        
-        <!-- 顶部导航 -->
-        <div class="cart-header">
-            <div class="back-btn">
-                <i class="fas fa-arrow-left"></i>
+    <!-- 页头 -->
+    <div class="app-header">
+        <button>
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="header-title">购物车</div>
+        <button>
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+    
+    <!-- 购物车内容 -->
+    <div class="cart-container">
+        <div class="cart-actions-top">
+            <div class="select-all">
+                <div class="checkbox active"></div>
+                <span>全选(3)</span>
             </div>
-            <div class="cart-title">购物车</div>
-            <div class="edit-btn">编辑</div>
+            <button class="edit-btn">编辑</button>
         </div>
         
-        <!-- 购物车内容 -->
-        <div class="cart-content">
-            <!-- 店铺1的商品组 -->
-            <div class="store-group">
-                <!-- 店铺头部 -->
-                <div class="store-header">
-                    <div class="store-info">
-                        <div class="store-icon">F</div>
-                        <div>
-                            <div class="store-name">Fashion House</div>
-                            <div class="store-notice">满¥399减¥30</div>
-                        </div>
-                    </div>
-                    <div class="check-container">
-                        <input type="checkbox" id="store1" checked>
+        <!-- 店铺1 -->
+        <div class="cart-store-section">
+            <div class="store-header">
+                <div class="store-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="store-name">StyleHub官方店</div>
+                <div class="store-actions">
+                    <button class="store-action-btn">关注</button>
+                    <button class="store-action-btn">进店</button>
+                </div>
+            </div>
+            
+            <!-- 卫衣商品 -->
+            <div class="cart-item">
+                <div class="item-select">
+                    <div class="checkbox active"></div>
+                </div>
+                <div class="item-image">
+                    <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=90&h=110" alt="黄色卫衣">
+                    <div class="image-placeholder" style="display:none;">
+                        <i class="fas fa-image"></i> 图片加载中
                     </div>
                 </div>
-                
-                <!-- 商品1 -->
-                <div class="cart-item">
-                    <div class="item-image-container">
-                        <img src="https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="连衣裙">
-                        <div class="item-discount">-25%</div>
+                <div class="item-info">
+                    <div>
+                        <div class="item-name">简约字母印花卫衣 春秋新款</div>
+                        <div class="item-attributes">黄色 | M码</div>
+                        <div class="item-price">¥169.00</div>
                     </div>
-                    <div class="item-details">
-                        <div class="item-name">法兰西复古方领连衣裙</div>
-                        <div class="item-spec">
-                            <span>颜色: 米白</span>
-                            <span>尺码: M</span>
+                    <div class="item-actions">
+                        <div class="quantity-control">
+                            <button class="quantity-btn">-</button>
+                            <div class="quantity-value">1</div>
+                            <button class="quantity-btn">+</button>
                         </div>
-                        <div class="item-price-container">
-                            <div class="price-quantity">
-                                <div>
-                                    <div class="item-price">¥399</div>
-                                    <div class="original-price">¥539</div>
-                                </div>
-                                <div class="quantity-control">
-                                    <div class="quantity-btn minus">-</div>
-                                    <div class="quantity-value">1</div>
-                                    <div class="quantity-btn plus">+</div>
-                                </div>
-                            </div>
-                            <div class="item-actions">
-                                <div class="action-btn">
-                                    <i class="far fa-heart"></i>
-                                </div>
-                                <div class="action-btn">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 商品2 -->
-                <div class="cart-item">
-                    <div class="item-image-container">
-                        <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="外套">
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name">设计师款麂皮外套</div>
-                        <div class="item-spec">
-                            <span>颜色: 米驼色</span>
-                            <span>尺码: L</span>
-                        </div>
-                        <div class="item-price-container">
-                            <div class="price-quantity">
-                                <div>
-                                    <div class="item-price">¥799</div>
-                                </div>
-                                <div class="quantity-control">
-                                    <div class="quantity-btn minus">-</div>
-                                    <div class="quantity-value">1</div>
-                                    <div class="quantity-btn plus">+</div>
-                                </div>
-                            </div>
-                            <div class="item-actions">
-                                <div class="action-btn">
-                                    <i class="far fa-heart"></i>
-                                </div>
-                                <div class="action-btn">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 店铺小结 -->
-                <div class="store-summary">
-                    <div class="summary-row">
-                        <div class="summary-label">商品小计</div>
-                        <div class="summary-value">¥1,198</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">运费</div>
-                        <div class="summary-value">¥0</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">优惠</div>
-                        <div class="summary-value">-¥30</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">店铺合计</div>
-                        <div class="summary-value">¥1,168</div>
-                    </div>
-                    <div class="store-action">
-                        <button class="store-action-btn">优惠券</button>
-                        <button class="store-action-btn primary">结算</button>
+                        <button class="remove-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- 店铺2的商品组 -->
-            <div class="store-group">
-                <!-- 店铺头部 -->
-                <div class="store-header">
-                    <div class="store-info">
-                        <div class="store-icon">E</div>
-                        <div>
-                            <div class="store-name">Elegant Woman</div>
-                            <div class="store-notice">新用户专享9折</div>
-                        </div>
-                    </div>
-                    <div class="check-container">
-                        <input type="checkbox" id="store2" checked>
+            <!-- 衬衫商品 -->
+            <div class="cart-item">
+                <div class="item-select">
+                    <div class="checkbox active"></div>
+                </div>
+                <div class="item-image">
+                    <img src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=90&h=110" alt="白色衬衫">
+                    <div class="image-placeholder" style="display:none;">
+                        <i class="fas fa-image"></i> 图片加载中
                     </div>
                 </div>
-                
-                <!-- 商品1 -->
-                <div class="cart-item">
-                    <div class="item-image-container">
-                        <img src="https://images.unsplash.com/photo-1596755094514-f87e34085b2c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="吊带裙">
+                <div class="item-info">
+                    <div>
+                        <div class="item-name">纯棉休闲女士衬衫 夏季薄款</div>
+                        <div class="item-attributes">白色 | L码</div>
+                        <div class="item-price">¥129.00</div>
                     </div>
-                    <div class="item-details">
-                        <div class="item-name">纯色修身吊带连衣裙</div>
-                        <div class="item-spec">
-                            <span>颜色: 黑色</span>
-                            <span>尺码: S</span>
+                    <div class="item-actions">
+                        <div class="quantity-control">
+                            <button class="quantity-btn">-</button>
+                            <div class="quantity-value">1</div>
+                            <button class="quantity-btn">+</button>
                         </div>
-                        <div class="item-price-container">
-                            <div class="price-quantity">
-                                <div>
-                                    <div class="item-price">¥459</div>
-                                </div>
-                                <div class="quantity-control">
-                                    <div class="quantity-btn minus">-</div>
-                                    <div class="quantity-value">2</div>
-                                    <div class="quantity-btn plus">+</div>
-                                </div>
-                            </div>
-                            <div class="item-actions">
-                                <div class="action-btn">
-                                    <i class="far fa-heart"></i>
-                                </div>
-                                <div class="action-btn">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 店铺小结 -->
-                <div class="store-summary">
-                    <div class="summary-row">
-                        <div class="summary-label">商品小计</div>
-                        <div class="summary-value">¥918</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">运费</div>
-                        <div class="summary-value">¥0</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">优惠</div>
-                        <div class="summary-value">-¥91.8</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">店铺合计</div>
-                        <div class="summary-value">¥826.2</div>
-                    </div>
-                    <div class="store-action">
-                        <button class="store-action-btn">优惠券</button>
-                        <button class="store-action-btn primary">结算</button>
+                        <button class="remove-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- 店铺2 -->
+        <div class="cart-store-section">
+            <div class="store-header">
+                <div class="store-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="store-name">优品牛仔官方店</div>
+                <div class="store-actions">
+                    <button class="store-action-btn">关注</button>
+                    <button class="store-action-btn">进店</button>
+                </div>
+            </div>
             
-            <!-- 店铺3的商品组 -->
-            <div class="store-group">
-                <!-- 店铺头部 -->
-                <div class="store-header">
-                    <div class="store-info">
-                        <div class="store-icon">S</div>
-                        <div>
-                            <div class="store-name">Style Empire</div>
-                            <div class="store-notice">全场包邮</div>
-                        </div>
-                    </div>
-                    <div class="check-container">
-                        <input type="checkbox" id="store3" checked>
+            <!-- 牛仔裤商品 -->
+            <div class="cart-item">
+                <div class="item-select">
+                    <div class="checkbox active"></div>
+                </div>
+                <div class="item-image">
+                    <img src="https://images.unsplash.com/photo-1541099649105-f69ad21a3246?auto=format&fit=crop&w=90&h=110" alt="蓝色牛仔裤">
+                    <div class="image-placeholder" style="display:none;">
+                        <i class="fas fa-image"></i> 图片加载中
                     </div>
                 </div>
-                
-                <!-- 商品1 -->
-                <div class="cart-item">
-                    <div class="item-image-container">
-                        <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="衬衫">
+                <div class="item-info">
+                    <div>
+                        <div class="item-name">修身直筒牛仔裤 显瘦百搭</div>
+                        <div class="item-attributes">蓝色 | 30码</div>
+                        <div class="item-price">¥199.00</div>
                     </div>
-                    <div class="item-details">
-                        <div class="item-name">缎面蝴蝶结衬衫</div>
-                        <div class="item-spec">
-                            <span>颜色: 浅粉</span>
-                            <span>尺码: M</span>
+                    <div class="item-actions">
+                        <div class="quantity-control">
+                            <button class="quantity-btn">-</button>
+                            <div class="quantity-value">1</div>
+                            <button class="quantity-btn">+</button>
                         </div>
-                        <div class="item-price-container">
-                            <div class="price-quantity">
-                                <div>
-                                    <div class="item-price">¥299</div>
-                                    <div class="original-price">¥399</div>
-                                </div>
-                                <div class="quantity-control">
-                                    <div class="quantity-btn minus">-</div>
-                                    <div class="quantity-value">1</div>
-                                    <div class="quantity-btn plus">+</div>
-                                </div>
-                            </div>
-                            <div class="item-actions">
-                                <div class="action-btn">
-                                    <i class="far fa-heart"></i>
-                                </div>
-                                <div class="action-btn">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <button class="remove-btn">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <!-- 店铺小结 -->
-                <div class="store-summary">
-                    <div class="summary-row">
-                        <div class="summary-label">商品小计</div>
-                        <div class="summary-value">¥299</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">运费</div>
-                        <div class="summary-value">¥0</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">优惠</div>
-                        <div class="summary-value">-¥0</div>
-                    </div>
-                    <div class="summary-row">
-                        <div class="summary-label">店铺合计</div>
-                        <div class="summary-value">¥299</div>
-                    </div>
-                    <div class="store-action">
-                        <button class="store-action-btn">优惠券</button>
-                        <button class="store-action-btn primary">结算</button>
-                    </div>
+            </div>
+        </div>
+        
+        <!-- 优惠券 -->
+        <div class="promotion-section">
+            <div class="promotion-header">
+                <div class="promotion-icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <div class="promotion-title">优惠信息</div>
+            </div>
+            
+            <div class="promotion-options">
+                <div class="promotion-option">
+                    <div class="promotion-text">店铺满300减30优惠券</div>
+                    <div class="promotion-value">未使用</div>
+                    <button class="edit-btn">去使用</button>
+                </div>
+                <div class="promotion-option">
+                    <div class="promotion-text">平台满500减50</div>
+                    <div class="promotion-value">已满足</div>
+                    <button class="edit-btn">选择</button>
                 </div>
             </div>
         </div>
         
         <!-- 结算栏 -->
         <div class="checkout-bar">
-            <div class="total-summary">
-                <div class="total-label">总计</div>
-                <div class="total-price">¥2,293.20</div>
+            <div class="total-info">
+                <div class="total-text">总计: <span class="total-amount">¥497.00</span></div>
+                <div class="total-text">已优惠: ¥40.00</div>
             </div>
-            <button class="checkout-btn">结算(8件)</button>
-        </div>
-        
-        <!-- 底部导航 -->
-        <div class="premium-navbar">
-            <div class="nav-item">
-                <i class="fas fa-home nav-icon"></i>
-                <span class="nav-label">首页</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-list nav-icon"></i>
-                <span class="nav-label">分类</span>
-            </div>
-            <div class="nav-item active">
-                <i class="fas fa-shopping-cart nav-icon"></i>
-                <span class="nav-label">购物车</span>
-            </div>
-            <div class="nav-item">
-                <i class="fas fa-user nav-icon"></i>
-                <span class="nav-label">我的</span>
-            </div>
+            <button class="checkout-btn">
+                <i class="fas fa-shopping-cart"></i> 结算(3件)
+            </button>
         </div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 数量加减按钮功能
+            // 数量调整
             document.querySelectorAll('.quantity-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const container = this.closest('.quantity-control');
-                    const valueElem = container.querySelector('.quantity-value');
-                    let value = parseInt(valueElem.textContent);
+                    const valueElement = this.parentElement.querySelector('.quantity-value');
+                    let value = parseInt(valueElement.textContent) || 1;
                     
-                    if (this.classList.contains('plus')) {
+                    if (this.textContent === '-') {
+                        if (value > 1) value--;
+                    } else {
                         value++;
-                    } else if (this.classList.contains('minus') && value > 1) {
-                        value--;
                     }
                     
-                    valueElem.textContent = value;
-                    updateTotalPrice();
+                    valueElement.textContent = value;
+                    updateTotal();
                 });
             });
             
-            // 删除商品功能
-            document.querySelectorAll('.action-btn .fa-trash').forEach(btn => {
+            // 商品选择
+            document.querySelectorAll('.checkbox').forEach(box => {
+                box.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    updateSelection();
+                });
+            });
+            
+            // 全选
+            document.querySelector('.select-all .checkbox').addEventListener('click', function() {
+                const isActive = this.classList.contains('active');
+                document.querySelectorAll('.cart-item .checkbox').forEach(box => {
+                    if (isActive) {
+                        box.classList.add('active');
+                    } else {
+                        box.classList.remove('active');
+                    }
+                });
+                updateSelection();
+            });
+            
+            // 删除商品
+            document.querySelectorAll('.remove-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const item = this.closest('.cart-item');
-                    if (confirm('确定要删除这个商品吗？')) {
-                        item.style.opacity = '0';
+                    if (confirm('确定要删除这件商品吗？')) {
+                        const item = this.closest('.cart-item');
+                        item.style.opacity = '0.5';
+                        item.style.transform = 'translateX(-20px)';
+                        
                         setTimeout(() => {
                             item.remove();
-                            updateTotalPrice();
+                            updateTotal();
+                            updateSelection();
                         }, 300);
                     }
                 });
             });
             
-            // 收藏商品功能
-            document.querySelectorAll('.action-btn .fa-heart').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.classList.toggle('fas');
-                    this.classList.toggle('far');
-                    
-                    if (this.classList.contains('fas')) {
-                        this.style.color = '#e53e3e'; // 红色
-                        alert('商品已收藏！');
-                    } else {
-                        this.style.color = 'var(--accent-gold)';
+            // 图片加载失败处理
+            document.querySelectorAll('.item-image img').forEach(img => {
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    this.nextElementSibling.style.display = 'flex';
+                };
+            });
+            
+            // 更新总价
+            function updateTotal() {
+                let total = 0;
+                let count = 0;
+                
+                document.querySelectorAll('.cart-item').forEach(item => {
+                    if (item.querySelector('.checkbox').classList.contains('active')) {
+                        const priceText = item.querySelector('.item-price').textContent;
+                        const price = parseFloat(priceText.replace('¥', '')) || 0;
+                        const quantity = parseInt(item.querySelector('.quantity-value').textContent) || 1;
+                        
+                        total += price * quantity;
+                        count++;
                     }
                 });
-            });
-            
-            // 更新总价函数
-            function updateTotalPrice() {
-                // 这里应计算所有商品总价
-                // 现在只是模拟更新
-                document.querySelector('.total-price').textContent = '¥2,293.20';
                 
-                // 更新总商品数量
-                const itemCount = document.querySelectorAll('.cart-item').length;
-                document.querySelector('.checkout-btn').textContent = `结算(${itemCount}件)`;
+                document.querySelector('.total-amount').textContent = `¥${total.toFixed(2)}`;
+                document.querySelector('.checkout-btn').innerHTML = `<i class="fas fa-shopping-cart"></i> 结算(${count}件)`;
+                document.querySelector('.select-all span').textContent = `全选(${count})`;
             }
             
-            // 结算按钮点击事件
-            document.querySelector('.checkout-btn').addEventListener('click', function() {
-                if (document.querySelectorAll('.cart-item').length === 0) {
-                    alert('购物车中没有商品！');
-                    return;
+            // 更新选择状态
+            function updateSelection() {
+                const allBoxes = document.querySelectorAll('.cart-item .checkbox');
+                const activeBoxes = document.querySelectorAll('.cart-item .checkbox.active');
+                
+                if (allBoxes.length === activeBoxes.length) {
+                    document.querySelector('.select-all .checkbox').classList.add('active');
+                } else {
+                    document.querySelector('.select-all .checkbox').classList.remove('active');
                 }
                 
-                this.textContent = '结算中...';
-                this.disabled = true;
-                
-                setTimeout(() => {
-                    alert('结算成功！');
-                    this.textContent = '结算(8件)';
-                    this.disabled = false;
-                }, 1500);
-            });
+                updateTotal();
+            }
             
-            // 店铺结算按钮事件
-            document.querySelectorAll('.store-action-btn.primary').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const storeName = this.closest('.store-group').querySelector('.store-name').textContent;
-                    alert(`开始结算 ${storeName} 的商品`);
-                });
-            });
+            // 初始计算
+            updateTotal();
         });
     </script>
 </body>

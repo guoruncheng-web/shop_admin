@@ -1,12 +1,93 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Swiper } from 'antd-mobile';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './page.module.scss';
 import { AuthGuard } from '@/providers/AuthGuard';
 
+// Simple Carousel Component
+function SimpleCarousel({ items }: { items: Array<{ image: string; title: string; buttonText: string }> }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!isTransitioning) {
+        setIsTransitioning(true);
+        setCurrentIndex((prev) => (prev + 1) % items.length);
+        setTimeout(() => setIsTransitioning(false), 500);
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [items.length, isTransitioning]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '180px', borderRadius: '12px', overflow: 'hidden' }}>
+      {items.map((item, index) => (
+        <div
+          key={index}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundImage: `url('${item.image}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: currentIndex === index ? 1 : 0,
+            transition: 'opacity 500ms ease-in-out',
+          }}
+        >
+          <div className={styles.bannerSlideContent}>
+            <h3>{item.title}</h3>
+            <button className={styles.bannerSlideBtn}>{item.buttonText}</button>
+          </div>
+        </div>
+      ))}
+
+      {/* Indicator Dots */}
+      <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
+        {items.map((_, index) => (
+          <div
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: currentIndex === index ? '#c4a376' : 'rgba(255, 255, 255, 0.5)',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'home' | 'category' | 'cart' | 'me'>('home');
+
+  const bannerItems = [
+    {
+      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      title: 'New Season Styles',
+      buttonText: '立即查看'
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      title: 'Summer Collection',
+      buttonText: '立即购买'
+    },
+    {
+      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      title: 'Limited Edition',
+      buttonText: '立即查看'
+    }
+  ];
+
   return (
     <AuthGuard>
       <div className={styles.phoneContainer}>
@@ -31,54 +112,7 @@ export default function Home() {
           {/* Banner Carousel */}
           <div className={styles.bannerCarousel}>
             <div className={styles.bannerInner}>
-              <Swiper
-              autoplay={true}
-              autoplayInterval={3000}
-              duration={500}
-              loop
-              defaultIndex={0}
-              style={{
-                '--height': '180px',
-                '--border-radius': '12px',
-                width: '100%',
-              }}
-            >
-              {[
-                {
-                  image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                  title: 'New Season Styles',
-                  buttonText: '立即查看'
-                },
-                {
-                  image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                  title: 'Summer Collection',
-                  buttonText: '立即购买'
-                },
-                {
-                  image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                  title: 'Limited Edition',
-                  buttonText: '立即查看'
-                }
-              ].map((item, index) => (
-                <Swiper.Item key={index}>
-                  <div
-                    className={styles.bannerSlide}
-                    style={{
-                      height: '100%',
-                      backgroundImage: `url('${item.image}')`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat',
-                    }}
-                  >
-                    <div className={styles.bannerSlideContent}>
-                      <h3>{item.title}</h3>
-                      <button className={styles.bannerSlideBtn}>{item.buttonText}</button>
-                    </div>
-                  </div>
-                </Swiper.Item>
-              ))}
-            </Swiper>
+              <SimpleCarousel items={bannerItems} />
             </div>
           </div>
 
