@@ -142,27 +142,24 @@ $input-height: 54px;
   z-index: 1;
 }
 
-// antd-mobile Input 自定义样式
+// Native Input 样式
 .customInput {
-  --border-radius: #{$radius};
-  --border-color: rgba(0, 0, 0, 0.08);
-  --placeholder-color: #{$text-light};
-  --text-align: left;
-  --font-size: 17px;
-  --color: #{$text-dark};
   width: 100%;
   height: $input-height;
   background-color: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: $radius;
   padding: 0 20px 0 45px;
+  font-size: 17px;
+  color: $text-dark;
   transition: all 0.3s;
+  outline: none;
 
-  :global(.adm-input-element) {
-    font-size: 17px;
+  &::placeholder {
+    color: $text-light;
   }
 
-  &:focus-within {
+  &:focus {
     border-color: $accent-gold;
     box-shadow: 0 5px 15px rgba(196, 163, 118, 0.1);
     background-color: rgba(255, 255, 255, 0.9);
@@ -174,24 +171,23 @@ $input-height: 54px;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
+}
 
-  // antd-mobile Checkbox 自定义样式
-  :global(.adm-checkbox) {
-    --icon-size: 18px;
-    --font-size: 14px;
-    --gap: 8px;
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: $accent-gold;
   }
 
-  :global(.adm-checkbox-icon) {
-    border-color: $accent-gold;
-  }
-
-  :global(.adm-checkbox-icon-checked) {
-    background-color: $accent-gold;
-    border-color: $accent-gold;
-  }
-
-  :global(.adm-checkbox-content) {
+  span {
     color: $text-medium;
     font-size: 14px;
   }
@@ -210,21 +206,23 @@ $input-height: 54px;
   }
 }
 
-// antd-mobile Button 自定义样式
+// Native Button 样式
 .loginButton {
-  --border-radius: #{$radius};
-  --background-color: linear-gradient(to right, #c4a376, #b18c5a);
-  height: $input-height !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
+  width: 100%;
+  height: $input-height;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(to right, #c4a376, #b18c5a);
+  border: none;
+  border-radius: $radius;
   box-shadow: 0 4px 12px rgba(196, 163, 118, 0.3);
   transition: all 0.3s ease;
+  cursor: pointer;
   position: relative;
-  background: linear-gradient(to right, #c4a376, #b18c5a) !important;
-  border: none !important;
 
   &:hover:not(:disabled) {
-    background: linear-gradient(to right, #b18c5a, #9e7a4c) !important;
+    background: linear-gradient(to right, #b18c5a, #9e7a4c);
     transform: translateY(-2px);
     box-shadow: 0 7px 15px rgba(196, 163, 118, 0.4);
   }
@@ -234,12 +232,8 @@ $input-height: 54px;
     cursor: not-allowed;
   }
 
-  &:global(.adm-button-loading) {
-    background: linear-gradient(to right, #b18c5a, #9e7a4c) !important;
-  }
-
-  :global(.adm-button-loading-wrapper) {
-    color: white;
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 }
 

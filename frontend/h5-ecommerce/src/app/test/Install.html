@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="filename" content="pwa_mini_install_prompt.html">
+    <title>PWA安装提示</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .install-prompt {
+            width: 320px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: popup 0.3s ease;
+            z-index: 101;
+        }
+        
+        .prompt-header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f9f0ee, #f8e0dd);
+            border-bottom: 1px solid #f0e0e0;
+        }
+        
+        .prompt-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 8px rgba(226, 150, 146, 0.2);
+        }
+        
+        .prompt-icon i {
+            font-size: 24px;
+            color: #e29692;
+        }
+        
+        .prompt-title {
+            margin-left: 15px;
+        }
+        
+        .prompt-title h2 {
+            font-size: 1.3rem;
+            color: #e29692;
+            font-weight: 600;
+        }
+        
+        .prompt-title p {
+            font-size: 0.85rem;
+            color: #888;
+        }
+        
+        .prompt-content {
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .benefit-tag {
+            display: inline-block;
+            background: rgba(226, 150, 146, 0.1);
+            border: 1px solid rgba(226, 150, 146, 0.2);
+            color: #c57d7a;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 2px;
+        }
+        
+        .prompt-text {
+            margin: 20px 0;
+            font-size: 0.95rem;
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            color: #e29692;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .install-btn {
+            background: linear-gradient(to right, #e29692, #d38683);
+            color: white;
+            box-shadow: 0 4px 10px rgba(226, 150, 146, 0.3);
+        }
+        
+        .install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(226, 150, 146, 0.4);
+        }
+        
+        .install-btn:active {
+            transform: translateY(0);
+        }
+        
+        .cancel-btn {
+            background: white;
+            color: #666;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .cancel-btn:hover {
+            background: #f8f8f8;
+        }
+        
+        .minimize-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #999;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        
+        .minimize-btn:hover {
+            background: #f8f8f8;
+            color: #e29692;
+        }
+        
+        @keyframes popup {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .libre-badge {
+            position: absolute;
+            right: -8px;
+            bottom: -8px;
+            background: #e29692;
+            color: white;
+            font-size: 0.7rem;
+            padding: 6px 10px;
+            border-radius: 15px 0 15px 0;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay">
+        <div class="install-prompt">
+            <div class="prompt-header">
+                <div class="prompt-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="prompt-title">
+                    <h2>安装 StyleHub</h2>
+                    <p>更快的购物体验</p>
+                </div>
+            </div>
+            
+            <div class="prompt-content">
+                <div class="minimize-btn">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div>
+                    <span class="benefit-tag"><i class="fas fa-bolt"></i> 快速加载</span>
+                    <span class="benefit-tag"><i class="fas fa-mobile-alt"></i> 离线可用</span>
+                </div>
+                
+                <p class="prompt-text">
+                    将<span class="highlight">StyleHub</span>安装到主屏幕，享受<span class="highlight">原生应用</span>体验和更便捷的访问方式
+                </p>
+                
+                <div class="action-buttons">
+                    <button class="btn install-btn">
+                        <i class="fas fa-download"></i> 安装
+                    </button>
+                    <button class="btn cancel-btn">
+                        取消
+                    </button>
+                </div>
+                
+                <div class="libre-badge">
+                    免费·安全
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const installBtn = document.querySelector('.install-btn');
+            const cancelBtn = document.querySelector('.cancel-btn');
+            const minimizeBtn = document.querySelector('.minimize-btn');
+            const prompt = document.querySelector('.install-prompt');
+            
+            // 安装按钮事件
+            installBtn.addEventListener('click', function() {
+                prompt.style.transform = 'scale(0.95)';
+                prompt.style.opacity = '0.5';
+                
+                setTimeout(() => {
+                    alert("安装请求已发送");
+                    document.querySelector('.overlay').style.opacity = '0';
+                    
+                    setTimeout(() => {
+                        document.querySelector('.overlay').remove();
+                        document.body.style.background = '#f0f2f5';
+                    }, 300);
+                }, 200);
+            });
+            
+            // 取消按钮事件
+            cancelBtn.addEventListener('click', function() {
+                prompt.style.transform = 'translateY(20px)';
+                prompt.style.opacity = '0';
+                
+                setTimeout(() => {
+                    document.querySelector('.overlay').remove();
+                }, 300);
+            });
+            
+            // 最小化/关闭按钮
+            minimizeBtn.addEventListener('click', function() {
+                prompt.style.transform = 'translateY(20px)';
+                prompt.style.opacity = '0';
+                
+                setTimeout(() => {
+                    document.querySelector('.overlay').remove();
+                }, 300);
+            });
+        });
+    </script>
+</body>
