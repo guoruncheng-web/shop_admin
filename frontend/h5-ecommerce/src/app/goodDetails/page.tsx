@@ -313,7 +313,10 @@ export default function GoodDetails() {
             用户评价 ({ratingUsers})
             <span style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', height: '65%', width: 3, background: '#e29692', borderRadius: 10 }} />
           </div>
-          <button style={{ background: '#f9f0ef', color: '#e29692', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}>
+          <button
+            onClick={() => (window.location.href = '/myOrder')}
+            style={{ background: '#f9f0ef', color: '#e29692', border: 'none', borderRadius: 6, padding: '6px 10px', fontSize: 12, cursor: 'pointer' }}
+          >
             查看全部 ›
           </button>
         </div>

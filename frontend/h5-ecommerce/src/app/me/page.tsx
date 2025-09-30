@@ -62,7 +62,6 @@ export default function MePage() {
             left: 0,
             right: 0,
             top: 0,
-            top: 0,
             zIndex: 100,
             boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
             borderBottom: '1px solid #f5f5f5',
@@ -274,7 +273,19 @@ export default function MePage() {
                 }}
               />
             </div>
-            <div style={{ fontSize: '0.9rem', color: '#666' }}>查看全部</div>
+            <button
+              onClick={() => (window.location.href = '/myOrder')}
+              style={{
+                fontSize: '0.9rem',
+                color: '#666',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer'
+              }}
+            >
+              查看全部
+            </button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
