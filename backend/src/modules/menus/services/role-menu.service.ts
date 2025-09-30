@@ -30,8 +30,8 @@ export class RoleMenuService {
 
     // 验证菜单是否存在，只保存数据库中实际存在的菜单
     const menus = await this.menuRepository.findByIds(menuIds);
-    const existingMenuIds = menus.map(menu => menu.id);
-    
+    const existingMenuIds = menus.map((menu) => menu.id);
+
     // 如果没有找到任何有效的菜单ID，记录警告但不抛出错误
     if (existingMenuIds.length === 0) {
       console.warn('没有找到有效的菜单ID:', menuIds);
@@ -39,9 +39,11 @@ export class RoleMenuService {
       await this.roleMenuRepository.delete({ roleId });
       return;
     }
-    
+
     // 记录被过滤掉的无效菜单ID
-    const invalidMenuIds = menuIds.filter(id => !existingMenuIds.includes(id));
+    const invalidMenuIds = menuIds.filter(
+      (id) => !existingMenuIds.includes(id),
+    );
     if (invalidMenuIds.length > 0) {
       console.warn('以下菜单ID在数据库中不存在，已自动过滤:', invalidMenuIds);
     }
@@ -50,7 +52,7 @@ export class RoleMenuService {
     await this.roleMenuRepository.delete({ roleId });
 
     // 创建新的菜单关联（只使用存在的菜单ID）
-    const roleMenus = existingMenuIds.map(menuId => ({
+    const roleMenus = existingMenuIds.map((menuId) => ({
       roleId,
       menuId,
     }));
@@ -73,7 +75,7 @@ export class RoleMenuService {
       .orderBy('menu.orderNum', 'ASC')
       .getMany();
 
-    return roleMenus.map(roleMenu => roleMenu.menu);
+    return roleMenus.map((roleMenu) => roleMenu.menu);
   }
 
   /**
@@ -86,7 +88,7 @@ export class RoleMenuService {
       select: ['menuId'],
     });
 
-    return roleMenus.map(roleMenu => roleMenu.menuId);
+    return roleMenus.map((roleMenu) => roleMenu.menuId);
   }
 
   /**
@@ -119,7 +121,7 @@ export class RoleMenuService {
       .andWhere('role.status = :status', { status: 1 })
       .getMany();
 
-    return roleMenus.map(roleMenu => roleMenu.role);
+    return roleMenus.map((roleMenu) => roleMenu.role);
   }
 
   /**
@@ -127,7 +129,10 @@ export class RoleMenuService {
    * @param roleIds 角色ID数组
    * @param menuIds 菜单ID数组
    */
-  async assignMenusToMultipleRoles(roleIds: number[], menuIds: number[]): Promise<void> {
+  async assignMenusToMultipleRoles(
+    roleIds: number[],
+    menuIds: number[],
+  ): Promise<void> {
     // 验证角色是否存在
     const roles = await this.roleRepository.findByIds(roleIds);
     if (roles.length !== roleIds.length) {
@@ -154,7 +159,7 @@ export class RoleMenuService {
   async copyRoleMenus(fromRoleId: number, toRoleId: number): Promise<void> {
     // 获取源角色的菜单ID
     const sourceMenuIds = await this.getRoleMenuIds(fromRoleId);
-    
+
     if (sourceMenuIds.length > 0) {
       // 分配给目标角色
       await this.assignMenusToRole(toRoleId, sourceMenuIds);
@@ -164,7 +169,9 @@ export class RoleMenuService {
   /**
    * 获取所有角色的菜单分配情况
    */
-  async getAllRoleMenuAssignments(): Promise<Array<{ role: Role; menus: Menu[] }>> {
+  async getAllRoleMenuAssignments(): Promise<
+    Array<{ role: Role; menus: Menu[] }>
+  > {
     const roles = await this.roleRepository.find({ where: { status: 1 } });
     const result = [];
 

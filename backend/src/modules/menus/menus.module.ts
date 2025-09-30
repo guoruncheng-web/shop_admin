@@ -11,7 +11,9 @@ import { Permission } from '../../database/entities/permission.entity';
 import { RoleMenu } from '../../database/entities/role-menu.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Menu, Admin, Role, Permission, RoleMenu])],
+  imports: [
+    TypeOrmModule.forFeature([Menu, Admin, Role, Permission, RoleMenu]),
+  ],
   controllers: [MenusController, RoleMenuController],
   providers: [MenusService, RoleMenuService],
   exports: [MenusService, RoleMenuService],

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 export async function initResourceTables() {
   const configService = new ConfigService();
-  
+
   const dataSource = new DataSource({
     type: 'mysql',
     host: configService.get('DATABASE_HOST', 'localhost'),
@@ -79,7 +79,7 @@ export async function initResourceTables() {
     await dataSource.query(`
       DROP TRIGGER IF EXISTS check_resource_category_level;
     `);
-    
+
     await dataSource.query(`
       CREATE TRIGGER check_resource_category_level
       BEFORE INSERT ON resources
@@ -129,7 +129,6 @@ export async function initResourceTables() {
 
     console.log('资源管理表创建成功！');
     console.log('示例数据插入完成！');
-
   } catch (error) {
     console.error('初始化失败:', error);
   } finally {
@@ -139,11 +138,13 @@ export async function initResourceTables() {
 
 // 如果直接运行此文件
 if (require.main === module) {
-  initResourceTables().then(() => {
-    console.log('初始化完成');
-    process.exit(0);
-  }).catch((error) => {
-    console.error('初始化失败:', error);
-    process.exit(1);
-  });
+  initResourceTables()
+    .then(() => {
+      console.log('初始化完成');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('初始化失败:', error);
+      process.exit(1);
+    });
 }

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -24,7 +29,7 @@ export class UsersService {
       relations: ['roles'],
       select: [
         'id',
-        'username', 
+        'username',
         'realName',
         'email',
         'phone',
@@ -33,8 +38,8 @@ export class UsersService {
         'lastLoginTime',
         'lastLoginIp',
         'createdAt',
-        'updatedAt'
-      ]
+        'updatedAt',
+      ],
     });
 
     if (!user) {
@@ -56,13 +61,21 @@ export class UsersService {
 
   // 分页查询用户列表
   async findAll(queryDto: QueryUserDto) {
-    const { page = 1, pageSize = 10, username, realName, email, status } = queryDto;
-    
-    const queryBuilder = this.adminRepository.createQueryBuilder('admin')
+    const {
+      page = 1,
+      pageSize = 10,
+      username,
+      realName,
+      email,
+      status,
+    } = queryDto;
+
+    const queryBuilder = this.adminRepository
+      .createQueryBuilder('admin')
       .leftJoinAndSelect('admin.roles', 'roles')
       .select([
         'admin.id',
-        'admin.username', 
+        'admin.username',
         'admin.realName',
         'admin.email',
         'admin.phone',
@@ -74,15 +87,19 @@ export class UsersService {
         'admin.updatedAt',
         'roles.id',
         'roles.name',
-        'roles.code'
+        'roles.code',
       ]);
 
     // 添加搜索条件
     if (username) {
-      queryBuilder.andWhere('admin.username LIKE :username', { username: `%${username}%` });
+      queryBuilder.andWhere('admin.username LIKE :username', {
+        username: `%${username}%`,
+      });
     }
     if (realName) {
-      queryBuilder.andWhere('admin.realName LIKE :realName', { realName: `%${realName}%` });
+      queryBuilder.andWhere('admin.realName LIKE :realName', {
+        realName: `%${realName}%`,
+      });
     }
     if (email) {
       queryBuilder.andWhere('admin.email LIKE :email', { email: `%${email}%` });
@@ -94,7 +111,7 @@ export class UsersService {
     // 分页
     const skip = (page - 1) * pageSize;
     queryBuilder.skip(skip).take(pageSize);
-    
+
     // 排序
     queryBuilder.orderBy('admin.createdAt', 'DESC');
 
@@ -151,7 +168,7 @@ export class UsersService {
   // 更新用户
   async update(id: number, updateUserDto: UpdateUserDto): Promise<Admin> {
     const { roleIds, ...userData } = updateUserDto;
-    
+
     const user = await this.findById(id);
 
     // 检查用户名和邮箱唯一性（排除当前用户）
@@ -179,7 +196,7 @@ export class UsersService {
     }
 
     // 使用事务来处理更新操作
-    return await this.adminRepository.manager.transaction(async manager => {
+    return await this.adminRepository.manager.transaction(async (manager) => {
       // 更新基本信息
       if (Object.keys(userData).length > 0) {
         await manager.update(Admin, id, userData);
@@ -189,13 +206,17 @@ export class UsersService {
       if (roleIds !== undefined) {
         // 先删除现有的角色关联
         await manager.query('DELETE FROM admin_roles WHERE admin_id = ?', [id]);
-        
+
         // 如果有新的角色，则插入新的关联
         if (roleIds.length > 0) {
           const roles = await manager.findByIds(Role, roleIds);
           if (roles.length > 0) {
-            const values = roles.map(role => `(${id}, ${role.id})`).join(', ');
-            await manager.query(`INSERT INTO admin_roles (admin_id, role_id) VALUES ${values}`);
+            const values = roles
+              .map((role) => `(${id}, ${role.id})`)
+              .join(', ');
+            await manager.query(
+              `INSERT INTO admin_roles (admin_id, role_id) VALUES ${values}`,
+            );
           }
         }
       }
@@ -208,7 +229,7 @@ export class UsersService {
   // 删除用户
   async remove(id: number): Promise<void> {
     const user = await this.findById(id);
-    
+
     // 不能删除自己（这里需要从请求上下文获取当前用户ID，暂时跳过）
     // if (user.id === currentUserId) {
     //   throw new BadRequestException('不能删除自己');
@@ -232,7 +253,10 @@ export class UsersService {
   }
 
   // 修改密码
-  async changePassword(id: number, changePasswordDto: ChangePasswordDto): Promise<void> {
+  async changePassword(
+    id: number,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<void> {
     const { oldPassword, newPassword } = changePasswordDto;
     const user = await this.adminRepository.findOne({
       where: { id },
@@ -251,7 +275,7 @@ export class UsersService {
 
     // 加密新密码
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // 更新密码
     await this.adminRepository.update(id, { password: hashedNewPassword });
   }
@@ -259,10 +283,10 @@ export class UsersService {
   // 重置密码
   async resetPassword(id: number, newPassword: string): Promise<void> {
     const user = await this.findById(id);
-    
+
     // 加密新密码
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    
+
     // 更新密码
     await this.adminRepository.update(id, { password: hashedPassword });
   }
@@ -272,7 +296,7 @@ export class UsersService {
     // 先获取用户当前状态（不加载关联关系）
     const user = await this.adminRepository.findOne({
       where: { id },
-      select: ['id', 'status']
+      select: ['id', 'status'],
     });
 
     if (!user) {
@@ -280,10 +304,10 @@ export class UsersService {
     }
 
     const newStatus = user.status === 1 ? 0 : 1;
-    
+
     // 直接更新状态字段，避免触发关联关系的保存
     await this.adminRepository.update(id, { status: newStatus });
-    
+
     // 返回更新后的完整用户信息
     return await this.findById(id);
   }

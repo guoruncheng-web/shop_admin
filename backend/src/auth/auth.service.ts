@@ -7,7 +7,11 @@ import * as jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import Redis from 'ioredis';
-import { LoginDto, LoginResponseDto, CaptchaResponseDto } from './dto/captcha.dto';
+import {
+  LoginDto,
+  LoginResponseDto,
+  CaptchaResponseDto,
+} from './dto/captcha.dto';
 import { MenusService } from '../modules/menus/services/menus.service';
 import { Admin } from '../database/entities/admin.entity';
 import { UserLoginLogService } from '../modules/login-log/services/user-login-log.service';
@@ -35,7 +39,7 @@ export class AuthService {
       port: redisPort,
       password: redisPassword ? '***已设置***' : '未设置',
       db: redisDb,
-      fullUrl: `redis://${redisHost}:${redisPort}/${redisDb}`
+      fullUrl: `redis://${redisHost}:${redisPort}/${redisDb}`,
     });
 
     // 初始化Redis连接
@@ -48,7 +52,10 @@ export class AuthService {
 
     // 监听Redis连接事件
     this.redis.on('connect', () => {
-      console.log('✅ Redis连接成功:', `redis://${redisHost}:${redisPort}/${redisDb}`);
+      console.log(
+        '✅ Redis连接成功:',
+        `redis://${redisHost}:${redisPort}/${redisDb}`,
+      );
     });
 
     this.redis.on('error', (err) => {
@@ -82,7 +89,7 @@ export class AuthService {
     await this.redis.setex(
       `captcha:${captchaId}`,
       expiresIn,
-      JSON.stringify(captchaData)
+      JSON.stringify(captchaData),
     );
 
     return {
@@ -104,7 +111,7 @@ export class AuthService {
     try {
       const key = `captcha:${captchaId}`;
       const stored = await this.redis.get(key);
-      
+
       if (!stored) {
         return false;
       }
@@ -137,23 +144,27 @@ export class AuthService {
   async getAllCaptchas(): Promise<any[]> {
     const keys = await this.redis.keys('captcha:*');
     const captchas: any[] = [];
-    
+
     for (const key of keys) {
       const data = await this.redis.get(key);
       if (data) {
         const captcha = JSON.parse(data);
         captchas.push({
           id: key.replace('captcha:', ''),
-          ...captcha
+          ...captcha,
         });
       }
     }
-    
+
     return captchas;
   }
 
   // 验证用户
-  async validateUser(username: string, password: string, loginIp?: string): Promise<any> {
+  async validateUser(
+    username: string,
+    password: string,
+    loginIp?: string,
+  ): Promise<any> {
     // 从数据库查找用户
     const user = await this.adminRepository.findOne({
       where: { username },
@@ -169,8 +180,7 @@ export class AuthService {
         'status',
         'lastLoginTime',
         'lastLoginIp',
-
-      ]
+      ],
     });
 
     if (!user) {
@@ -191,20 +201,21 @@ export class AuthService {
     // 更新登录信息
     await this.adminRepository.update(user.id, {
       lastLoginTime: new Date(),
-      lastLoginIp: loginIp || '127.0.0.1'
+      lastLoginIp: loginIp || '127.0.0.1',
     });
 
     // 构建返回的用户信息
     const { password: _, ...userInfo } = user;
-    
+
     // 提取角色信息
-    const roles = user.roles?.map(role => role.code) || [];
-    const roleInfo = user.roles?.map(role => ({
-      id: role.id,
-      name: role.name,
-      code: role.code,
-      description: role.description
-    })) || [];
+    const roles = user.roles?.map((role) => role.code) || [];
+    const roleInfo =
+      user.roles?.map((role) => ({
+        id: role.id,
+        name: role.name,
+        code: role.code,
+        description: role.description,
+      })) || [];
 
     // 获取用户权限（通过角色）
     const permissions = await this.getUserPermissionsByUserId(user.id);
@@ -213,93 +224,104 @@ export class AuthService {
       ...userInfo,
       roles,
       roleInfo,
-      permissions
+      permissions,
     };
   }
 
   // 登录
-  async login(loginDto: LoginDto, loginIp?: string, userAgent?: string): Promise<LoginResponseDto> {
+  async login(
+    loginDto: LoginDto,
+    loginIp?: string,
+    userAgent?: string,
+  ): Promise<LoginResponseDto> {
     let userId: number | null = null;
-    
+
     try {
       // 验证验证码
-      const isCaptchaValid = await this.validateCaptcha(loginDto.captchaId, loginDto.captcha);
+      const isCaptchaValid = await this.validateCaptcha(
+        loginDto.captchaId,
+        loginDto.captcha,
+      );
       if (!isCaptchaValid) {
         throw new UnauthorizedException('验证码错误或已过期');
       }
 
       // 验证用户
-      const user = await this.validateUser(loginDto.username, loginDto.password, loginIp);
+      const user = await this.validateUser(
+        loginDto.username,
+        loginDto.password,
+        loginIp,
+      );
       if (!user) {
         // 记录登录失败日志（用户名错误的情况下无法获取userId，设为null）
         await this.userLoginLogService.recordLogin(
-          null, 
-          loginIp || '127.0.0.1', 
-          userAgent, 
-          false, 
-          '用户名或密码错误'
+          null,
+          loginIp || '127.0.0.1',
+          userAgent,
+          false,
+          '用户名或密码错误',
         );
         throw new UnauthorizedException('用户名或密码错误');
       }
 
       userId = user.id;
 
-    // 获取用户菜单
-    const userMenus = await this.menusService.getUserMenusByUserId(user.id);
+      // 获取用户菜单
+      const userMenus = await this.menusService.getUserMenusByUserId(user.id);
 
-    // 生成JWT令牌
-    const jwtSecret = this.configService.get('jwt.secret');
-    const jwtExpiresIn = this.configService.get('jwt.expiresIn');
-    
-    // 调试信息
-    console.log('JWT配置:', {
-      secret: jwtSecret ? '已设置' : '未设置',
-      expiresIn: jwtExpiresIn,
-      env: process.env.JWT_EXPIRES_IN
-    });
-    
-    const payload = {
-      sub: user.id,
-      username: user.username,
-      roles: user.roles,
-      permissions: user.permissions,
-      iat: Math.floor(Date.now() / 1000),
-    };
+      // 生成JWT令牌
+      const jwtSecret = this.configService.get('jwt.secret');
+      const jwtExpiresIn = this.configService.get('jwt.expiresIn');
 
-    const accessToken = jwt.sign(payload, jwtSecret, {
-      expiresIn: jwtExpiresIn,
-      issuer: 'wechat-mall-api',
-      audience: 'wechat-mall-client',
-    });
+      // 调试信息
+      console.log('JWT配置:', {
+        secret: jwtSecret ? '已设置' : '未设置',
+        expiresIn: jwtExpiresIn,
+        env: process.env.JWT_EXPIRES_IN,
+      });
 
-    // 记录登录成功日志
-    await this.userLoginLogService.recordLogin(
-      userId, 
-      loginIp || '127.0.0.1', 
-      userAgent, 
-      true
-    );
+      const payload = {
+        sub: user.id,
+        username: user.username,
+        roles: user.roles,
+        permissions: user.permissions,
+        iat: Math.floor(Date.now() / 1000),
+      };
 
-    return {
-      code: 200,
-      data: {
-        accessToken,
-        user: {
-          ...user,
-          menus: userMenus, // 添加用户菜单信息
+      const accessToken = jwt.sign(payload, jwtSecret, {
+        expiresIn: jwtExpiresIn,
+        issuer: 'wechat-mall-api',
+        audience: 'wechat-mall-client',
+      });
+
+      // 记录登录成功日志
+      await this.userLoginLogService.recordLogin(
+        userId,
+        loginIp || '127.0.0.1',
+        userAgent,
+        true,
+      );
+
+      return {
+        code: 200,
+        data: {
+          accessToken,
+          user: {
+            ...user,
+            menus: userMenus, // 添加用户菜单信息
+          },
         },
-      },
-      msg: '登录成功',
-    };
+        msg: '登录成功',
+      };
     } catch (error) {
       // 记录登录失败日志
       if (userId) {
         await this.userLoginLogService.recordLogin(
-          userId, 
-          loginIp || '127.0.0.1', 
-          userAgent, 
-          false, 
-          error.message
+          userId,
+          loginIp || '127.0.0.1',
+          userAgent,
+          false,
+          error.message,
         );
       }
       throw error;
@@ -340,14 +362,30 @@ export class AuthService {
         avatar: '/images/avatar/admin.png',
         roles: ['super_admin'],
         permissions: [
-          'system:admin', 'system:user', 'system:role', 'system:permission',
-          'product:list', 'product:create', 'product:update', 'product:delete',
-          'order:list', 'order:update', 'order:delete',
-          'banner:list', 'banner:create', 'banner:update', 'banner:delete'
+          'system:admin',
+          'system:user',
+          'system:role',
+          'system:permission',
+          'product:list',
+          'product:create',
+          'product:update',
+          'product:delete',
+          'order:list',
+          'order:update',
+          'order:delete',
+          'banner:list',
+          'banner:create',
+          'banner:update',
+          'banner:delete',
         ],
         roleInfo: [
-          { id: 1, name: '超级管理员', code: 'super_admin', description: '系统超级管理员，拥有所有权限' }
-        ]
+          {
+            id: 1,
+            name: '超级管理员',
+            code: 'super_admin',
+            description: '系统超级管理员，拥有所有权限',
+          },
+        ],
       },
       {
         id: 2,
@@ -358,16 +396,27 @@ export class AuthService {
         avatar: '/images/avatar/product.png',
         roles: ['product_admin'],
         permissions: [
-          'product:list', 'product:create', 'product:update', 'product:delete',
-          'category:list', 'category:create', 'category:update', 'category:delete'
+          'product:list',
+          'product:create',
+          'product:update',
+          'product:delete',
+          'category:list',
+          'category:create',
+          'category:update',
+          'category:delete',
         ],
         roleInfo: [
-          { id: 2, name: '商品管理员', code: 'product_admin', description: '负责商品和分类管理' }
-        ]
+          {
+            id: 2,
+            name: '商品管理员',
+            code: 'product_admin',
+            description: '负责商品和分类管理',
+          },
+        ],
       },
     ];
 
-    return mockUsers.find(user => user.id === userId) || null;
+    return mockUsers.find((user) => user.id === userId) || null;
   }
 
   // 刷新JWT令牌
@@ -391,7 +440,7 @@ export class AuthService {
       // 生成新的token
       const jwtSecret = this.configService.get('jwt.secret');
       const jwtExpiresIn = this.configService.get('jwt.expiresIn');
-      
+
       const newPayload = {
         sub: decoded.sub,
         username: decoded.username,

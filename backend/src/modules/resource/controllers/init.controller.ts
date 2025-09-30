@@ -78,13 +78,13 @@ export class ResourceInitController {
       return {
         success: true,
         message: '数据表创建成功',
-        tables: ['resource_categories', 'resources']
+        tables: ['resource_categories', 'resources'],
       };
     } catch (error) {
       return {
         success: false,
         message: '数据表创建失败',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -130,14 +130,14 @@ export class ResourceInitController {
         message: '示例数据初始化成功',
         data: {
           categories: 12,
-          resources: 8
-        }
+          resources: 8,
+        },
       };
     } catch (error) {
       return {
         success: false,
         message: '示例数据初始化失败',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -149,8 +149,10 @@ export class ResourceInitController {
   async createTrigger() {
     try {
       // 删除已存在的触发器
-      await this.dataSource.query(`DROP TRIGGER IF EXISTS check_resource_category_level;`);
-      
+      await this.dataSource.query(
+        `DROP TRIGGER IF EXISTS check_resource_category_level;`,
+      );
+
       // 创建触发器：确保只能在二级分类下上传资源
       await this.dataSource.query(`
         CREATE TRIGGER check_resource_category_level
@@ -171,13 +173,13 @@ export class ResourceInitController {
 
       return {
         success: true,
-        message: '数据库触发器创建成功'
+        message: '数据库触发器创建成功',
       };
     } catch (error) {
       return {
         success: false,
         message: '数据库触发器创建失败',
-        error: error.message
+        error: error.message,
       };
     }
   }

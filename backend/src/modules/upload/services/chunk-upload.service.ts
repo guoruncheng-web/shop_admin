@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -34,11 +38,11 @@ export class ChunkUploadService {
       SecretId: this.configService.get('cos.secretId'),
       SecretKey: this.configService.get('cos.secretKey'),
     });
-    
+
     this.bucket = this.configService.get('cos.bucket');
     this.region = this.configService.get('cos.region');
     this.tempDir = path.join(process.cwd(), 'uploads', 'chunks');
-    
+
     // 确保临时目录存在
     if (!fs.existsSync(this.tempDir)) {
       fs.mkdirSync(this.tempDir, { recursive: true });
@@ -56,7 +60,7 @@ export class ChunkUploadService {
     totalChunks: number;
   }) {
     const uploadId = `upload_${uuidv4()}`;
-    
+
     // 生成文件存储路径
     const fileExtension = path.extname(dto.fileName);
     const fileName = `${uuidv4()}${fileExtension}`;
@@ -113,7 +117,10 @@ export class ChunkUploadService {
     }
 
     // 验证分片MD5
-    const actualMD5 = crypto.createHash('md5').update(chunkBuffer).digest('hex');
+    const actualMD5 = crypto
+      .createHash('md5')
+      .update(chunkBuffer)
+      .digest('hex');
     if (actualMD5 !== chunkMD5) {
       throw new BadRequestException('分片数据校验失败');
     }
@@ -136,14 +143,21 @@ export class ChunkUploadService {
 
       // 记录已上传的分片
       uploadInfo.uploadedChunks.push(chunkIndex);
-      
+
       // 保存分片信息到临时文件（用于断点续传）
-      const chunkInfoPath = path.join(this.tempDir, uploadId, `chunk_${chunkIndex}.json`);
-      fs.writeFileSync(chunkInfoPath, JSON.stringify({
-        chunkIndex,
-        etag: partResult.ETag,
-        partNumber: chunkIndex + 1,
-      }));
+      const chunkInfoPath = path.join(
+        this.tempDir,
+        uploadId,
+        `chunk_${chunkIndex}.json`,
+      );
+      fs.writeFileSync(
+        chunkInfoPath,
+        JSON.stringify({
+          chunkIndex,
+          etag: partResult.ETag,
+          partNumber: chunkIndex + 1,
+        }),
+      );
 
       return {
         chunkIndex,
@@ -169,7 +183,9 @@ export class ChunkUploadService {
     return {
       uploadedChunks: uploadInfo.uploadedChunks,
       total: uploadInfo.totalChunks,
-      progress: Math.round((uploadInfo.uploadedChunks.length / uploadInfo.totalChunks) * 100),
+      progress: Math.round(
+        (uploadInfo.uploadedChunks.length / uploadInfo.totalChunks) * 100,
+      ),
     };
   }
 
@@ -196,7 +212,7 @@ export class ChunkUploadService {
       // 读取所有分片信息
       const uploadDir = path.join(this.tempDir, uploadId);
       const parts = [];
-      
+
       for (let i = 0; i < uploadInfo.totalChunks; i++) {
         const chunkInfoPath = path.join(uploadDir, `chunk_${i}.json`);
         if (fs.existsSync(chunkInfoPath)) {
@@ -294,7 +310,7 @@ export class ChunkUploadService {
       '.webm': 'video/webm',
       '.mkv': 'video/mkv',
     };
-    
+
     return mimeTypes[extension.toLowerCase()] || 'application/octet-stream';
   }
 

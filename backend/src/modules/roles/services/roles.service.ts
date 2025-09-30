@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Role } from '../../../database/entities/role.entity';
@@ -33,7 +37,8 @@ export class RolesService {
     const { page = 1, pageSize = 10, name, code, status } = query;
     const skip = (page - 1) * pageSize;
 
-    const queryBuilder = this.roleRepository.createQueryBuilder('role')
+    const queryBuilder = this.roleRepository
+      .createQueryBuilder('role')
       .leftJoinAndSelect('role.permissions', 'permissions')
       .orderBy('role.createdAt', 'DESC');
 
@@ -102,7 +107,8 @@ export class RolesService {
 
     // 处理权限关联
     if (permissionIds && permissionIds.length > 0) {
-      const permissions = await this.permissionRepository.findByIds(permissionIds);
+      const permissions =
+        await this.permissionRepository.findByIds(permissionIds);
       role.permissions = permissions;
     }
 
@@ -123,7 +129,8 @@ export class RolesService {
     // 处理权限关联
     if (permissionIds !== undefined) {
       if (permissionIds.length > 0) {
-        const permissions = await this.permissionRepository.findByIds(permissionIds);
+        const permissions =
+          await this.permissionRepository.findByIds(permissionIds);
         role.permissions = permissions;
       } else {
         role.permissions = [];

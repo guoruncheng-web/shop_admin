@@ -25,7 +25,7 @@ export class UploadService {
       SecretId: this.configService.get('cos.secretId'),
       SecretKey: this.configService.get('cos.secretKey'),
     });
-    
+
     this.bucket = this.configService.get('cos.bucket');
     this.region = this.configService.get('cos.region');
   }
@@ -35,9 +35,17 @@ export class UploadService {
    */
   async uploadImage(file: Express.Multer.File): Promise<UploadResult> {
     // 验证文件类型
-    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
     if (!allowedImageTypes.includes(file.mimetype)) {
-      throw new BadRequestException('只支持上传 JPEG、PNG、GIF、WebP 格式的图片');
+      throw new BadRequestException(
+        '只支持上传 JPEG、PNG、GIF、WebP 格式的图片',
+      );
     }
 
     // 验证文件大小 (5MB)
@@ -55,16 +63,18 @@ export class UploadService {
   async uploadVideo(file: Express.Multer.File): Promise<UploadResult> {
     // 验证文件类型
     const allowedVideoTypes = [
-      'video/mp4', 
-      'video/avi', 
-      'video/mov', 
-      'video/wmv', 
-      'video/flv', 
+      'video/mp4',
+      'video/avi',
+      'video/mov',
+      'video/wmv',
+      'video/flv',
       'video/webm',
-      'video/mkv'
+      'video/mkv',
     ];
     if (!allowedVideoTypes.includes(file.mimetype)) {
-      throw new BadRequestException('只支持上传 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式的视频');
+      throw new BadRequestException(
+        '只支持上传 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式的视频',
+      );
     }
 
     // 验证文件大小 (100MB)
@@ -79,7 +89,10 @@ export class UploadService {
   /**
    * 通用上传到COS的方法
    */
-  private async uploadToCOS(file: Express.Multer.File, folder: string): Promise<UploadResult> {
+  private async uploadToCOS(
+    file: Express.Multer.File,
+    folder: string,
+  ): Promise<UploadResult> {
     try {
       // 生成唯一文件名
       const fileExtension = path.extname(file.originalname);
@@ -114,7 +127,7 @@ export class UploadService {
       if (fs.existsSync(file.path)) {
         fs.unlinkSync(file.path);
       }
-      
+
       console.error('上传到腾讯云COS失败:', error);
       throw new BadRequestException('文件上传失败，请稍后重试');
     }
@@ -141,7 +154,7 @@ export class UploadService {
    */
   async deleteFiles(keys: string[]): Promise<void> {
     try {
-      const objects = keys.map(key => ({ Key: key }));
+      const objects = keys.map((key) => ({ Key: key }));
       await this.cos.deleteMultipleObject({
         Bucket: this.bucket,
         Region: this.region,

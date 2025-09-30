@@ -25,18 +25,28 @@ export class Permission {
   @Column({ type: 'varchar', length: 200, nullable: true, comment: '权限描述' })
   description?: string;
 
-  @Column({ 
-    type: 'enum', 
-    enum: ['menu', 'button', 'api'], 
-    default: 'menu', 
-    comment: '权限类型：menu-菜单，button-按钮，api-接口' 
+  @Column({
+    type: 'enum',
+    enum: ['menu', 'button', 'api'],
+    default: 'menu',
+    comment: '权限类型：menu-菜单，button-按钮，api-接口',
   })
   type: 'menu' | 'button' | 'api';
 
-  @Column({ type: 'bigint', nullable: true, name: 'parent_id', comment: '父权限ID' })
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    name: 'parent_id',
+    comment: '父权限ID',
+  })
   parentId?: number;
 
-  @Column({ type: 'bigint', nullable: true, name: 'menu_id', comment: '关联菜单ID' })
+  @Column({
+    type: 'bigint',
+    nullable: true,
+    name: 'menu_id',
+    comment: '关联菜单ID',
+  })
   menuId?: number;
 
   @Column({ type: 'tinyint', default: 1, comment: '状态：0-禁用，1-启用' })
@@ -61,7 +71,9 @@ export class Permission {
   roles: Role[];
 
   // 关联菜单（多对一）
-  @ManyToOne(() => require('../../modules/menus/entities/menu.entity').Menu, { nullable: true })
+  @ManyToOne(() => require('../../modules/menus/entities/menu.entity').Menu, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'menu_id' })
   menu?: any;
 
@@ -70,7 +82,9 @@ export class Permission {
   children: Permission[];
 
   // 父权限（多对一）
-  @ManyToOne(() => Permission, (permission) => permission.children, { nullable: true })
+  @ManyToOne(() => Permission, (permission) => permission.children, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'parent_id' })
   parent?: Permission;
 }

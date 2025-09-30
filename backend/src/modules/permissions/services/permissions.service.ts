@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
@@ -36,7 +40,7 @@ export class PermissionsService {
     });
 
     // 将菜单转换为权限格式
-    const menuPermissions = menus.map(menu => ({
+    const menuPermissions = menus.map((menu) => ({
       id: `menu_${menu.id}`, // 使用前缀避免ID冲突
       name: menu.title || menu.name,
       code: menu.buttonKey || `menu:${menu.name}`,
@@ -72,11 +76,35 @@ export class PermissionsService {
             type: 'menu',
             parentId: 1,
             children: [
-              { id: 111, name: '查看用户', code: 'system:user:view', type: 'button', parentId: 11 },
-              { id: 112, name: '新增用户', code: 'system:user:add', type: 'button', parentId: 11 },
-              { id: 113, name: '编辑用户', code: 'system:user:edit', type: 'button', parentId: 11 },
-              { id: 114, name: '删除用户', code: 'system:user:delete', type: 'button', parentId: 11 },
-            ]
+              {
+                id: 111,
+                name: '查看用户',
+                code: 'system:user:view',
+                type: 'button',
+                parentId: 11,
+              },
+              {
+                id: 112,
+                name: '新增用户',
+                code: 'system:user:add',
+                type: 'button',
+                parentId: 11,
+              },
+              {
+                id: 113,
+                name: '编辑用户',
+                code: 'system:user:edit',
+                type: 'button',
+                parentId: 11,
+              },
+              {
+                id: 114,
+                name: '删除用户',
+                code: 'system:user:delete',
+                type: 'button',
+                parentId: 11,
+              },
+            ],
           },
           {
             id: 12,
@@ -85,12 +113,42 @@ export class PermissionsService {
             type: 'menu',
             parentId: 1,
             children: [
-              { id: 121, name: '查看角色', code: 'system:role:view', type: 'button', parentId: 12 },
-              { id: 122, name: '新增角色', code: 'system:role:add', type: 'button', parentId: 12 },
-              { id: 123, name: '编辑角色', code: 'system:role:edit', type: 'button', parentId: 12 },
-              { id: 124, name: '删除角色', code: 'system:role:delete', type: 'button', parentId: 12 },
-              { id: 125, name: '分配权限', code: 'system:role:assign', type: 'button', parentId: 12 },
-            ]
+              {
+                id: 121,
+                name: '查看角色',
+                code: 'system:role:view',
+                type: 'button',
+                parentId: 12,
+              },
+              {
+                id: 122,
+                name: '新增角色',
+                code: 'system:role:add',
+                type: 'button',
+                parentId: 12,
+              },
+              {
+                id: 123,
+                name: '编辑角色',
+                code: 'system:role:edit',
+                type: 'button',
+                parentId: 12,
+              },
+              {
+                id: 124,
+                name: '删除角色',
+                code: 'system:role:delete',
+                type: 'button',
+                parentId: 12,
+              },
+              {
+                id: 125,
+                name: '分配权限',
+                code: 'system:role:assign',
+                type: 'button',
+                parentId: 12,
+              },
+            ],
           },
           {
             id: 13,
@@ -99,13 +157,37 @@ export class PermissionsService {
             type: 'menu',
             parentId: 1,
             children: [
-              { id: 131, name: '查看菜单', code: 'system:menu:view', type: 'button', parentId: 13 },
-              { id: 132, name: '新增菜单', code: 'system:menu:add', type: 'button', parentId: 13 },
-              { id: 133, name: '编辑菜单', code: 'system:menu:edit', type: 'button', parentId: 13 },
-              { id: 134, name: '删除菜单', code: 'system:menu:delete', type: 'button', parentId: 13 },
-            ]
-          }
-        ]
+              {
+                id: 131,
+                name: '查看菜单',
+                code: 'system:menu:view',
+                type: 'button',
+                parentId: 13,
+              },
+              {
+                id: 132,
+                name: '新增菜单',
+                code: 'system:menu:add',
+                type: 'button',
+                parentId: 13,
+              },
+              {
+                id: 133,
+                name: '编辑菜单',
+                code: 'system:menu:edit',
+                type: 'button',
+                parentId: 13,
+              },
+              {
+                id: 134,
+                name: '删除菜单',
+                code: 'system:menu:delete',
+                type: 'button',
+                parentId: 13,
+              },
+            ],
+          },
+        ],
       },
       {
         id: 2,
@@ -120,11 +202,35 @@ export class PermissionsService {
             type: 'menu',
             parentId: 2,
             children: [
-              { id: 211, name: '查看商品', code: 'product:view', type: 'button', parentId: 21 },
-              { id: 212, name: '新增商品', code: 'product:add', type: 'button', parentId: 21 },
-              { id: 213, name: '编辑商品', code: 'product:edit', type: 'button', parentId: 21 },
-              { id: 214, name: '删除商品', code: 'product:delete', type: 'button', parentId: 21 },
-            ]
+              {
+                id: 211,
+                name: '查看商品',
+                code: 'product:view',
+                type: 'button',
+                parentId: 21,
+              },
+              {
+                id: 212,
+                name: '新增商品',
+                code: 'product:add',
+                type: 'button',
+                parentId: 21,
+              },
+              {
+                id: 213,
+                name: '编辑商品',
+                code: 'product:edit',
+                type: 'button',
+                parentId: 21,
+              },
+              {
+                id: 214,
+                name: '删除商品',
+                code: 'product:delete',
+                type: 'button',
+                parentId: 21,
+              },
+            ],
           },
           {
             id: 22,
@@ -133,13 +239,37 @@ export class PermissionsService {
             type: 'menu',
             parentId: 2,
             children: [
-              { id: 221, name: '查看分类', code: 'product:category:view', type: 'button', parentId: 22 },
-              { id: 222, name: '新增分类', code: 'product:category:add', type: 'button', parentId: 22 },
-              { id: 223, name: '编辑分类', code: 'product:category:edit', type: 'button', parentId: 22 },
-              { id: 224, name: '删除分类', code: 'product:category:delete', type: 'button', parentId: 22 },
-            ]
-          }
-        ]
+              {
+                id: 221,
+                name: '查看分类',
+                code: 'product:category:view',
+                type: 'button',
+                parentId: 22,
+              },
+              {
+                id: 222,
+                name: '新增分类',
+                code: 'product:category:add',
+                type: 'button',
+                parentId: 22,
+              },
+              {
+                id: 223,
+                name: '编辑分类',
+                code: 'product:category:edit',
+                type: 'button',
+                parentId: 22,
+              },
+              {
+                id: 224,
+                name: '删除分类',
+                code: 'product:category:delete',
+                type: 'button',
+                parentId: 22,
+              },
+            ],
+          },
+        ],
       },
       {
         id: 3,
@@ -154,13 +284,31 @@ export class PermissionsService {
             type: 'menu',
             parentId: 3,
             children: [
-              { id: 311, name: '查看订单', code: 'order:view', type: 'button', parentId: 31 },
-              { id: 312, name: '处理订单', code: 'order:process', type: 'button', parentId: 31 },
-              { id: 313, name: '取消订单', code: 'order:cancel', type: 'button', parentId: 31 },
-            ]
-          }
-        ]
-      }
+              {
+                id: 311,
+                name: '查看订单',
+                code: 'order:view',
+                type: 'button',
+                parentId: 31,
+              },
+              {
+                id: 312,
+                name: '处理订单',
+                code: 'order:process',
+                type: 'button',
+                parentId: 31,
+              },
+              {
+                id: 313,
+                name: '取消订单',
+                code: 'order:cancel',
+                type: 'button',
+                parentId: 31,
+              },
+            ],
+          },
+        ],
+      },
     ];
 
     return treeData;
@@ -175,20 +323,20 @@ export class PermissionsService {
     const rootPermissions: any[] = [];
 
     // 先创建所有权限节点
-    permissions.forEach(permission => {
+    permissions.forEach((permission) => {
       const node = {
         id: permission.id,
         name: permission.name,
         code: permission.code,
         type: permission.type,
         parentId: permission.parentId,
-        children: []
+        children: [],
       };
       permissionMap.set(permission.id, node);
     });
 
     // 构建树形结构
-    permissions.forEach(permission => {
+    permissions.forEach((permission) => {
       const node = permissionMap.get(permission.id);
       if (permission.parentId && permissionMap.has(permission.parentId)) {
         const parent = permissionMap.get(permission.parentId);
@@ -208,15 +356,20 @@ export class PermissionsService {
     const { page = 1, pageSize = 10, name, code, status } = query;
     const skip = (page - 1) * pageSize;
 
-    const queryBuilder = this.permissionRepository.createQueryBuilder('permission')
+    const queryBuilder = this.permissionRepository
+      .createQueryBuilder('permission')
       .orderBy('permission.createdAt', 'DESC');
 
     // 添加搜索条件
     if (name) {
-      queryBuilder.andWhere('permission.name LIKE :name', { name: `%${name}%` });
+      queryBuilder.andWhere('permission.name LIKE :name', {
+        name: `%${name}%`,
+      });
     }
     if (code) {
-      queryBuilder.andWhere('permission.code LIKE :code', { code: `%${code}%` });
+      queryBuilder.andWhere('permission.code LIKE :code', {
+        code: `%${code}%`,
+      });
     }
     if (status !== undefined) {
       queryBuilder.andWhere('permission.status = :status', { status });
@@ -278,11 +431,17 @@ export class PermissionsService {
   /**
    * 更新权限
    */
-  async update(id: number, updatePermissionDto: UpdatePermissionDto): Promise<Permission> {
+  async update(
+    id: number,
+    updatePermissionDto: UpdatePermissionDto,
+  ): Promise<Permission> {
     const permission = await this.findById(id);
 
     // 如果更新代码，检查是否重复
-    if (updatePermissionDto.code && updatePermissionDto.code !== permission.code) {
+    if (
+      updatePermissionDto.code &&
+      updatePermissionDto.code !== permission.code
+    ) {
       const existingPermission = await this.permissionRepository.findOne({
         where: { code: updatePermissionDto.code },
       });
@@ -333,7 +492,10 @@ export class PermissionsService {
   /**
    * 分配角色权限
    */
-  async assignRolePermissions(roleId: number, permissionIds: number[]): Promise<void> {
+  async assignRolePermissions(
+    roleId: number,
+    permissionIds: number[],
+  ): Promise<void> {
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
       relations: ['permissions'],
@@ -344,30 +506,37 @@ export class PermissionsService {
     }
 
     // 使用事务确保数据一致性
-    await this.roleRepository.manager.transaction(async (transactionalEntityManager) => {
-      // 先清除该角色的所有权限关联
-      await transactionalEntityManager.query(
-        'DELETE FROM role_permissions WHERE role_id = ?',
-        [roleId]
-      );
-
-      // 如果有新权限需要分配，则批量插入
-      if (permissionIds && permissionIds.length > 0) {
-        // 验证权限是否存在
-        const permissions = await transactionalEntityManager.find(Permission, {
-          where: { id: In(permissionIds) },
-        });
-
-        if (permissions.length !== permissionIds.length) {
-          throw new BadRequestException('部分权限不存在');
-        }
-
-        // 批量插入新的权限关联
-        const values = permissionIds.map(permissionId => `(${roleId}, ${permissionId})`).join(', ');
+    await this.roleRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // 先清除该角色的所有权限关联
         await transactionalEntityManager.query(
-          `INSERT INTO role_permissions (role_id, permission_id) VALUES ${values}`
+          'DELETE FROM role_permissions WHERE role_id = ?',
+          [roleId],
         );
-      }
-    });
+
+        // 如果有新权限需要分配，则批量插入
+        if (permissionIds && permissionIds.length > 0) {
+          // 验证权限是否存在
+          const permissions = await transactionalEntityManager.find(
+            Permission,
+            {
+              where: { id: In(permissionIds) },
+            },
+          );
+
+          if (permissions.length !== permissionIds.length) {
+            throw new BadRequestException('部分权限不存在');
+          }
+
+          // 批量插入新的权限关联
+          const values = permissionIds
+            .map((permissionId) => `(${roleId}, ${permissionId})`)
+            .join(', ');
+          await transactionalEntityManager.query(
+            `INSERT INTO role_permissions (role_id, permission_id) VALUES ${values}`,
+          );
+        }
+      },
+    );
   }
 }

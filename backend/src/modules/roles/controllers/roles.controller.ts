@@ -10,7 +10,12 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { RolesService } from '../services/roles.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
@@ -122,7 +127,8 @@ export class RolesController {
   @Get('menu-tree')
   @ApiOperation({
     summary: '获取菜单树（供角色权限分配使用）',
-    description: '获取完整的菜单树形结构，用于角色权限分配界面，返回标准的树形结构'
+    description:
+      '获取完整的菜单树形结构，用于角色权限分配界面，返回标准的树形结构',
   })
   @ApiResponse({
     status: 200,
@@ -143,21 +149,21 @@ export class RolesController {
               key: { type: 'string', example: '1' },
               children: {
                 type: 'array',
-                items: { type: 'object' }
-              }
-            }
-          }
+                items: { type: 'object' },
+              },
+            },
+          },
         },
-        msg: { type: 'string', example: '获取菜单树成功' }
-      }
-    }
+        msg: { type: 'string', example: '获取菜单树成功' },
+      },
+    },
   })
   async getMenuTreeForRoleAssign() {
     const menuTree = await this.menusService.getMenuTree();
 
     // 转换为前端需要的标准树形结构
     const formatTreeForFrontend = (menus: any[]): any[] => {
-      return menus.map(menu => {
+      return menus.map((menu) => {
         const formattedMenu = {
           id: menu.id,
           label: menu.title || menu.name, // 显示文本
@@ -171,9 +177,10 @@ export class RolesController {
           status: menu.status, // 状态
           orderNum: menu.orderNum || menu.sort || 0, // 排序
           parentId: menu.parentId, // 父级ID
-          children: menu.children && menu.children.length > 0
-            ? formatTreeForFrontend(menu.children)
-            : undefined
+          children:
+            menu.children && menu.children.length > 0
+              ? formatTreeForFrontend(menu.children)
+              : undefined,
         };
 
         // 只保留有效的children
@@ -197,7 +204,7 @@ export class RolesController {
   @Get(':id/menus')
   @ApiOperation({
     summary: '获取角色已分配的菜单权限',
-    description: '获取指定角色已分配的菜单权限列表'
+    description: '获取指定角色已分配的菜单权限列表',
   })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getRoleMenus(@Param('id', ParseIntPipe) roleId: number) {
@@ -212,7 +219,7 @@ export class RolesController {
   @Get(':id/menu-ids')
   @ApiOperation({
     summary: '获取角色已分配的菜单ID列表',
-    description: '获取指定角色已分配的菜单ID列表，用于前端复选框回显'
+    description: '获取指定角色已分配的菜单ID列表，用于前端复选框回显',
   })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getRoleMenuIds(@Param('id', ParseIntPipe) roleId: number) {
@@ -227,7 +234,7 @@ export class RolesController {
   @Post(':id/assign-menus')
   @ApiOperation({
     summary: '为角色分配菜单权限',
-    description: '为指定角色分配菜单权限，会覆盖原有的菜单权限'
+    description: '为指定角色分配菜单权限，会覆盖原有的菜单权限',
   })
   @ApiResponse({ status: 200, description: '分配成功' })
   async assignMenusToRole(

@@ -18,13 +18,13 @@ export class SeedController {
       return {
         code: 200,
         data: null,
-        msg: '用户登录日志测试数据初始化成功'
+        msg: '用户登录日志测试数据初始化成功',
       };
     } catch (error) {
       return {
         code: 500,
         data: null,
-        msg: `初始化失败: ${error.message}`
+        msg: `初始化失败: ${error.message}`,
       };
     }
   }

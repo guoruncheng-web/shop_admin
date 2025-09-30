@@ -14,8 +14,14 @@ import { RoleMenuService } from '../menus/services/role-menu.service';
 import { MenusService } from '../menus/services/menus.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Role, Permission, RoleMenu, Menu, Admin])],
-  controllers: [RolesController, RolePermissionTreeController, RolePermissionsController],
+  imports: [
+    TypeOrmModule.forFeature([Role, Permission, RoleMenu, Menu, Admin]),
+  ],
+  controllers: [
+    RolesController,
+    RolePermissionTreeController,
+    RolePermissionsController,
+  ],
   providers: [RolesService, PermissionsService, RoleMenuService, MenusService],
   exports: [RolesService],
 })

@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsEnum, IsArray, MaxLength, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+  IsArray,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ResourceType } from '../entities/resource.entity';
 

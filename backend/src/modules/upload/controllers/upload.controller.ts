@@ -12,11 +12,20 @@ import {
   Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiConsumes,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { UploadService, UploadResult } from '../services/upload.service';
 import { ChunkUploadService } from '../services/chunk-upload.service';
-import { InitChunkUploadDto, CompleteChunkUploadDto } from '../dto/chunk-upload.dto';
+import {
+  InitChunkUploadDto,
+  CompleteChunkUploadDto,
+} from '../dto/chunk-upload.dto';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -35,7 +44,8 @@ export class UploadController {
   @Post('image')
   @ApiOperation({
     summary: '上传图片',
-    description: '上传图片到腾讯云COS，支持 JPEG、PNG、GIF、WebP 格式，最大 5MB',
+    description:
+      '上传图片到腾讯云COS，支持 JPEG、PNG、GIF、WebP 格式，最大 5MB',
   })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
@@ -48,7 +58,11 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/images/2024/01/uuid.jpg' },
+            url: {
+              type: 'string',
+              example:
+                'https://bucket.cos.region.myqcloud.com/images/2024/01/uuid.jpg',
+            },
             key: { type: 'string', example: 'images/2024/01/uuid.jpg' },
             size: { type: 'number', example: 1024000 },
             originalName: { type: 'string', example: 'avatar.jpg' },
@@ -84,7 +98,7 @@ export class UploadController {
     }
 
     const result = await this.uploadService.uploadImage(file);
-    
+
     return {
       code: 200,
       data: result,
@@ -95,7 +109,8 @@ export class UploadController {
   @Post('video')
   @ApiOperation({
     summary: '上传视频',
-    description: '上传视频到腾讯云COS，支持 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式，最大 100MB',
+    description:
+      '上传视频到腾讯云COS，支持 MP4、AVI、MOV、WMV、FLV、WebM、MKV 格式，最大 100MB',
   })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
@@ -108,7 +123,11 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/videos/2024/01/uuid.mp4' },
+            url: {
+              type: 'string',
+              example:
+                'https://bucket.cos.region.myqcloud.com/videos/2024/01/uuid.mp4',
+            },
             key: { type: 'string', example: 'videos/2024/01/uuid.mp4' },
             size: { type: 'number', example: 50240000 },
             originalName: { type: 'string', example: 'demo.mp4' },
@@ -144,7 +163,7 @@ export class UploadController {
     }
 
     const result = await this.uploadService.uploadVideo(file);
-    
+
     return {
       code: 200,
       data: result,
@@ -173,7 +192,7 @@ export class UploadController {
     // URL解码key参数
     const decodedKey = decodeURIComponent(key);
     await this.uploadService.deleteFile(decodedKey);
-    
+
     return {
       code: 200,
       data: {},
@@ -200,13 +219,13 @@ export class UploadController {
   })
   async batchDeleteFiles(@Body() body: { keys: string[] }) {
     const { keys } = body;
-    
+
     if (!keys || !Array.isArray(keys) || keys.length === 0) {
       throw new BadRequestException('请提供要删除的文件key列表');
     }
 
     await this.uploadService.deleteFiles(keys);
-    
+
     return {
       code: 200,
       data: {},
@@ -229,7 +248,11 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/file.jpg?sign=xxx' },
+            url: {
+              type: 'string',
+              example:
+                'https://bucket.cos.region.myqcloud.com/file.jpg?sign=xxx',
+            },
             expires: { type: 'number', example: 3600 },
           },
         },
@@ -242,14 +265,14 @@ export class UploadController {
     @Query('expires') expires?: number,
   ) {
     const { key } = body;
-    
+
     if (!key) {
       throw new BadRequestException('请提供文件key');
     }
 
     const expiresIn = expires || 3600; // 默认1小时
     const url = await this.uploadService.getSignedUrl(key, expiresIn);
-    
+
     return {
       code: 200,
       data: {
@@ -288,7 +311,7 @@ export class UploadController {
   })
   async initChunkUpload(@Body() dto: InitChunkUploadDto) {
     const result = await this.chunkUploadService.initChunkUpload(dto);
-    
+
     return {
       code: 200,
       data: result,
@@ -353,7 +376,7 @@ export class UploadController {
     try {
       // 读取分片数据
       const chunkBuffer = require('fs').readFileSync(chunk.path);
-      
+
       const result = await this.chunkUploadService.uploadChunk(
         uploadId,
         parseInt(chunkIndex),
@@ -393,7 +416,11 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            uploadedChunks: { type: 'array', items: { type: 'number' }, example: [0, 1, 2] },
+            uploadedChunks: {
+              type: 'array',
+              items: { type: 'number' },
+              example: [0, 1, 2],
+            },
             total: { type: 'number', example: 10 },
             progress: { type: 'number', example: 30 },
           },
@@ -404,7 +431,7 @@ export class UploadController {
   })
   async checkUploadedChunks(@Param('uploadId') uploadId: string) {
     const result = await this.chunkUploadService.checkUploadedChunks(uploadId);
-    
+
     return {
       code: 200,
       data: result,
@@ -427,7 +454,10 @@ export class UploadController {
         data: {
           type: 'object',
           properties: {
-            url: { type: 'string', example: 'https://bucket.cos.region.myqcloud.com/videos/uuid.mp4' },
+            url: {
+              type: 'string',
+              example: 'https://bucket.cos.region.myqcloud.com/videos/uuid.mp4',
+            },
             key: { type: 'string', example: 'videos/uuid.mp4' },
             size: { type: 'number', example: 104857600 },
             originalName: { type: 'string', example: 'video.mp4' },
@@ -443,7 +473,7 @@ export class UploadController {
       dto.uploadId,
       dto.fileMD5,
     );
-    
+
     return {
       code: 200,
       data: result,
@@ -470,7 +500,7 @@ export class UploadController {
   })
   async cancelChunkUpload(@Param('uploadId') uploadId: string) {
     const result = await this.chunkUploadService.cancelChunkUpload(uploadId);
-    
+
     return {
       code: 200,
       data: result,

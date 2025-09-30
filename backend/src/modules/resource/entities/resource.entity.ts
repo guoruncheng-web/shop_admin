@@ -1,15 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ResourceCategory } from './resource-category.entity';
 
 export enum ResourceType {
   IMAGE = 'image',
-  VIDEO = 'video'
+  VIDEO = 'video',
 }
 
 export enum ResourceStatus {
   DELETED = -1,
   DISABLED = 0,
-  ACTIVE = 1
+  ACTIVE = 1,
 }
 
 @Entity('resources')
@@ -26,13 +34,28 @@ export class Resource {
   @Column({ type: 'enum', enum: ResourceType, comment: '资源类型' })
   type: ResourceType;
 
-  @Column({ name: 'file_size', type: 'bigint', nullable: true, comment: '文件大小（字节）' })
+  @Column({
+    name: 'file_size',
+    type: 'bigint',
+    nullable: true,
+    comment: '文件大小（字节）',
+  })
   fileSize: number;
 
-  @Column({ name: 'file_extension', length: 10, nullable: true, comment: '文件扩展名' })
+  @Column({
+    name: 'file_extension',
+    length: 10,
+    nullable: true,
+    comment: '文件扩展名',
+  })
   fileExtension: string;
 
-  @Column({ name: 'mime_type', length: 100, nullable: true, comment: 'MIME类型' })
+  @Column({
+    name: 'mime_type',
+    length: 100,
+    nullable: true,
+    comment: 'MIME类型',
+  })
   mimeType: string;
 
   @Column({ nullable: true, comment: '图片/视频宽度' })
@@ -65,10 +88,19 @@ export class Resource {
   @Column({ name: 'view_count', default: 0, comment: '查看次数' })
   viewCount: number;
 
-  @Column({ type: 'tinyint', default: 1, comment: '状态：1-正常，0-禁用，-1-已删除' })
+  @Column({
+    type: 'tinyint',
+    default: 1,
+    comment: '状态：1-正常，0-禁用，-1-已删除',
+  })
   status: ResourceStatus;
 
-  @Column({ name: 'uploaded_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', comment: '上传时间' })
+  @Column({
+    name: 'uploaded_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    comment: '上传时间',
+  })
   uploadedAt: Date;
 
   @CreateDateColumn({ name: 'created_at', comment: '创建时间' })
@@ -78,13 +110,13 @@ export class Resource {
   updatedAt: Date;
 
   // 关联关系
-  @ManyToOne(() => ResourceCategory, category => category.resources)
+  @ManyToOne(() => ResourceCategory, (category) => category.resources)
   @JoinColumn({ name: 'category_id' })
   category: ResourceCategory;
 
   // 虚拟字段 - 标签数组
   get tagList(): string[] {
-    return this.tags ? this.tags.split(',').map(tag => tag.trim()) : [];
+    return this.tags ? this.tags.split(',').map((tag) => tag.trim()) : [];
   }
 
   set tagList(tags: string[]) {

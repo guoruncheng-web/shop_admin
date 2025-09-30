@@ -1,0 +1,28 @@
+-- 创建操作日志表
+CREATE TABLE IF NOT EXISTS `operation_logs` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+  `userId` bigint(20) NOT NULL COMMENT '用户ID',
+  `username` varchar(100) NOT NULL COMMENT '用户名',
+  `module` varchar(100) NOT NULL COMMENT '模块名称',
+  `operation` varchar(100) NOT NULL COMMENT '操作类型',
+  `description` varchar(255) NOT NULL COMMENT '操作描述',
+  `method` varchar(10) NOT NULL COMMENT '请求方法',
+  `path` varchar(500) NOT NULL COMMENT '请求路径',
+  `params` text COMMENT '请求参数',
+  `response` text COMMENT '响应数据',
+  `ip` varchar(45) NOT NULL COMMENT 'IP地址',
+  `location` varchar(100) DEFAULT NULL COMMENT '地理位置',
+  `userAgent` varchar(500) DEFAULT NULL COMMENT '用户代理',
+  `statusCode` int(11) NOT NULL COMMENT '响应状态码',
+  `executionTime` int(11) NOT NULL COMMENT '执行时间(ms)',
+  `status` enum('success','failed') NOT NULL DEFAULT 'success' COMMENT '操作状态',
+  `errorMessage` text COMMENT '错误信息',
+  `businessId` varchar(50) DEFAULT NULL COMMENT '业务标识',
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_userId_createdAt` (`userId`, `createdAt`),
+  KEY `idx_module_operation` (`module`, `operation`),
+  KEY `idx_createdAt` (`createdAt`),
+  KEY `idx_status` (`status`),
+  KEY `idx_businessId` (`businessId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='操作日志表';

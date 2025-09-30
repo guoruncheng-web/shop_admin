@@ -13,12 +13,24 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { UsersService } from '../services/users.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto, ChangePasswordDto } from '../dto/update-user.dto';
 import { QueryUserDto } from '../dto/query-user.dto';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 
 @ApiTags('用户管理')
 @Controller('users')
@@ -58,11 +70,11 @@ export class UsersController {
                   id: { type: 'number' },
                   name: { type: 'string' },
                   code: { type: 'string' },
-                  description: { type: 'string' }
-                }
-              }
-            }
-          }
+                  description: { type: 'string' },
+                },
+              },
+            },
+          },
         },
         msg: { type: 'string', example: '获取成功' },
       },
@@ -82,8 +94,18 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: '获取用户列表', description: '分页查询用户列表，支持搜索和筛选' })
+  @ApiOperation({
+    summary: '获取用户列表',
+    description: '分页查询用户列表，支持搜索和筛选',
+  })
   @ApiResponse({ status: 200, description: '获取成功' })
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.VIEW.operation,
+    description: '查看用户列表',
+    includeParams: true,
+    includeResponse: false,
+  })
   async findAll(@Query() queryDto: QueryUserDto) {
     const result = await this.usersService.findAll(queryDto);
     return {
@@ -94,10 +116,19 @@ export class UsersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '获取用户详情', description: '根据ID获取用户详细信息' })
+  @ApiOperation({
+    summary: '获取用户详情',
+    description: '根据ID获取用户详细信息',
+  })
   @ApiParam({ name: 'id', description: '用户ID' })
   @ApiResponse({ status: 200, description: '获取成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.VIEW.operation,
+    description: '查看用户详情',
+    businessIdField: 'id',
+  })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findById(id);
     return {
@@ -112,6 +143,13 @@ export class UsersController {
   @ApiResponse({ status: 201, description: '创建成功' })
   @ApiResponse({ status: 400, description: '参数错误' })
   @ApiResponse({ status: 409, description: '用户名或邮箱已存在' })
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_CREATE.operation,
+    description: OperationTypes.USER_CREATE.description,
+    includeParams: true,
+    includeResponse: true,
+  })
   async create(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     return {
@@ -127,6 +165,14 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '更新成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
   @ApiResponse({ status: 409, description: '用户名或邮箱已存在' })
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_UPDATE.operation,
+    description: OperationTypes.USER_UPDATE.description,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -145,6 +191,12 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '删除成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
   @HttpCode(HttpStatus.OK)
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_DELETE.operation,
+    description: OperationTypes.USER_DELETE.description,
+    businessIdField: 'id',
+  })
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.remove(id);
     return {
@@ -157,6 +209,12 @@ export class UsersController {
   @ApiOperation({ summary: '批量删除用户', description: '批量删除多个用户' })
   @ApiResponse({ status: 200, description: '删除成功' })
   @HttpCode(HttpStatus.OK)
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_DELETE.operation,
+    description: '批量删除用户',
+    includeParams: true,
+  })
   async batchRemove(@Body('ids') ids: number[]) {
     await this.usersService.batchRemove(ids);
     return {
@@ -171,6 +229,13 @@ export class UsersController {
   @ApiResponse({ status: 200, description: '修改成功' })
   @ApiResponse({ status: 400, description: '旧密码不正确' })
   @HttpCode(HttpStatus.OK)
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: 'change_password',
+    description: '修改用户密码',
+    businessIdField: 'id',
+    includeParams: false, // 不记录密码参数
+  })
   async changePassword(
     @Param('id', ParseIntPipe) id: number,
     @Body() changePasswordDto: ChangePasswordDto,
@@ -187,6 +252,13 @@ export class UsersController {
   @ApiParam({ name: 'id', description: '用户ID' })
   @ApiResponse({ status: 200, description: '重置成功' })
   @HttpCode(HttpStatus.OK)
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_RESET_PASSWORD.operation,
+    description: OperationTypes.USER_RESET_PASSWORD.description,
+    businessIdField: 'id',
+    includeParams: false, // 不记录密码参数
+  })
   async resetPassword(
     @Param('id', ParseIntPipe) id: number,
     @Body('newPassword') newPassword: string,
@@ -203,6 +275,13 @@ export class UsersController {
   @ApiParam({ name: 'id', description: '用户ID' })
   @ApiResponse({ status: 200, description: '操作成功' })
   @HttpCode(HttpStatus.OK)
+  @OperationLog({
+    module: ModuleNames.USER,
+    operation: OperationTypes.USER_CHANGE_STATUS.operation,
+    description: OperationTypes.USER_CHANGE_STATUS.description,
+    businessIdField: 'id',
+    includeResponse: true,
+  })
   async toggleStatus(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.toggleStatus(id);
     return {

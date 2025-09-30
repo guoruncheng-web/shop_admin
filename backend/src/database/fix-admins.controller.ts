@@ -26,34 +26,37 @@ export class FixAdminsController {
         if (tableExists) {
           const table = await queryRunner.getTable('admins');
           const roleIdColumn = table?.findColumnByName('role_id');
-          
+
           if (roleIdColumn) {
             console.log('发现 role_id 字段，正在删除...');
-            
+
             // 首先删除相关的外键约束
             try {
-              const foreignKeys = table.foreignKeys.filter(fk => 
-                fk.columnNames.includes('role_id')
+              const foreignKeys = table.foreignKeys.filter((fk) =>
+                fk.columnNames.includes('role_id'),
               );
-              
+
               for (const foreignKey of foreignKeys) {
                 console.log(`删除外键约束: ${foreignKey.name}`);
                 await queryRunner.dropForeignKey('admins', foreignKey);
               }
-              
+
               // 删除相关的索引
-              const indices = table.indices.filter(index => 
-                index.columnNames.includes('role_id')
+              const indices = table.indices.filter((index) =>
+                index.columnNames.includes('role_id'),
               );
-              
+
               for (const index of indices) {
                 console.log(`删除索引: ${index.name}`);
                 await queryRunner.dropIndex('admins', index);
               }
             } catch (constraintError) {
-              console.log('删除约束时出错，尝试直接删除字段:', constraintError.message);
+              console.log(
+                '删除约束时出错，尝试直接删除字段:',
+                constraintError.message,
+              );
             }
-            
+
             // 最后删除 role_id 字段
             await queryRunner.dropColumn('admins', 'role_id');
             console.log('✅ 已删除 admins 表中的 role_id 字段');
@@ -90,20 +93,18 @@ export class FixAdminsController {
           message: '数据库表结构修复完成',
           data: {
             roleIdColumnRemoved,
-            adminRolesTableCreated
-          }
+            adminRolesTableCreated,
+          },
         };
-
       } finally {
         await queryRunner.release();
       }
-
     } catch (error) {
       console.error('修复数据库表结构失败:', error);
       return {
         code: 500,
         message: '修复数据库表结构失败',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -118,25 +119,27 @@ export class FixAdminsController {
       try {
         // 检查 admins 表结构
         const adminsTable = await queryRunner.getTable('admins');
-        const adminsColumns = adminsTable?.columns.map(col => ({
-          name: col.name,
-          type: col.type,
-          isNullable: col.isNullable,
-          isPrimary: col.isPrimary
-        })) || [];
+        const adminsColumns =
+          adminsTable?.columns.map((col) => ({
+            name: col.name,
+            type: col.type,
+            isNullable: col.isNullable,
+            isPrimary: col.isPrimary,
+          })) || [];
 
         // 检查 admin_roles 表是否存在
         const adminRolesExists = await queryRunner.hasTable('admin_roles');
         let adminRolesColumns = [];
-        
+
         if (adminRolesExists) {
           const adminRolesTable = await queryRunner.getTable('admin_roles');
-          adminRolesColumns = adminRolesTable?.columns.map(col => ({
-            name: col.name,
-            type: col.type,
-            isNullable: col.isNullable,
-            isPrimary: col.isPrimary
-          })) || [];
+          adminRolesColumns =
+            adminRolesTable?.columns.map((col) => ({
+              name: col.name,
+              type: col.type,
+              isNullable: col.isNullable,
+              isPrimary: col.isPrimary,
+            })) || [];
         }
 
         return {
@@ -146,25 +149,25 @@ export class FixAdminsController {
             admins: {
               exists: !!adminsTable,
               columns: adminsColumns,
-              hasRoleIdColumn: adminsColumns.some(col => col.name === 'role_id')
+              hasRoleIdColumn: adminsColumns.some(
+                (col) => col.name === 'role_id',
+              ),
             },
             adminRoles: {
               exists: adminRolesExists,
-              columns: adminRolesColumns
-            }
-          }
+              columns: adminRolesColumns,
+            },
+          },
         };
-
       } finally {
         await queryRunner.release();
       }
-
     } catch (error) {
       console.error('检查表结构失败:', error);
       return {
         code: 500,
         message: '检查表结构失败',
-        error: error.message
+        error: error.message,
       };
     }
   }

@@ -1,5 +1,17 @@
-import { Controller, Get, Query, Param, Delete, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Query,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UserLoginLogService } from '../services/user-login-log.service';
 import { QueryUserLoginLogDto } from '../dto/create-login-log.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
@@ -27,7 +39,7 @@ export class UserLoginLogController {
     return {
       code: 200,
       data: loginLog,
-      msg: '获取成功'
+      msg: '获取成功',
     };
   }
 
@@ -39,7 +51,7 @@ export class UserLoginLogController {
     return {
       code: 200,
       data: null,
-      msg: '删除成功'
+      msg: '删除成功',
     };
   }
 
@@ -52,7 +64,7 @@ export class UserLoginLogController {
     return {
       code: 200,
       data: null,
-      msg: `已清理${daysToKeep}天前的登录日志`
+      msg: `已清理${daysToKeep}天前的登录日志`,
     };
   }
 }

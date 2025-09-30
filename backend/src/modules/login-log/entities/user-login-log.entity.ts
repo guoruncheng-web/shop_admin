@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity('user_login_logs')
 export class UserLoginLog {
@@ -17,11 +24,11 @@ export class UserLoginLog {
   @Column({ type: 'varchar', length: 100, nullable: true, comment: '登录地点' })
   location: string;
 
-  @Column({ 
-    type: 'enum', 
+  @Column({
+    type: 'enum',
     enum: ['success', 'failed'],
     default: 'success',
-    comment: '登录状态'
+    comment: '登录状态',
   })
   status: 'success' | 'failed';
 

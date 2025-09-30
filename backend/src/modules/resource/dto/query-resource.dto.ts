@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsNumber, IsEnum, IsArray, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsArray,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ResourceType, ResourceStatus } from '../entities/resource.entity';
@@ -53,7 +61,11 @@ export class QueryResourceDto {
   @IsString({ each: true })
   tags?: string[];
 
-  @ApiProperty({ description: '排序字段', required: false, default: 'uploadedAt' })
+  @ApiProperty({
+    description: '排序字段',
+    required: false,
+    default: 'uploadedAt',
+  })
   @IsOptional()
   @IsString()
   sortBy?: string = 'uploadedAt';

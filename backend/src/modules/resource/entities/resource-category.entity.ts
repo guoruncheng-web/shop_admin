@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Resource } from './resource.entity';
 
 @Entity('resource_categories')
@@ -12,7 +21,11 @@ export class ResourceCategory {
   @Column({ name: 'parent_id', nullable: true, comment: '父分类ID' })
   parentId: number;
 
-  @Column({ type: 'tinyint', default: 1, comment: '分类层级：1-一级分类，2-二级分类' })
+  @Column({
+    type: 'tinyint',
+    default: 1,
+    comment: '分类层级：1-一级分类，2-二级分类',
+  })
   level: number;
 
   @Column({ name: 'sort_order', default: 0, comment: '排序字段' })
@@ -28,13 +41,13 @@ export class ResourceCategory {
   updatedAt: Date;
 
   // 关联关系
-  @ManyToOne(() => ResourceCategory, category => category.children)
+  @ManyToOne(() => ResourceCategory, (category) => category.children)
   @JoinColumn({ name: 'parent_id' })
   parent: ResourceCategory;
 
-  @OneToMany(() => ResourceCategory, category => category.parent)
+  @OneToMany(() => ResourceCategory, (category) => category.parent)
   children: ResourceCategory[];
 
-  @OneToMany(() => Resource, resource => resource.category)
+  @OneToMany(() => Resource, (resource) => resource.category)
   resources: Resource[];
 }

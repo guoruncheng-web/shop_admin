@@ -10,7 +10,12 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { PermissionsService } from '../services/permissions.service';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
@@ -65,7 +70,8 @@ export class PermissionsController {
   @ApiOperation({ summary: '创建权限' })
   @ApiResponse({ status: 201, description: '创建成功' })
   async createPermission(@Body() createPermissionDto: CreatePermissionDto) {
-    const permission = await this.permissionsService.create(createPermissionDto);
+    const permission =
+      await this.permissionsService.create(createPermissionDto);
     return {
       code: 201,
       data: permission,
@@ -80,7 +86,10 @@ export class PermissionsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updatePermissionDto: UpdatePermissionDto,
   ) {
-    const permission = await this.permissionsService.update(id, updatePermissionDto);
+    const permission = await this.permissionsService.update(
+      id,
+      updatePermissionDto,
+    );
     return {
       code: 200,
       data: permission,
@@ -112,7 +121,8 @@ export class RolePermissionsController {
   @ApiOperation({ summary: '获取角色权限列表' })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getRolePermissions(@Param('id', ParseIntPipe) roleId: number) {
-    const permissions = await this.permissionsService.getRolePermissions(roleId);
+    const permissions =
+      await this.permissionsService.getRolePermissions(roleId);
     return {
       code: 200,
       data: permissions,
@@ -127,7 +137,10 @@ export class RolePermissionsController {
     @Param('id', ParseIntPipe) roleId: number,
     @Body() assignDto: AssignRolePermissionsDto,
   ) {
-    await this.permissionsService.assignRolePermissions(roleId, assignDto.permissionIds);
+    await this.permissionsService.assignRolePermissions(
+      roleId,
+      assignDto.permissionIds,
+    );
     return {
       code: 200,
       data: null,

@@ -1,5 +1,12 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsOptional, IsString, IsEmail, IsNumber, MinLength, MaxLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsNumber,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @ApiProperty({ description: '用户名', example: 'admin', required: false })
@@ -15,12 +22,20 @@ export class UpdateUserDto {
   @MaxLength(50, { message: '真实姓名最多50个字符' })
   realName?: string;
 
-  @ApiProperty({ description: '邮箱', example: 'admin@example.com', required: false })
+  @ApiProperty({
+    description: '邮箱',
+    example: 'admin@example.com',
+    required: false,
+  })
   @IsOptional()
   @IsEmail({}, { message: '邮箱格式不正确' })
   email?: string;
 
-  @ApiProperty({ description: '手机号', example: '13800138000', required: false })
+  @ApiProperty({
+    description: '手机号',
+    example: '13800138000',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   phone?: string;
@@ -30,7 +45,11 @@ export class UpdateUserDto {
   @IsString()
   avatar?: string;
 
-  @ApiProperty({ description: '状态：0-禁用，1-启用', example: 1, required: false })
+  @ApiProperty({
+    description: '状态：0-禁用，1-启用',
+    example: 1,
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   status?: number;

@@ -34,8 +34,8 @@ import { Admin } from '../database/entities/admin.entity';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, 
-    JwtStrategy, 
+    AuthService,
+    JwtStrategy,
     JwtAuthGuard,
     {
       provide: APP_INTERCEPTOR,

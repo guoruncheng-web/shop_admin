@@ -27,7 +27,11 @@ export class QueryRoleDto {
   @IsString()
   code?: string;
 
-  @ApiProperty({ description: '状态：0-禁用，1-启用', example: 1, required: false })
+  @ApiProperty({
+    description: '状态：0-禁用，1-启用',
+    example: 1,
+    required: false,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()

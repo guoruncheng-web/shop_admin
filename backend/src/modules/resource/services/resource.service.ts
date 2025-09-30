@@ -1,7 +1,15 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { Resource, ResourceStatus, ResourceType } from '../entities/resource.entity';
+import {
+  Resource,
+  ResourceStatus,
+  ResourceType,
+} from '../entities/resource.entity';
 import { CreateResourceDto } from '../dto/create-resource.dto';
 import { QueryResourceDto } from '../dto/query-resource.dto';
 import { ResourceCategoryService } from './resource-category.service';
@@ -27,7 +35,10 @@ export class ResourceService {
    */
   async create(createDto: CreateResourceDto): Promise<Resource> {
     // 验证分类是否为二级分类
-    const isValidCategory = await this.categoryService.validateSecondLevelCategory(createDto.categoryId);
+    const isValidCategory =
+      await this.categoryService.validateSecondLevelCategory(
+        createDto.categoryId,
+      );
     if (!isValidCategory) {
       throw new BadRequestException('只能在二级分类下上传资源');
     }
@@ -43,9 +54,11 @@ export class ResourceService {
   /**
    * 分页查询资源
    */
-  async findAll(queryDto: QueryResourceDto): Promise<PaginatedResult<Resource>> {
+  async findAll(
+    queryDto: QueryResourceDto,
+  ): Promise<PaginatedResult<Resource>> {
     const { page, pageSize, ...filters } = queryDto;
-    
+
     let queryBuilder = this.resourceRepository
       .createQueryBuilder('resource')
       .leftJoinAndSelect('resource.category', 'category')
@@ -77,9 +90,14 @@ export class ResourceService {
   /**
    * 应用查询过滤条件
    */
-  private applyFilters(queryBuilder: SelectQueryBuilder<Resource>, filters: any): SelectQueryBuilder<Resource> {
+  private applyFilters(
+    queryBuilder: SelectQueryBuilder<Resource>,
+    filters: any,
+  ): SelectQueryBuilder<Resource> {
     if (filters.name) {
-      queryBuilder.andWhere('resource.name LIKE :name', { name: `%${filters.name}%` });
+      queryBuilder.andWhere('resource.name LIKE :name', {
+        name: `%${filters.name}%`,
+      });
     }
 
     if (filters.type) {
@@ -87,27 +105,33 @@ export class ResourceService {
     }
 
     if (filters.categoryId) {
-      queryBuilder.andWhere('resource.categoryId = :categoryId', { categoryId: filters.categoryId });
+      queryBuilder.andWhere('resource.categoryId = :categoryId', {
+        categoryId: filters.categoryId,
+      });
     }
 
     if (filters.uploaderId) {
-      queryBuilder.andWhere('resource.uploaderId = :uploaderId', { uploaderId: filters.uploaderId });
+      queryBuilder.andWhere('resource.uploaderId = :uploaderId', {
+        uploaderId: filters.uploaderId,
+      });
     }
 
     if (filters.status !== undefined) {
-      queryBuilder.andWhere('resource.status = :status', { status: filters.status });
+      queryBuilder.andWhere('resource.status = :status', {
+        status: filters.status,
+      });
     } else {
       // 默认只显示正常状态的资源
       queryBuilder.andWhere('resource.status >= 0');
     }
 
     if (filters.tags && filters.tags.length > 0) {
-      const tagConditions = filters.tags.map((tag, index) => 
-        `FIND_IN_SET(:tag${index}, resource.tags) > 0`
-      ).join(' OR ');
-      
+      const tagConditions = filters.tags
+        .map((tag, index) => `FIND_IN_SET(:tag${index}, resource.tags) > 0`)
+        .join(' OR ');
+
       queryBuilder.andWhere(`(${tagConditions})`);
-      
+
       filters.tags.forEach((tag, index) => {
         queryBuilder.setParameter(`tag${index}`, tag);
       });
@@ -137,12 +161,18 @@ export class ResourceService {
   /**
    * 更新资源
    */
-  async update(id: number, updateDto: Partial<CreateResourceDto>): Promise<Resource> {
+  async update(
+    id: number,
+    updateDto: Partial<CreateResourceDto>,
+  ): Promise<Resource> {
     const resource = await this.findOne(id);
 
     // 如果更新分类，需要验证
     if (updateDto.categoryId && updateDto.categoryId !== resource.categoryId) {
-      const isValidCategory = await this.categoryService.validateSecondLevelCategory(updateDto.categoryId);
+      const isValidCategory =
+        await this.categoryService.validateSecondLevelCategory(
+          updateDto.categoryId,
+        );
       if (!isValidCategory) {
         throw new BadRequestException('只能在二级分类下上传资源');
       }
@@ -211,14 +241,19 @@ export class ResourceService {
   /**
    * 全文搜索资源
    */
-  async searchResources(keyword: string, limit: number = 50): Promise<Resource[]> {
+  async searchResources(
+    keyword: string,
+    limit: number = 50,
+  ): Promise<Resource[]> {
     return await this.resourceRepository
       .createQueryBuilder('resource')
       .leftJoinAndSelect('resource.category', 'category')
       .leftJoinAndSelect('category.parent', 'parentCategory')
       .where('resource.status = :status', { status: ResourceStatus.ACTIVE })
-      .andWhere('(resource.name LIKE :keyword OR resource.description LIKE :keyword)', 
-        { keyword: `%${keyword}%` })
+      .andWhere(
+        '(resource.name LIKE :keyword OR resource.description LIKE :keyword)',
+        { keyword: `%${keyword}%` },
+      )
       .orderBy('resource.uploadedAt', 'DESC')
       .limit(limit)
       .getMany();
@@ -228,16 +263,16 @@ export class ResourceService {
    * 获取统计信息
    */
   async getStatistics() {
-    const totalResources = await this.resourceRepository.count({ 
-      where: { status: ResourceStatus.ACTIVE } 
+    const totalResources = await this.resourceRepository.count({
+      where: { status: ResourceStatus.ACTIVE },
     });
 
-    const imageCount = await this.resourceRepository.count({ 
-      where: { status: ResourceStatus.ACTIVE, type: ResourceType.IMAGE } 
+    const imageCount = await this.resourceRepository.count({
+      where: { status: ResourceStatus.ACTIVE, type: ResourceType.IMAGE },
     });
 
-    const videoCount = await this.resourceRepository.count({ 
-      where: { status: ResourceStatus.ACTIVE, type: ResourceType.VIDEO } 
+    const videoCount = await this.resourceRepository.count({
+      where: { status: ResourceStatus.ACTIVE, type: ResourceType.VIDEO },
     });
 
     const totalSize = await this.resourceRepository

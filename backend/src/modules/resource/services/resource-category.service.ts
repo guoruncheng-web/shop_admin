@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ResourceCategory } from '../entities/resource-category.entity';
@@ -14,12 +18,14 @@ export class ResourceCategoryService {
   /**
    * 创建分类
    */
-  async create(createDto: CreateResourceCategoryDto): Promise<ResourceCategory> {
+  async create(
+    createDto: CreateResourceCategoryDto,
+  ): Promise<ResourceCategory> {
     // 验证分类层级规则
     if (createDto.level === 1 && createDto.parentId) {
       throw new BadRequestException('一级分类不能有父分类');
     }
-    
+
     if (createDto.level === 2 && !createDto.parentId) {
       throw new BadRequestException('二级分类必须指定父分类');
     }
@@ -27,9 +33,9 @@ export class ResourceCategoryService {
     // 验证父分类是否存在且为一级分类
     if (createDto.parentId) {
       const parentCategory = await this.categoryRepository.findOne({
-        where: { id: createDto.parentId, level: 1, status: 1 }
+        where: { id: createDto.parentId, level: 1, status: 1 },
       });
-      
+
       if (!parentCategory) {
         throw new BadRequestException('父分类不存在或不是有效的一级分类');
       }
@@ -45,18 +51,18 @@ export class ResourceCategoryService {
   async getTree(): Promise<ResourceCategory[]> {
     const categories = await this.categoryRepository.find({
       where: { status: 1 },
-      order: { level: 'ASC', sortOrder: 'ASC', id: 'ASC' }
+      order: { level: 'ASC', sortOrder: 'ASC', id: 'ASC' },
     });
 
     // 构建树形结构
     const categoryMap = new Map<number, ResourceCategory>();
     const rootCategories: ResourceCategory[] = [];
 
-    categories.forEach(category => {
+    categories.forEach((category) => {
       categoryMap.set(category.id, { ...category, children: [] });
     });
 
-    categories.forEach(category => {
+    categories.forEach((category) => {
       const categoryWithChildren = categoryMap.get(category.id);
       if (category.level === 1) {
         rootCategories.push(categoryWithChildren);
@@ -87,7 +93,10 @@ export class ResourceCategoryService {
   /**
    * 更新分类
    */
-  async update(id: number, updateDto: Partial<CreateResourceCategoryDto>): Promise<ResourceCategory> {
+  async update(
+    id: number,
+    updateDto: Partial<CreateResourceCategoryDto>,
+  ): Promise<ResourceCategory> {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) {
       throw new NotFoundException('分类不存在');
@@ -101,7 +110,7 @@ export class ResourceCategoryService {
       if (level === 1 && parentId) {
         throw new BadRequestException('一级分类不能有父分类');
       }
-      
+
       if (level === 2 && !parentId) {
         throw new BadRequestException('二级分类必须指定父分类');
       }
@@ -117,7 +126,7 @@ export class ResourceCategoryService {
   async delete(id: number): Promise<void> {
     const category = await this.categoryRepository.findOne({
       where: { id },
-      relations: ['children', 'resources']
+      relations: ['children', 'resources'],
     });
 
     if (!category) {
@@ -143,7 +152,7 @@ export class ResourceCategoryService {
    */
   async validateSecondLevelCategory(categoryId: number): Promise<boolean> {
     const category = await this.categoryRepository.findOne({
-      where: { id: categoryId, level: 2, status: 1 }
+      where: { id: categoryId, level: 2, status: 1 },
     });
     return !!category;
   }

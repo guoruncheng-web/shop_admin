@@ -49,12 +49,12 @@ export class AddMenuButtons1726815600000 implements MigrationInterface {
     await queryRunner.query(`
       DELETE FROM menus WHERE type = 3 AND parentId IN (3, 4, 7) AND name IN ('查看', '新增', '编辑', '删除')
     `);
-    
+
     // 删除为用户管理和权限管理补充的按钮
     await queryRunner.query(`
       DELETE FROM menus WHERE type = 3 AND parentId = 2 AND name = '查看'
     `);
-    
+
     await queryRunner.query(`
       DELETE FROM menus WHERE type = 3 AND parentId = 22 AND name IN ('查看', '编辑', '删除')
     `);

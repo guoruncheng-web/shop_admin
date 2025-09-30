@@ -17,14 +17,14 @@ export class ResourceMenuController {
     try {
       // 检查是否已存在媒体管理菜单
       const existingMenu = await this.menuRepository.findOne({
-        where: { path: '/medial' }
+        where: { path: '/medial' },
       });
 
       if (existingMenu) {
         return {
           success: true,
           message: '媒体管理菜单已存在',
-          data: existingMenu
+          data: existingMenu,
         };
       }
 
@@ -85,16 +85,15 @@ export class ResourceMenuController {
         message: '媒体管理菜单创建成功',
         data: {
           parent: savedParentMenu,
-          children: [savedStaticMenu, savedCategoryMenu]
-        }
+          children: [savedStaticMenu, savedCategoryMenu],
+        },
       };
-
     } catch (error) {
       console.error('创建媒体管理菜单失败:', error);
       return {
         success: false,
         message: '创建媒体管理菜单失败',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -105,16 +104,16 @@ export class ResourceMenuController {
     try {
       // 这里需要将菜单分配给超级管理员角色
       // 具体实现取决于你的角色菜单关联表结构
-      
+
       return {
         success: true,
-        message: '菜单已分配给超级管理员'
+        message: '菜单已分配给超级管理员',
       };
     } catch (error) {
       return {
         success: false,
         message: '分配菜单失败',
-        error: error.message
+        error: error.message,
       };
     }
   }

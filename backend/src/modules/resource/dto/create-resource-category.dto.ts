@@ -1,4 +1,12 @@
-import { IsString, IsOptional, IsNumber, IsIn, MaxLength, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsIn,
+  MaxLength,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateResourceCategoryDto {
@@ -12,7 +20,10 @@ export class CreateResourceCategoryDto {
   @IsNumber()
   parentId?: number;
 
-  @ApiProperty({ description: '分类层级：1-一级分类，2-二级分类', enum: [1, 2] })
+  @ApiProperty({
+    description: '分类层级：1-一级分类，2-二级分类',
+    enum: [1, 2],
+  })
   @IsNumber()
   @IsIn([1, 2])
   level: number;
@@ -23,7 +34,11 @@ export class CreateResourceCategoryDto {
   @Min(0)
   sortOrder?: number = 0;
 
-  @ApiProperty({ description: '状态：1-启用，0-禁用', enum: [0, 1], default: 1 })
+  @ApiProperty({
+    description: '状态：1-启用，0-禁用',
+    enum: [0, 1],
+    default: 1,
+  })
   @IsOptional()
   @IsNumber()
   @IsIn([0, 1])

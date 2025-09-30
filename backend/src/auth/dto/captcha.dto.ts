@@ -59,17 +59,17 @@ export class LoginResponseDto {
           'system:admin',
           'system:user',
           'product:list',
-          'product:create'
+          'product:create',
         ],
         roleInfo: [
           {
             id: 1,
             name: '超级管理员',
             code: 'super_admin',
-            description: '系统超级管理员，拥有所有权限'
-          }
-        ]
-      }
+            description: '系统超级管理员，拥有所有权限',
+          },
+        ],
+      },
     },
   })
   data: {
@@ -108,7 +108,8 @@ export class CaptchaResponseDto {
 
   @ApiProperty({
     description: '验证码图片（base64格式）',
-    example: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==',
+    example:
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==',
   })
   captchaImage: string;
 

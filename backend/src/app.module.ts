@@ -25,6 +25,7 @@ import { FixAdminsController } from './database/fix-admins.controller';
 
 import { ResourceModule } from './modules/resource/resource.module';
 import { LoginLogModule } from './modules/login-log/login-log.module';
+import { OperationLogModule } from './modules/operation-log/operation-log.module';
 import { MigrationController } from './database/migration.controller';
 import { Permission } from './database/entities/permission.entity';
 import { Menu } from './modules/menus/entities/menu.entity';
@@ -105,6 +106,7 @@ import { Admin } from './database/entities/admin.entity';
     PermissionsModule,
     ResourceModule,
     LoginLogModule,
+    OperationLogModule,
 
     // 为迁移控制器添加TypeORM实体
     TypeOrmModule.forFeature([Permission, Menu, Role, Admin]),

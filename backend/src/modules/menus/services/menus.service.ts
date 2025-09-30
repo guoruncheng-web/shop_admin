@@ -62,7 +62,9 @@ export interface RouteRecordStringComponent {
 @Injectable()
 export class MenusService {
   // 将对外输出的菜单节点 status 规范为 0(启用)/1(禁用)，并保证 children 为数组
-  private normalizeStatusForOutput<T extends { status?: any; children?: any[] }>(node: T): T {
+  private normalizeStatusForOutput<
+    T extends { status?: any; children?: any[] },
+  >(node: T): T {
     const raw = node?.status;
     let num: number;
     if (typeof raw === 'boolean') {
@@ -76,7 +78,9 @@ export class MenusService {
     const normalized = { ...(node as any) };
     normalized.status = num === 1 ? 1 : 0;
     const children = Array.isArray(node?.children) ? node.children : [];
-    normalized.children = children.map((c: any) => this.normalizeStatusForOutput(c));
+    normalized.children = children.map((c: any) =>
+      this.normalizeStatusForOutput(c),
+    );
     return normalized as T;
   }
 
@@ -95,13 +99,8 @@ export class MenusService {
 
   // 创建菜单
   async create(createMenuDto: CreateMenuDto, currentUser?: any): Promise<Menu> {
-    const {
-      parentId,
-      isHidden,
-      isKeepAlive,
-      permission,
-      ...menuData
-    } = createMenuDto;
+    const { parentId, isHidden, isKeepAlive, permission, ...menuData } =
+      createMenuDto;
 
     // 字段映射和转换
     const menu = this.menuRepository.create({
@@ -191,7 +190,10 @@ export class MenusService {
   }
 
   // 根据菜单类型自动设置组件路径
-  private getComponentByMenuType(type: MenuType, providedComponent?: string): string {
+  private getComponentByMenuType(
+    type: MenuType,
+    providedComponent?: string,
+  ): string {
     switch (type) {
       case MenuType.DIRECTORY:
         // 目录类型自动设置为 BasicLayout
@@ -232,10 +234,10 @@ export class MenusService {
 
     // 为每个菜单添加对应的按钮权限（无论是否有类型过滤）
     const menusWithButtons = await this.addButtonsToMenus(menus);
-    
+
     // 手动构建树形结构
     const tree = this.buildMenuTree(menusWithButtons);
-    
+
     // 对外输出前统一规范 status/children
     return tree.map((n) => this.normalizeStatusForOutput(n));
   }
@@ -245,21 +247,23 @@ export class MenusService {
    */
   private async addButtonsToMenus(menus: Menu[]): Promise<Menu[]> {
     const result = [...menus];
-    
+
     // 为每个菜单类型的项目添加标准的按钮权限
-    const menuItems = menus.filter(menu => menu.type === 2); // 菜单类型
-    
+    const menuItems = menus.filter((menu) => menu.type === 2); // 菜单类型
+
     for (const menu of menuItems) {
       // 检查是否已经有对应的按钮，如果没有则创建标准按钮
-      const existingButtons = menus.filter(m => m.parentId === menu.id && m.type === 3);
-      
+      const existingButtons = menus.filter(
+        (m) => m.parentId === menu.id && m.type === 3,
+      );
+
       if (existingButtons.length === 0) {
         // 创建标准的CRUD按钮
         const buttons = this.createStandardButtons(menu);
         result.push(...buttons);
       }
     }
-    
+
     return result;
   }
 
@@ -280,7 +284,7 @@ export class MenusService {
       buttonConfigs.push({ suffix: 5, name: '分配权限', key: 'permission' });
     }
 
-    const buttons: Menu[] = buttonConfigs.map(config => {
+    const buttons: Menu[] = buttonConfigs.map((config) => {
       const button = new Menu();
       button.id = baseId + config.suffix;
       button.name = `${menu.name}:${config.name}`;
@@ -357,7 +361,9 @@ export class MenusService {
 
     const data = await queryBuilder.orderBy('menu.orderNum', 'ASC').getMany();
     // 扁平列表也做统一规范（children 归一为空数组）
-    return data.map((n) => this.normalizeStatusForOutput({ ...n, children: [] } as any));
+    return data.map((n) =>
+      this.normalizeStatusForOutput({ ...n, children: [] } as any),
+    );
   }
 
   // 根据ID获取菜单
@@ -375,15 +381,14 @@ export class MenusService {
   }
 
   // 更新菜单
-  async update(id: number, updateMenuDto: UpdateMenuDto, currentUser?: any): Promise<Menu> {
+  async update(
+    id: number,
+    updateMenuDto: UpdateMenuDto,
+    currentUser?: any,
+  ): Promise<Menu> {
     const menu = await this.getMenuById(id);
-    const {
-      parentId,
-      isHidden,
-      isKeepAlive,
-      permission,
-      ...updateData
-    } = updateMenuDto;
+    const { parentId, isHidden, isKeepAlive, permission, ...updateData } =
+      updateMenuDto;
 
     // 检查是否将菜单设置为自己的子菜单
     if (parentId === id) {
@@ -407,7 +412,7 @@ export class MenusService {
       // 根据菜单类型自动设置组件路径
       component: this.getComponentByMenuType(
         updateData.type || menu.type,
-        updateData.component
+        updateData.component,
       ),
       // 自动更新更新者信息
       updatedBy: currentUser?.userId || menu.updatedBy,
@@ -486,8 +491,8 @@ export class MenusService {
 
     // 收集用户所有启用角色的ID
     const userRoleIds = user.roles
-      .filter(role => role.status === 1)
-      .map(role => role.id);
+      .filter((role) => role.status === 1)
+      .map((role) => role.id);
 
     console.log('用户角色IDs:', userRoleIds);
 
@@ -509,7 +514,7 @@ export class MenusService {
 
     // 提取菜单并去重
     const menuMap = new Map<number, Menu>();
-    roleMenus.forEach(roleMenu => {
+    roleMenus.forEach((roleMenu) => {
       if (roleMenu.menu) {
         menuMap.set(roleMenu.menu.id, roleMenu.menu);
       }
@@ -520,8 +525,10 @@ export class MenusService {
 
     // 如果没有找到菜单，检查是否是超级管理员
     if (userMenus.length === 0) {
-      const isSuperAdmin = user.roles.some(role => role.code === 'super_admin' && role.status === 1);
-      
+      const isSuperAdmin = user.roles.some(
+        (role) => role.code === 'super_admin' && role.status === 1,
+      );
+
       if (isSuperAdmin) {
         console.log('超级管理员但没有菜单关联，返回所有菜单');
         const allMenus = await this.menuRepository
@@ -529,19 +536,19 @@ export class MenusService {
           .where('menu.status = :status', { status: 1 })
           .orderBy('menu.orderNum', 'ASC')
           .getMany();
-        
+
         // 构建菜单树
         const menuTree = this.buildMenuTree(allMenus);
         return this.convertToRouteFormat(menuTree);
       }
-      
+
       console.log('没有找到菜单');
       return [];
     }
 
     // 构建菜单树
     const menuTree = this.buildMenuTree(userMenus);
-    
+
     // 转换为前端路由格式
     return this.convertToRouteFormat(menuTree);
   }
@@ -552,7 +559,7 @@ export class MenusService {
     let menuId = 1000; // 使用较大的ID避免冲突
 
     // 系统管理目录
-    if (permissionCodes.some(code => code.startsWith('system'))) {
+    if (permissionCodes.some((code) => code.startsWith('system'))) {
       const systemMenu: Menu = {
         id: menuId++,
         name: 'system',
@@ -603,7 +610,7 @@ export class MenusService {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Menu;
-      
+
       defaultMenus.push(systemMenu);
 
       // 菜单管理
@@ -659,7 +666,7 @@ export class MenusService {
     }
 
     // 商品管理目录
-    if (permissionCodes.some(code => code.startsWith('product'))) {
+    if (permissionCodes.some((code) => code.startsWith('product'))) {
       const productMenu: Menu = {
         id: menuId++,
         name: 'product',
@@ -710,7 +717,7 @@ export class MenusService {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Menu;
-      
+
       defaultMenus.push(productMenu);
 
       // 商品列表
@@ -732,7 +739,7 @@ export class MenusService {
     }
 
     // 订单管理目录
-    if (permissionCodes.some(code => code.startsWith('order'))) {
+    if (permissionCodes.some((code) => code.startsWith('order'))) {
       const orderMenu: Menu = {
         id: menuId++,
         name: 'order',
@@ -783,7 +790,7 @@ export class MenusService {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Menu;
-      
+
       defaultMenus.push(orderMenu);
 
       // 订单列表
@@ -804,7 +811,16 @@ export class MenusService {
       }
     }
 
-    console.log('创建的默认菜单:', defaultMenus.map(m => ({ id: m.id, name: m.name, title: m.title, type: m.type, parentId: m.parentId })));
+    console.log(
+      '创建的默认菜单:',
+      defaultMenus.map((m) => ({
+        id: m.id,
+        name: m.name,
+        title: m.title,
+        type: m.type,
+        parentId: m.parentId,
+      })),
+    );
     return defaultMenus;
   }
 
@@ -814,12 +830,12 @@ export class MenusService {
     const rootPermissions: any[] = [];
 
     // 创建权限映射并添加children属性
-    permissions.forEach(permission => {
+    permissions.forEach((permission) => {
       permissionMap.set(permission.id, { ...permission, children: [] });
     });
 
     // 构建树结构
-    permissions.forEach(permission => {
+    permissions.forEach((permission) => {
       const permissionItem = permissionMap.get(permission.id);
       if (permission.parentId && permissionMap.has(permission.parentId)) {
         const parent = permissionMap.get(permission.parentId);
@@ -831,8 +847,6 @@ export class MenusService {
 
     return rootPermissions;
   }
-
-
 
   // 生成默认路径
   private generateDefaultPath(code: string): string {
@@ -854,18 +868,18 @@ export class MenusService {
   // 获取默认图标
   private getDefaultIcon(code: string): string {
     const iconMap = {
-      'system': 'ion:settings-outline',
+      system: 'ion:settings-outline',
       'system:menu': 'ion:menu-outline',
       'system:role': 'ion:key-outline',
       'system:user': 'ion:people-outline',
-      'product': 'ion:cube-outline',
+      product: 'ion:cube-outline',
       'product:list': 'ion:list-outline',
-      'order': 'ion:receipt-outline',
+      order: 'ion:receipt-outline',
       'order:list': 'ion:list-outline',
-      'media': 'ion:folder-open',
+      media: 'ion:folder-open',
       'media:static': 'ion:image',
     };
-    
+
     return iconMap[code] || 'ion:document-outline';
   }
 
@@ -877,14 +891,14 @@ export class MenusService {
   // 根据权限代码获取排序号
   private getOrderByPermissionCode(code: string): number {
     const orderMap = {
-      'system': 1,
+      system: 1,
       'system:user': 1,
       'system:role': 2,
       'system:menu': 3,
-      'product': 2,
+      product: 2,
       'product:list': 1,
-      'order': 3,
-      'order:list': 1
+      order: 3,
+      'order:list': 1,
     };
 
     return orderMap[code] || 99;
@@ -896,12 +910,12 @@ export class MenusService {
     const rootMenus: Menu[] = [];
 
     // 创建菜单映射
-    menus.forEach(menu => {
+    menus.forEach((menu) => {
       menuMap.set(menu.id, { ...menu, children: [] });
     });
 
     // 构建树结构
-    menus.forEach(menu => {
+    menus.forEach((menu) => {
       const menuItem = menuMap.get(menu.id);
       if (menu.parentId && menuMap.has(menu.parentId)) {
         const parent = menuMap.get(menu.parentId);
@@ -917,7 +931,7 @@ export class MenusService {
 
   // 转换为前端路由格式
   private convertToRouteFormat(menus: Menu[]): RouteRecordStringComponent[] {
-    return menus.map(menu => {
+    return menus.map((menu) => {
       const route: RouteRecordStringComponent = {
         name: menu.name,
         path: menu.path || '',

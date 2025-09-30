@@ -15,9 +15,12 @@ export interface Response<T> {
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<Response<T>> {
     return next.handle().pipe(
-      map(data => {
+      map((data) => {
         // 如果已经是标准格式，直接返回
         if (data && typeof data === 'object' && 'code' in data) {
           return data;
@@ -27,7 +30,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         return {
           code: 200,
           data: data,
-          msg: 'success'
+          msg: 'success',
         };
       }),
     );

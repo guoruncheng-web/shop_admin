@@ -22,7 +22,7 @@ export class TokenRefreshInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
-    
+
     // 获取当前token
     const authHeader = request.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -30,10 +30,10 @@ export class TokenRefreshInterceptor implements NestInterceptor {
     }
 
     const token = authHeader.substring(7);
-    
+
     try {
       // 解码token（不验证签名，只获取payload）
-      const decoded = this.jwtService.decode(token) as any;
+      const decoded = this.jwtService.decode(token);
       if (!decoded || !decoded.exp) {
         return next.handle();
       }

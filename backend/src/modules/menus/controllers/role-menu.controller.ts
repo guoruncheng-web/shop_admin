@@ -8,7 +8,12 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { RoleMenuService } from '../services/role-menu.service';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 
@@ -39,7 +44,10 @@ export class RoleMenuController {
     @Param('roleId', ParseIntPipe) roleId: number,
     @Body() assignMenusDto: AssignMenusDto,
   ) {
-    await this.roleMenuService.assignMenusToRole(roleId, assignMenusDto.menuIds);
+    await this.roleMenuService.assignMenusToRole(
+      roleId,
+      assignMenusDto.menuIds,
+    );
     return {
       code: 200,
       data: {},
@@ -87,7 +95,10 @@ export class RoleMenuController {
     @Param('roleId', ParseIntPipe) roleId: number,
     @Body() removeMenusDto: AssignMenusDto,
   ) {
-    await this.roleMenuService.removeMenusFromRole(roleId, removeMenusDto.menuIds);
+    await this.roleMenuService.removeMenusFromRole(
+      roleId,
+      removeMenusDto.menuIds,
+    );
     return {
       code: 200,
       data: {},
@@ -117,7 +128,10 @@ export class RoleMenuController {
   })
   @ApiResponse({ status: 200, description: '复制成功' })
   async copyRoleMenus(@Body() copyDto: CopyRoleMenusDto) {
-    await this.roleMenuService.copyRoleMenus(copyDto.fromRoleId, copyDto.toRoleId);
+    await this.roleMenuService.copyRoleMenus(
+      copyDto.fromRoleId,
+      copyDto.toRoleId,
+    );
     return {
       code: 200,
       data: {},

@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, IsNumber, MinLength, MaxLength, IsPhoneNumber } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsNumber,
+  MinLength,
+  MaxLength,
+  IsPhoneNumber,
+} from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ description: '用户名', example: 'admin' })
@@ -22,7 +30,11 @@ export class CreateUserDto {
   @IsEmail({}, { message: '邮箱格式不正确' })
   email: string;
 
-  @ApiProperty({ description: '手机号', example: '13800138000', required: false })
+  @ApiProperty({
+    description: '手机号',
+    example: '13800138000',
+    required: false,
+  })
   @IsOptional()
   @IsString()
   phone?: string;
@@ -32,7 +44,11 @@ export class CreateUserDto {
   @IsString()
   avatar?: string;
 
-  @ApiProperty({ description: '状态：0-禁用，1-启用', example: 1, required: false })
+  @ApiProperty({
+    description: '状态：0-禁用，1-启用',
+    example: 1,
+    required: false,
+  })
   @IsOptional()
   @IsNumber()
   status?: number;

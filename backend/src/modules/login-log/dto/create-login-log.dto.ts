@@ -39,7 +39,11 @@ export class QueryUserLoginLogDto {
   @IsOptional()
   pageSize?: number;
 
-  @ApiProperty({ description: '登录状态', required: false, enum: ['success', 'failed', ''] })
+  @ApiProperty({
+    description: '登录状态',
+    required: false,
+    enum: ['success', 'failed', ''],
+  })
   @IsOptional()
   @IsString()
   status?: string;

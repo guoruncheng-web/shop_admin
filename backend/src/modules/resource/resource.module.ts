@@ -12,23 +12,15 @@ import { ResourceMenuController } from './controllers/menu-init.controller';
 import { Menu } from '../menus/entities/menu.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([ResourceCategory, Resource, Menu])
-  ],
+  imports: [TypeOrmModule.forFeature([ResourceCategory, Resource, Menu])],
   controllers: [
     ResourceCategoryController,
     ResourceController,
     ResourceInitController,
     FixSchemaController,
-    ResourceMenuController
+    ResourceMenuController,
   ],
-  providers: [
-    ResourceCategoryService,
-    ResourceService
-  ],
-  exports: [
-    ResourceCategoryService,
-    ResourceService
-  ]
+  providers: [ResourceCategoryService, ResourceService],
+  exports: [ResourceCategoryService, ResourceService],
 })
 export class ResourceModule {}
