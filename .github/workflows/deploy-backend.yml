@@ -1,0 +1,116 @@
+name: Deploy Backend to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Build application
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Run tests
+        working-directory: ./backend
+        run: npm run test
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -e
+
+            # 设置变量
+            APP_NAME="wechat-mall-backend"
+            APP_DIR="/www/wwwroot/shop_admin/bk_admin"
+            REPO_URL="git@github.com:guoruncheng/shop_admin.git"
+
+            # 创建应用目录
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+
+            # 克隆或更新代码
+            if [ -d ".git" ]; then
+              echo "Pulling latest code..."
+              git fetch origin
+              git reset --hard origin/main
+            else
+              echo "Cloning repository..."
+              git clone $REPO_URL .
+            fi
+
+            # 进入 backend 目录
+            cd backend
+
+            # 安装依赖
+            echo "Installing dependencies..."
+            npm ci --production=false
+
+            # 构建应用
+            echo "Building application..."
+            npm run build
+
+            # 复制生产环境配置
+            if [ ! -f .env.production ]; then
+              echo "Creating .env.production from template..."
+              cp .env.example .env.production
+              echo "⚠️  Please update .env.production with actual production values!"
+            fi
+
+            # 使用 PM2 重启应用
+            echo "Restarting application with PM2..."
+            pm2 reload ecosystem.config.js --env production || pm2 start ecosystem.config.js --env production
+
+            # 保存 PM2 进程列表
+            pm2 save
+
+            echo "✅ Deployment completed successfully!"
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            echo "Checking PM2 status..."
+            pm2 status
+
+            echo "Checking application logs..."
+            pm2 logs wechat-mall-backend --lines 20 --nostream
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+          fi
