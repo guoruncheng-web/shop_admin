@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
-          source: "backend/dist/*,backend/package.json,backend/package-lock.json,backend/ecosystem.config.js,backend/.env.production"
+          source: "backend/dist/*,backend/package.json,backend/package-lock.json,backend/ecosystem.config.js"
           target: "/www/wwwroot/shop_admin/bk_admin"
           strip_components: 0
           overwrite: true
