@@ -21,8 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '21.7.1'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         working-directory: ./backend
@@ -94,11 +92,14 @@ jobs:
             # 检查 .env.production
             if [ -f .env.production ]; then
               echo "✓ .env.production found"
+              echo "Checking configuration..."
+              grep -E "DATABASE_HOST|REDIS_HOST|NODE_ENV" .env.production || echo "⚠️  Please verify database and redis config"
             else
-              echo "⚠️  .env.production not found, creating from template..."
-              if [ -f .env.example ]; then
-                cp .env.example .env.production
-              fi
+              echo "❌ .env.production not found! Please create it manually with:"
+              echo "  DATABASE_HOST, DATABASE_PASSWORD"
+              echo "  REDIS_HOST, REDIS_PASSWORD"
+              echo "  SESSION_SECRET, JWT_SECRET"
+              exit 1
             fi
 
             # 使用 PM2 重启应用
