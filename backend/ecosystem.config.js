@@ -7,7 +7,7 @@ module.exports = {
   apps: [
     {
       name: 'wechat-mall-backend',
-      script: './dist/main.js',
+      script: './dist/src/main.js',
       instances: 'max', // 使用所有可用 CPU 核心
       exec_mode: 'cluster', // 集群模式
       autorestart: true, // 自动重启
