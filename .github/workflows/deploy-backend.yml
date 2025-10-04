@@ -20,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '21.7.1'
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -67,6 +67,15 @@ jobs:
 
             # 进入 backend 目录
             cd backend
+
+            # 加载 nvm 环境并使用正确的 Node.js 版本
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm use 21.7.1 || nvm use default
+
+            # 验证 Node.js 版本
+            echo "Using Node.js version: $(node -v)"
+            echo "Using npm version: $(npm -v)"
 
             # 安装依赖
             echo "Installing dependencies..."

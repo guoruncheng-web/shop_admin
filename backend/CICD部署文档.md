@@ -142,15 +142,25 @@ ssh -i ~/.ssh/github_actions_key root@43.139.80.246
 
 ## 服务器环境配置
 
-### 1. 安装 Node.js 20
+### 1. Node.js 环境 (已完成)
+
+你已经使用 nvm 安装了 Node.js v21.7.1:
 
 ```bash
-# 使用 nvm 安装
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-source ~/.bashrc
-nvm install 20
-nvm use 20
-node -v  # 验证版本
+# 验证当前版本
+node -v  # v21.7.1
+nvm current  # v21.7.1
+
+# 如果需要切换版本
+nvm use 21.7.1
+
+# 设置默认版本
+nvm alias default 21.7.1
+
+# 如果还没安装 nvm,可以这样安装:
+# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# source ~/.bashrc
+# nvm install 21.7.1
 ```
 
 ### 2. 安装 PM2
