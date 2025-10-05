@@ -69,19 +69,25 @@ jobs:
             echo "Files in directory:"
             ls -la
 
-            # 加载 nvm 环境
-            echo "Loading nvm..."
+            # 加载 nvm 并设置版本
+            echo "Setting up Node.js environment..."
             export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              \. "$NVM_DIR/nvm.sh"
-              echo "✓ nvm loaded"
-            else
-              echo "⚠️  nvm not found, using system node"
-            fi
 
-            # 切换到 Node.js 21.7.1
-            echo "Switching to Node.js 21.7.1..."
-            nvm use 21.7.1 || nvm use default || echo "Using current node version"
+            # 简化的 nvm 加载 - 不触发 auto mode
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              # 禁用 nvm_process_parameters 来避免 auto mode
+              NVM_NO_USE=true source "$NVM_DIR/nvm.sh"
+
+              # 设置默认版本为 21.7.1 (如果不存在)
+              if ! nvm alias default >/dev/null 2>&1; then
+                echo "Setting default nvm version to 21.7.1..."
+                nvm alias default 21.7.1 2>/dev/null || true
+              fi
+
+              # 切换到 21.7.1
+              echo "Using Node.js 21.7.1..."
+              nvm use 21.7.1 2>/dev/null || nvm use default 2>/dev/null || true
+            fi
 
             # 验证版本
             echo "Node.js version: $(node -v)"
