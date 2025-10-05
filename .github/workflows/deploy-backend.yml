@@ -69,17 +69,19 @@ jobs:
             echo "Files in directory:"
             ls -la
 
-            # 加载 nvm 环境 (禁用 auto mode)
+            # 加载 nvm 环境
             echo "Loading nvm..."
             export NVM_DIR="$HOME/.nvm"
-            export NVM_AUTO_MODE=""
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              \. "$NVM_DIR/nvm.sh"
+              echo "✓ nvm loaded"
+            else
+              echo "⚠️  nvm not found, using system node"
+            fi
 
             # 切换到 Node.js 21.7.1
             echo "Switching to Node.js 21.7.1..."
-            if command -v nvm &> /dev/null; then
-              nvm use 21.7.1 || nvm use default || true
-            fi
+            nvm use 21.7.1 || nvm use default || echo "Using current node version"
 
             # 验证版本
             echo "Node.js version: $(node -v)"
