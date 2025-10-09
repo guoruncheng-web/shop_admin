@@ -95,6 +95,13 @@ jobs:
             echo "Node.js version: $(node -v)"
             echo "npm version: $(npm -v)"
 
+            # 设置 21.7.1 为默认版本（持久化）
+            echo "Setting Node.js 21.7.1 as default..."
+            nvm alias default 21.7.1
+
+            # 验证默认版本
+            echo "Default Node.js version: $(nvm version default)"
+
             # 确保 pm2 可用（与当前 Node 版本一致）
             if ! command -v pm2 >/dev/null 2>&1; then
               echo "Installing pm2 globally..."
