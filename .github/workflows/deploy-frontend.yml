@@ -29,6 +29,22 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: 'frontend/vben-admin/pnpm-lock.yaml'
 
+      - name: Configure npm registry for CI
+        working-directory: ./frontend/vben-admin
+        run: |
+          echo "registry=https://registry.npmjs.org/" > .npmrc
+          echo "public-hoist-pattern[]=lefthook" >> .npmrc
+          echo "public-hoist-pattern[]=eslint" >> .npmrc
+          echo "public-hoist-pattern[]=prettier" >> .npmrc
+          echo "public-hoist-pattern[]=prettier-plugin-tailwindcss" >> .npmrc
+          echo "public-hoist-pattern[]=stylelint" >> .npmrc
+          echo "public-hoist-pattern[]=*postcss*" >> .npmrc
+          echo "public-hoist-pattern[]=@commitlint/*" >> .npmrc
+          echo "public-hoist-pattern[]=czg" >> .npmrc
+          echo "strict-peer-dependencies=false" >> .npmrc
+          echo "auto-install-peers=true" >> .npmrc
+          echo "dedupe-peer-dependents=true" >> .npmrc
+
       - name: Install dependencies
         working-directory: ./frontend/vben-admin
         run: pnpm install --frozen-lockfile --no-optional
