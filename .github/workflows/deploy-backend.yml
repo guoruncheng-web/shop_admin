@@ -73,19 +73,27 @@ jobs:
             echo "Files in directory:"
             ls -la
 
-            # 仅切换 nvm 版本，不使用变量、不拼路径
+            # 方案 B：在 CI 中显式加载 nvm 并切换版本
             echo "Setting up Node.js environment..."
-            if command -v nvm >/dev/null 2>&1; then
-              echo "Using Node.js 21.7.1 via nvm (current shell)..."
+            export NVM_DIR="/root/.nvm"
+            echo "NVM_DIR=$NVM_DIR"
+            [ -s "$NVM_DIR/nvm.sh" ] && ls -l "$NVM_DIR/nvm.sh" || true
+            if [ -s "$NVM_DIR/nvm.sh" ]; then
+              # 防止 auto mode 触发 nvm use N/A
+              export NVM_NO_USE=true
+              # 加载 nvm（忽略加载阶段的返回码）
+              set +e
+              . "$NVM_DIR/nvm.sh" || true
+              set -e
+              echo "Using Node.js 21.7.1 via nvm..."
               nvm use 21.7.1 || { echo "❌ nvm use 21.7.1 failed"; exit 1; }
             else
-              echo "nvm not found in current shell, trying login shell..."
-              bash -lc 'nvm use 21.7.1' || { echo "❌ nvm use 21.7.1 in login shell failed"; exit 1; }
+              echo "❌ nvm not found at $NVM_DIR"; exit 1
             fi
 
             # 验证版本
-            echo "Node.js version: $(node -v || bash -lc "node -v")"
-            echo "npm version: $(npm -v || bash -lc "npm -v")"
+            echo "Node.js version: $(node -v)"
+            echo "npm version: $(npm -v)"
 
             # 确保 pm2 可用（与当前 Node 版本一致）
             if ! command -v pm2 >/dev/null 2>&1; then
