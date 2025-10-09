@@ -73,14 +73,13 @@ jobs:
 
             # 加载 nvm 并设置版本
             echo "Setting up Node.js environment..."
-            export NVM_DIR="$HOME/.nvm"
-            if [ -s "$NVM_DIR/nvm.sh" ]; then
-              # 加载 nvm 并直接切换到指定版本（服务器已预装）
-              . "$NVM_DIR/nvm.sh"
-              echo "Using Node.js ${NODE_VERSION} via nvm..."
-              nvm use "${NODE_VERSION}" || { echo "❌ nvm use ${NODE_VERSION} failed"; exit 1; }
+            # 不依赖 nvm，直接使用指定版本的 Node 路径
+            NODE_BIN_DIR="$HOME/.nvm/versions/node/v${NODE_VERSION}/bin"
+            if [ -x "$NODE_BIN_DIR/node" ]; then
+              export PATH="$NODE_BIN_DIR:$PATH"
+              echo "Using Node.js v${NODE_VERSION} from $NODE_BIN_DIR"
             else
-              echo "❌ nvm not found at $NVM_DIR"; exit 1
+              echo "❌ Node v${NODE_VERSION} not found under $NODE_BIN_DIR"; exit 1
             fi
 
             # 验证版本
