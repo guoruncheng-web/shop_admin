@@ -1,0 +1,129 @@
+name: Deploy Frontend to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/vben-admin/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.10.0'
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/vben-admin/pnpm-lock.yaml'
+
+      - name: Install dependencies
+        working-directory: ./frontend/vben-admin
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web-ele
+        working-directory: ./frontend/vben-admin
+        run: pnpm run build:ele
+
+      - name: Deploy to Server via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          source: "frontend/vben-admin/apps/web-ele/dist/*"
+          target: "/tmp/frontend-deploy/"
+          strip_components: 4
+          overwrite: true
+          rm: true
+
+      - name: Move files to Nginx directory
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -ex
+
+            # 备份旧版本
+            BACKUP_DIR="/home/docker/nginx/html_backup_$(date +%Y%m%d_%H%M%S)"
+            if [ -d "/home/docker/nginx/html" ]; then
+              echo "Backing up existing files to $BACKUP_DIR..."
+              mkdir -p "$BACKUP_DIR"
+              cp -r /home/docker/nginx/html/* "$BACKUP_DIR/" || true
+            fi
+
+            # 确保目标目录存在
+            echo "Ensuring target directory exists..."
+            mkdir -p /home/docker/nginx/html
+
+            # 移动新文件
+            echo "Deploying new files..."
+            rm -rf /home/docker/nginx/html/*
+            mv /tmp/frontend-deploy/* /home/docker/nginx/html/
+
+            # 清理临时目录
+            rm -rf /tmp/frontend-deploy
+
+            # 设置权限
+            echo "Setting permissions..."
+            chmod -R 755 /home/docker/nginx/html
+
+            # 列出部署的文件
+            echo "Deployed files:"
+            ls -lah /home/docker/nginx/html
+
+            echo "✅ Frontend deployment completed!"
+
+            # 保留最近3个备份
+            echo "Cleaning up old backups..."
+            cd /home/docker/nginx
+            ls -dt html_backup_* 2>/dev/null | tail -n +4 | xargs rm -rf {} 2>/dev/null || true
+
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.1.0
+        continue-on-error: true
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            echo "Checking deployed files..."
+            ls -lah /home/docker/nginx/html
+
+            echo "Checking index.html..."
+            if [ -f "/home/docker/nginx/html/index.html" ]; then
+              echo "✅ index.html found"
+              head -5 /home/docker/nginx/html/index.html
+            else
+              echo "❌ index.html not found"
+            fi
+
+            echo "Checking Nginx container..."
+            docker ps | grep nginx || echo "⚠️  Nginx container not running or not found"
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Frontend deployment successful!"
+            echo "🌐 Visit: http://www.livegrc.chat"
+          else
+            echo "❌ Frontend deployment failed!"
+          fi
