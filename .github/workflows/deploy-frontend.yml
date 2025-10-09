@@ -31,10 +31,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./frontend/vben-admin
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --no-optional
 
       - name: Build web-ele
         working-directory: ./frontend/vben-admin
+        env:
+          NODE_ENV: production
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm run build:ele
 
       - name: Deploy to Server via SCP
