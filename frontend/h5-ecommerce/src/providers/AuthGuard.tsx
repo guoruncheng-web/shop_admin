@@ -22,10 +22,21 @@ export function AuthGuard({ children, enabled = true }: Props) {
     if (typeof window === 'undefined') return;
 
     const token = localStorage.getItem('token');
-    // 已在登录页则不拦截
-    if (!token && pathname !== '/login') {
+    const isFirstLogin = localStorage.getItem('isFirstLogin') === 'true';
+
+    // 登录页、注册页、个人信息设置页不拦截
+    const publicPaths = ['/login', '/register', '/profile-setup'];
+
+    // 未登录且不在公开路径，跳转到登录页
+    if (!token && !publicPaths.includes(pathname)) {
       const redirect = encodeURIComponent(pathname || '/');
       router.replace(`/login?redirect=${redirect}`);
+      return;
+    }
+
+    // 已登录但是首次登录，且不在设置页面，强制跳转到设置页面
+    if (token && isFirstLogin && pathname !== '/profile-setup') {
+      router.replace('/profile-setup');
     }
   }, [enabled, pathname, router]);
 

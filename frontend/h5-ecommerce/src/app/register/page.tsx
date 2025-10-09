@@ -1,44 +1,67 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+export default function RegisterPage() {
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [sending, setSending] = useState(false);
+  const [seconds, setSeconds] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
-    if (!username || username.trim().length === 0) {
-      alert('请输入账号');
+  // 倒计时计时器
+  useEffect(() => {
+    if (seconds <= 0) return;
+    const timer = setInterval(() => setSeconds((s) => s - 1), 1000);
+    return () => clearInterval(timer);
+  }, [seconds]);
+
+  const canSendCode = useMemo(() => {
+    return !sending && seconds === 0 && phone.length === 11;
+  }, [sending, seconds, phone]);
+
+  const sendCode = () => {
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号码');
       return;
     }
-    if (!password || password.length < 6) {
-      alert('请输入密码(至少6位)');
+    setSending(true);
+    // 模拟请求
+    setTimeout(() => {
+      setSending(false);
+      setSeconds(60);
+      alert('验证码已发送');
+    }, 600);
+  };
+
+  const handleRegister = () => {
+    if (!phone || phone.length < 11) {
+      alert('请输入正确的手机号码');
+      return;
+    }
+    if (!code || code.length < 4) {
+      alert('请输入有效的验证码');
       return;
     }
     setLoading(true);
-    // 模拟登录
+    // 模拟注册
     setTimeout(() => {
       try {
         const token = 'mock-token-' + Date.now();
         localStorage.setItem('token', token);
-
-        // 检查是否为首次登录（模拟后端返回的isFirstLogin字段）
-        const isFirstLogin = Math.random() > 0.5; // 模拟50%概率首次登录
-
-        if (isFirstLogin) {
-          // 首次登录，跳转到设置页面
-          localStorage.setItem('isFirstLogin', 'true');
-          window.location.href = '/profile-setup';
-        } else {
-          // 非首次登录，跳转到首页
-          window.location.href = '/';
-        }
+        // 注册后默认为首次登录，需要完善信息
+        localStorage.setItem('isFirstLogin', 'true');
       } catch {}
       setLoading(false);
+      alert('注册成功！');
+      // 注册成功后跳转到设置页面
+      window.location.href = '/profile-setup';
     }, 1200);
   };
+
+  // 限制输入为数字
+  const onPhoneInput = (v: string) => setPhone(v.replace(/[^\d]/g, '').slice(0, 11));
+  const onCodeInput = (v: string) => setCode(v.replace(/[^\d]/g, '').slice(0, 6));
 
   return (
     <div
@@ -70,6 +93,36 @@ export default function LoginPage() {
             position: 'relative',
           }}
         >
+          {/* 返回按钮 */}
+          <a
+            href="/login"
+            style={{
+              position: 'absolute',
+              left: 20,
+              top: 24,
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.3s',
+              textDecoration: 'none',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
+              e.currentTarget.style.transform = 'scale(1.1)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <span style={{ fontSize: '1.2rem', color: '#fff' }}>←</span>
+          </a>
           <div
             style={{
               position: 'absolute',
@@ -107,15 +160,15 @@ export default function LoginPage() {
           >
             <span style={{ fontSize: '2.5rem', color: '#e29692' }}>🛍️</span>
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: 0.5 }}>StyleHub</div>
-          <div style={{ marginTop: 8, opacity: 0.9 }}>时尚购物，随时随地</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: 0.5 }}>注册账号</div>
+          <div style={{ marginTop: 8, opacity: 0.9 }}>欢迎加入 StyleHub</div>
         </div>
 
         {/* 表单 */}
         <div style={{ padding: '24px 20px 20px' }}>
-          {/* 账号 */}
+          {/* 手机号 */}
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>账号</label>
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>手机号码</label>
             <div style={{ position: 'relative' }}>
               <span
                 style={{
@@ -126,13 +179,14 @@ export default function LoginPage() {
                   color: '#666',
                 }}
               >
-                👤
+                📱
               </span>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="请输入您的账号"
+                type="tel"
+                value={phone}
+                onChange={(e) => onPhoneInput(e.target.value)}
+                placeholder="请输入您的手机号码"
+                maxLength={11}
                 style={{
                   width: '100%',
                   padding: '12px 16px 12px 45px',
@@ -154,64 +208,71 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* 密码 */}
+          {/* 验证码 */}
           <div style={{ marginBottom: 20 }}>
-            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>密码</label>
-            <div style={{ position: 'relative' }}>
-              <span
+            <label style={{ display: 'block', marginBottom: 8, fontWeight: 500, color: '#333' }}>验证码</label>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ position: 'relative', flexGrow: 1 }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: 15,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#666',
+                  }}
+                >
+                  🛡️
+                </span>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => onCodeInput(e.target.value)}
+                  placeholder="请输入验证码"
+                  maxLength={6}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px 12px 45px',
+                    border: '1px solid #e0e0e0',
+                    borderRadius: 12,
+                    fontSize: '1rem',
+                    transition: 'all 0.3s',
+                    outline: 'none',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#e29692';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(226,150,146,0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e0e0e0';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                />
+              </div>
+
+              <button
+                onClick={sendCode}
+                disabled={!canSendCode}
                 style={{
-                  position: 'absolute',
-                  left: 15,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: '#666',
-                }}
-              >
-                🔒
-              </span>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="请输入您的密码"
-                style={{
-                  width: '100%',
-                  padding: '12px 50px 12px 45px',
-                  border: '1px solid #e0e0e0',
+                  background: canSendCode ? '#f9f0ef' : '#eee',
+                  color: canSendCode ? '#e29692' : '#999',
+                  border: 'none',
                   borderRadius: 12,
-                  fontSize: '1rem',
-                  transition: 'all 0.3s',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#e29692';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(226,150,146,0.2)';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = '#e0e0e0';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              />
-              <span
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: 'absolute',
-                  right: 15,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  cursor: 'pointer',
-                  color: '#666',
-                  fontSize: '1.2rem',
+                  padding: '0 16px',
+                  fontWeight: 500,
+                  cursor: canSendCode ? 'pointer' : 'not-allowed',
+                  whiteSpace: 'nowrap' as const,
+                  minWidth: 120,
                 }}
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </span>
+                {seconds > 0 ? `${seconds}秒后重新发送` : sending ? '发送中...' : '获取验证码'}
+              </button>
             </div>
           </div>
 
-          {/* 登录按钮 */}
+          {/* 注册按钮 */}
           <button
-            onClick={handleLogin}
+            onClick={handleRegister}
             disabled={loading}
             style={{
               width: '100%',
@@ -228,14 +289,14 @@ export default function LoginPage() {
               boxShadow: loading ? 'none' : '0 5px 15px rgba(226, 150, 146, 0.4)',
             }}
           >
-            {loading ? '登录中...' : '立即登录'}
+            {loading ? '注册中...' : '立即注册'}
           </button>
 
-          {/* 注册入口 */}
+          {/* 登录入口 */}
           <div style={{ textAlign: 'center', marginTop: 20 }}>
-            <span style={{ color: '#666', fontSize: '0.9rem' }}>还没有账号？</span>
+            <span style={{ color: '#666', fontSize: '0.9rem' }}>已有账号？</span>
             <a
-              href="/register"
+              href="/login"
               style={{
                 color: '#e29692',
                 fontSize: '0.9rem',
@@ -246,7 +307,7 @@ export default function LoginPage() {
               onMouseOver={(e) => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseOut={(e) => (e.currentTarget.style.textDecoration = 'none')}
             >
-              立即注册
+              立即登录
             </a>
           </div>
 

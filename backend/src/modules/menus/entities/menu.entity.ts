@@ -10,11 +10,20 @@ import {
 } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
 import { RoleMenu } from '../../../database/entities/role-menu.entity';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 @Entity('menus')
 export class Menu {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    default: 1,
+    comment: '所属商户ID',
+  })
+  merchantId: number;
 
   // 基础路由信息
   @Column({ length: 100, comment: '路由名称/菜单名称' })
@@ -326,6 +335,11 @@ export class Menu {
   // 关联角色（通过中间表）
   @OneToMany(() => RoleMenu, (roleMenu) => roleMenu.menu)
   roleMenus: RoleMenu[];
+
+  // 多对一关系：菜单-商户
+  @ManyToOne(() => Merchant, (merchant) => merchant.menus)
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant;
 
   @CreateDateColumn({
     type: 'timestamp',

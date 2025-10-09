@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { ResourceCategory } from './resource-category.entity';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 export enum ResourceType {
   IMAGE = 'image',
@@ -24,6 +25,14 @@ export enum ResourceStatus {
 export class Resource {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    default: 1,
+    comment: '所属商户ID',
+  })
+  merchantId: number;
 
   @Column({ length: 255, comment: '资源名称' })
   name: string;
@@ -113,6 +122,11 @@ export class Resource {
   @ManyToOne(() => ResourceCategory, (category) => category.resources)
   @JoinColumn({ name: 'category_id' })
   category: ResourceCategory;
+
+  // 多对一关系：资源-商户
+  @ManyToOne(() => Merchant, { nullable: false })
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant;
 
   // 虚拟字段 - 标签数组
   get tagList(): string[] {

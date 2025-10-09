@@ -3,17 +3,28 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
+  ManyToOne,
   JoinTable,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Admin } from './admin.entity';
 import { Permission } from './permission.entity';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 @Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    default: 1,
+    comment: '所属商户ID',
+  })
+  merchantId: number;
 
   @Column({ length: 50, unique: true, comment: '角色名称' })
   name: string;
@@ -45,4 +56,9 @@ export class Role {
     inverseJoinColumn: { name: 'permission_id', referencedColumnName: 'id' },
   })
   permissions: Permission[];
+
+  // 多对一关系：角色-商户
+  @ManyToOne(() => Merchant, (merchant) => merchant.roles)
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant;
 }
