@@ -99,8 +99,19 @@ jobs:
             echo "Setting Node.js 21.7.1 as default..."
             nvm alias default 21.7.1
 
+            # 手动写入到 NVM 配置确保持久化
+            echo "21.7.1" > "$NVM_DIR/alias/default"
+
+            # 同时更新 shell 配置文件
+            if ! grep -q "nvm use default" ~/.bashrc 2>/dev/null; then
+              echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+              echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"' >> ~/.bashrc
+              echo 'nvm use default --silent' >> ~/.bashrc
+            fi
+
             # 验证默认版本
             echo "Default Node.js version: $(nvm version default)"
+            echo "Current active version: $(nvm current)"
 
             # 确保 pm2 可用（与当前 Node 版本一致）
             if ! command -v pm2 >/dev/null 2>&1; then
