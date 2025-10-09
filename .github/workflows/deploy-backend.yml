@@ -121,22 +121,25 @@ jobs:
             echo "PM2 version: $(pm2 --version)"
             echo "PM2 path: $(which pm2)"
 
+            # 创建 .env.production 文件（从 GitHub Secrets）
+            echo "Creating .env.production file..."
+            cat > .env.production << 'ENV_EOF'
+            ${{ secrets.ENV_PRODUCTION }}
+            ENV_EOF
+
+            # 验证 .env.production
+            if [ -f .env.production ]; then
+              echo "✓ .env.production created successfully"
+              echo "Checking configuration..."
+              grep -E "NODE_ENV|DATABASE_HOST|REDIS_HOST" .env.production || echo "⚠️  Please verify .env configuration"
+            else
+              echo "❌ Failed to create .env.production"
+              exit 1
+            fi
+
             # 只安装生产依赖
             echo "Installing production dependencies..."
             npm install --production --legacy-peer-deps || npm install --production || true
-
-            # 检查 .env.production
-            if [ -f .env.production ]; then
-              echo "✓ .env.production found"
-              echo "Checking configuration..."
-              grep -E "DATABASE_HOST|REDIS_HOST|NODE_ENV" .env.production || echo "⚠️  Please verify database and redis config"
-            else
-              echo "❌ .env.production not found! Please create it manually with:"
-              echo "  DATABASE_HOST, DATABASE_PASSWORD"
-              echo "  REDIS_HOST, REDIS_PASSWORD"
-              echo "  SESSION_SECRET, JWT_SECRET"
-              exit 1
-            fi
 
             # 使用 PM2 重启应用
             echo "Restarting with PM2..."
