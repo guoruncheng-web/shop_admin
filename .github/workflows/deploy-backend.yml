@@ -13,7 +13,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      NODE_VERSION: '21.7.0'
+      NODE_VERSION: '21.7.1'
 
     steps:
       - name: Checkout code
@@ -59,7 +59,7 @@ jobs:
           envs: NODE_VERSION
           script: |
             set -ex  # 显示执行的命令
-            NODE_VERSION="${NODE_VERSION:-21.7.0}"
+            NODE_VERSION="${NODE_VERSION:-21.7.1}"
 
             # 设置变量
             APP_DIR="/www/wwwroot/shop_admin/bk_admin/backend"
@@ -73,28 +73,19 @@ jobs:
             echo "Files in directory:"
             ls -la
 
-            # 加载 nvm 并设置版本
+            # 仅切换 nvm 版本，不使用变量、不拼路径
             echo "Setting up Node.js environment..."
-            # 不依赖 nvm，直接使用指定版本的 Node 路径
-            NODE_BIN_DIR="$HOME/.nvm/versions/node/v${NODE_VERSION}/bin"
-            if [ -x "$NODE_BIN_DIR/node" ]; then
-              export PATH="$NODE_BIN_DIR:$PATH"
-              echo "Using Node.js v${NODE_VERSION} from $NODE_BIN_DIR"
+            if command -v nvm >/dev/null 2>&1; then
+              echo "Using Node.js 21.7.1 via nvm (current shell)..."
+              nvm use 21.7.1 || { echo "❌ nvm use 21.7.1 failed"; exit 1; }
             else
-              echo "❌ Node v${NODE_VERSION} not found under $NODE_BIN_DIR"; exit 1
+              echo "nvm not found in current shell, trying login shell..."
+              bash -lc 'nvm use 21.7.1' || { echo "❌ nvm use 21.7.1 in login shell failed"; exit 1; }
             fi
 
             # 验证版本
-            if command -v node >/dev/null 2>&1; then
-              echo "Node.js version: $(node -v)"
-            else
-              echo "❌ Node.js not found in PATH"; exit 1
-            fi
-            if command -v npm >/dev/null 2>&1; then
-              echo "npm version: $(npm -v)"
-            else
-              echo "❌ npm not found in PATH"; exit 1
-            fi
+            echo "Node.js version: $(node -v || bash -lc "node -v")"
+            echo "npm version: $(npm -v || bash -lc "npm -v")"
 
             # 确保 pm2 可用（与当前 Node 版本一致）
             if ! command -v pm2 >/dev/null 2>&1; then
