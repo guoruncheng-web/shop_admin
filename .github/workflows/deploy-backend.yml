@@ -12,6 +12,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: '21.7.0'
 
     steps:
       - name: Checkout code
@@ -20,7 +22,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '21.7.1'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
         working-directory: ./backend
@@ -72,26 +74,32 @@ jobs:
             # 加载 nvm 并设置版本
             echo "Setting up Node.js environment..."
             export NVM_DIR="$HOME/.nvm"
-
-            # 简化的 nvm 加载 - 不触发 auto mode
             if [ -s "$NVM_DIR/nvm.sh" ]; then
-              # 禁用 nvm_process_parameters 来避免 auto mode
-              NVM_NO_USE=true source "$NVM_DIR/nvm.sh"
-
-              # 设置默认版本为 21.7.1 (如果不存在)
-              if ! nvm alias default >/dev/null 2>&1; then
-                echo "Setting default nvm version to 21.7.1..."
-                nvm alias default 21.7.1 2>/dev/null || true
-              fi
-
-              # 切换到 21.7.1
-              echo "Using Node.js 21.7.1..."
-              nvm use 21.7.1 2>/dev/null || nvm use default 2>/dev/null || true
+              # 加载 nvm 并直接切换到指定版本（服务器已预装）
+              . "$NVM_DIR/nvm.sh"
+              echo "Using Node.js ${NODE_VERSION} via nvm..."
+              nvm use "${NODE_VERSION}" || { echo "❌ nvm use ${NODE_VERSION} failed"; exit 1; }
+            else
+              echo "❌ nvm not found at $NVM_DIR"; exit 1
             fi
 
             # 验证版本
-            echo "Node.js version: $(node -v)"
-            echo "npm version: $(npm -v)"
+            if command -v node >/dev/null 2>&1; then
+              echo "Node.js version: $(node -v)"
+            else
+              echo "❌ Node.js not found in PATH"; exit 1
+            fi
+            if command -v npm >/dev/null 2>&1; then
+              echo "npm version: $(npm -v)"
+            else
+              echo "❌ npm not found in PATH"; exit 1
+            fi
+
+            # 确保 pm2 可用（与当前 Node 版本一致）
+            if ! command -v pm2 >/dev/null 2>&1; then
+              echo "Installing pm2 globally..."
+              npm i -g pm2
+            fi
 
             # 只安装生产依赖
             echo "Installing production dependencies..."
