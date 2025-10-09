@@ -8,7 +8,6 @@ module.exports = {
     {
       name: 'wechat-mall-backend',
       script: './dist/src/main.js',
-      interpreter: '/root/.nvm/versions/node/v21.7.1/bin/node', // 指定 Node.js 版本解释器
       instances: 'max', // 使用所有可用 CPU 核心
       exec_mode: 'cluster', // 集群模式
       autorestart: true, // 自动重启

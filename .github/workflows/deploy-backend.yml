@@ -113,11 +113,13 @@ jobs:
             echo "Default Node.js version: $(nvm version default)"
             echo "Current active version: $(nvm current)"
 
-            # 确保 pm2 可用（与当前 Node 版本一致）
-            if ! command -v pm2 >/dev/null 2>&1; then
-              echo "Installing pm2 globally..."
-              npm i -g pm2
-            fi
+            # 重新安装 PM2 到当前 Node 版本（强制重装确保版本一致）
+            echo "Installing PM2 for Node.js 21.7.1..."
+            npm install -g pm2 --force
+
+            # 验证 PM2 安装
+            echo "PM2 version: $(pm2 --version)"
+            echo "PM2 path: $(which pm2)"
 
             # 只安装生产依赖
             echo "Installing production dependencies..."
