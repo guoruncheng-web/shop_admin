@@ -1027,10 +1027,10 @@ export class MenusService {
 
   // 通过用户ID汇总完整用户档案（基础信息 + 角色 + 权限 + 菜单）
   async getFullUserProfile(userId: number): Promise<any> {
-    // 查询用户及其角色、权限
+    // 查询用户及其角色、权限、商户信息
     const user = await this.adminRepository.findOne({
       where: { id: userId },
-      relations: ['roles', 'roles.permissions'],
+      relations: ['roles', 'roles.permissions', 'merchant'],
     });
     if (!user) {
       throw new NotFoundException('用户不存在');
@@ -1063,6 +1063,23 @@ export class MenusService {
     // 查询基于权限过滤的菜单树
     const menus = await this.getUserMenusByUserId(userId);
 
+    // 组装商户信息
+    const merchant = user.merchant ? {
+      id: user.merchant.id,
+      merchantCode: user.merchant.merchantCode,
+      merchantName: user.merchant.merchantName,
+      merchantType: user.merchant.merchantType,
+      status: user.merchant.status,
+      logo: user.merchant.logo,
+      description: user.merchant.description,
+      certificationStatus: user.merchant.certificationStatus,
+      maxProducts: user.merchant.maxProducts,
+      maxAdmins: user.merchant.maxAdmins,
+      maxStorage: user.merchant.maxStorage,
+      createdAt: user.merchant.createdAt,
+      updatedAt: user.merchant.updatedAt,
+    } : null;
+
     // 返回完整用户档案
     return {
       id: user.id,
@@ -1071,6 +1088,8 @@ export class MenusService {
       email: user.email,
       phone: user.phone,
       avatar: user.avatar,
+      merchantId: user.merchantId,
+      merchant,
       roles,
       permissions,
       roleInfo,

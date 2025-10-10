@@ -257,7 +257,7 @@ export class UserLoginLogService {
 
   // 记录登录日志的便捷方法
   async recordLogin(
-    userId: number,
+    userId: number | null,
     ip: string,
     userAgent?: string,
     success: boolean = true,

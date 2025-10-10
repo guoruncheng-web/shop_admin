@@ -3,19 +3,30 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   JoinTable,
+  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Admin } from './admin.entity';
 import { Permission } from './permission.entity';
 import { RoleMenu } from './role-menu.entity';
+import { Merchant } from '../../modules/merchants/entities/merchant.entity';
 
 @Entity('roles')
 export class Role {
   @PrimaryGeneratedColumn({ type: 'bigint', comment: '角色ID' })
   id: number;
+
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    default: 1,
+    comment: '所属商户ID',
+  })
+  merchantId: number;
 
   @Column({ type: 'varchar', length: 50, comment: '角色名称' })
   name: string;
@@ -59,4 +70,9 @@ export class Role {
   // 关联菜单（通过中间表）
   @OneToMany(() => RoleMenu, (roleMenu) => roleMenu.role)
   roleMenus: RoleMenu[];
+
+  // 多对一关系：角色-商户
+  @ManyToOne(() => Merchant, (merchant) => merchant.roles)
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant;
 }

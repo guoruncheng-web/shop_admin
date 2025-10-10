@@ -1493,6 +1493,178 @@ export class MigrationController {
     }
   }
 
+  @Get('check-merchants-table')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '检查商户表结构' })
+  @ApiResponse({ status: 200, description: '检查成功' })
+  async checkMerchantsTable() {
+    try {
+      const tableInfo = await this.permissionRepository.query(`
+        DESCRIBE merchants
+      `);
+
+      return {
+        code: 200,
+        data: tableInfo,
+        msg: '商户表结构查询成功',
+      };
+    } catch (error) {
+      console.error('查询商户表结构失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `查询失败: ${error.message}`,
+      };
+    }
+  }
+
+  @Post('fix-merchants-table')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '修复商户表结构，添加缺失的字段' })
+  @ApiResponse({ status: 200, description: '修复成功' })
+  async fixMerchantsTable() {
+    try {
+      const fixes = [];
+
+      // 检查并添加 description 字段
+      try {
+        await this.permissionRepository.query(`
+          ALTER TABLE merchants ADD COLUMN description TEXT NULL COMMENT '商户描述'
+        `);
+        fixes.push('添加 description 字段');
+      } catch (error) {
+        if (error.message.includes('Duplicate column name')) {
+          fixes.push('description 字段已存在');
+        } else {
+          throw error;
+        }
+      }
+
+      // 检查并添加 created_at 字段
+      try {
+        await this.permissionRepository.query(`
+          ALTER TABLE merchants ADD COLUMN created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+        `);
+        fixes.push('添加 created_at 字段');
+      } catch (error) {
+        if (error.message.includes('Duplicate column name')) {
+          fixes.push('created_at 字段已存在');
+        } else {
+          throw error;
+        }
+      }
+
+      // 检查并添加 updated_at 字段
+      try {
+        await this.permissionRepository.query(`
+          ALTER TABLE merchants ADD COLUMN updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+        `);
+        fixes.push('添加 updated_at 字段');
+      } catch (error) {
+        if (error.message.includes('Duplicate column name')) {
+          fixes.push('updated_at 字段已存在');
+        } else {
+          throw error;
+        }
+      }
+
+      // 验证修改
+      const tableInfo = await this.permissionRepository.query(`
+        DESCRIBE merchants
+      `);
+
+      const hasDescription = tableInfo.some((col) => col.Field === 'description');
+      const hasCreatedAt = tableInfo.some((col) => col.Field === 'created_at');
+      const hasUpdatedAt = tableInfo.some((col) => col.Field === 'updated_at');
+
+      return {
+        code: 200,
+        data: {
+          fixes,
+          verification: {
+            hasDescription,
+            hasCreatedAt,
+            hasUpdatedAt,
+          },
+          tableStructure: tableInfo,
+        },
+        msg: '商户表结构修复完成',
+      };
+    } catch (error) {
+      console.error('修复商户表结构失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `修复失败: ${error.message}`,
+      };
+    }
+  }
+
+  @Get('check-admin-users')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '检查管理员用户信息' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  async checkAdminUsers() {
+    try {
+      const admins = await this.adminRepository.find({
+        select: ['id', 'username', 'realName', 'email', 'status'],
+      });
+
+      return {
+        code: 200,
+        data: admins,
+        msg: '管理员用户查询成功',
+      };
+    } catch (error) {
+      console.error('查询管理员用户失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `查询失败: ${error.message}`,
+      };
+    }
+  }
+
+  @Post('fix-user-login-logs-userid')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '修复user_login_logs表的userId列为可空' })
+  @ApiResponse({ status: 200, description: '修复成功' })
+  async fixUserLoginLogsUserId() {
+    try {
+      // 修改 userId 列为可空
+      await this.permissionRepository.query(`
+        ALTER TABLE user_login_logs MODIFY COLUMN userId BIGINT NULL COMMENT '用户ID'
+      `);
+
+      // 验证修改
+      const tableInfo = await this.permissionRepository.query(`
+        DESCRIBE user_login_logs
+      `);
+
+      const userIdColumn = tableInfo.find((col) => col.Field === 'userId');
+
+      return {
+        code: 200,
+        data: {
+          updated: true,
+          userIdColumn: userIdColumn,
+        },
+        msg: 'user_login_logs表的userId列已成功修改为可空',
+      };
+    } catch (error) {
+      console.error('修复user_login_logs表失败:', error);
+      return {
+        code: 500,
+        data: {},
+        msg: `修复失败: ${error.message}`,
+      };
+    }
+  }
+
   @Post('update-directory-menus-component')
   @Public()
   @HttpCode(HttpStatus.OK)

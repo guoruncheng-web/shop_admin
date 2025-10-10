@@ -235,7 +235,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: '获取当前用户信息',
-    description: '根据JWT令牌获取当前登录用户的详细信息',
+    description: '根据JWT令牌获取当前登录用户的详细信息，包含所属商户信息',
   })
   @ApiResponse({
     status: 200,
@@ -253,6 +253,25 @@ export class AuthController {
             email: { type: 'string' },
             phone: { type: 'string' },
             avatar: { type: 'string' },
+            merchantId: { type: 'number', example: 1 },
+            merchant: {
+              type: 'object',
+              properties: {
+                id: { type: 'number' },
+                merchantCode: { type: 'string', example: 'SUPER_MERCHANT' },
+                merchantName: { type: 'string', example: '平台超级商户' },
+                merchantType: { type: 'number', example: 1 },
+                status: { type: 'number', example: 1 },
+                logo: { type: 'string' },
+                description: { type: 'string', example: '平台超级商户，拥有最高权限' },
+                certificationStatus: { type: 'number', example: 2 },
+                maxProducts: { type: 'number' },
+                maxAdmins: { type: 'number' },
+                maxStorage: { type: 'number' },
+                createdAt: { type: 'string', format: 'date-time' },
+                updatedAt: { type: 'string', format: 'date-time' },
+              },
+            },
             roles: { type: 'array', items: { type: 'string' } },
             permissions: { type: 'array', items: { type: 'string' } },
             roleInfo: {
@@ -288,7 +307,7 @@ export class AuthController {
 
     return {
       code: 200,
-      data: fullProfile, // 包含 基础信息 + roles + permissions + roleInfo + menus
+      data: fullProfile, // 包含 基础信息 + roles + permissions + roleInfo + menus + merchant
       msg: '获取成功',
     };
   }

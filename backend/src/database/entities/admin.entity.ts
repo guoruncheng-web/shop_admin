@@ -3,7 +3,9 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
+  ManyToOne,
   JoinTable,
+  JoinColumn,
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
@@ -12,11 +14,20 @@ import { Exclude } from 'class-transformer';
 import { Role } from './role.entity';
 import { AdminLoginLog } from './admin-login-log.entity';
 import { AdminOperationLog } from '../../modules/admin/entities/admin-operation-log.entity';
+import { Merchant } from '../../modules/merchants/entities/merchant.entity';
 
 @Entity('admins')
 export class Admin {
   @PrimaryGeneratedColumn({ type: 'bigint', comment: '管理员ID' })
   id: number;
+
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    default: 1,
+    comment: '所属商户ID',
+  })
+  merchantId: number;
 
   @Column({ type: 'varchar', length: 50, unique: true, comment: '用户名' })
   username: string;
@@ -92,4 +103,9 @@ export class Admin {
   // 操作日志
   @OneToMany(() => AdminOperationLog, (log) => log.admin)
   operationLogs: AdminOperationLog[];
+
+  // 多对一关系：管理员-商户
+  @ManyToOne(() => Merchant, (merchant) => merchant.admins)
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant;
 }

@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Role } from '../../admin/entities/role.entity';
-import { Admin } from '../../admin/entities/admin.entity';
+import { Role } from '../../../database/entities/role.entity';
+import { Admin } from '../../../database/entities/admin.entity';
 import { Menu } from '../../menus/entities/menu.entity';
 import { Resource } from '../../resource/entities/resource.entity';
 import { ResourceCategory } from '../../resource/entities/resource-category.entity';

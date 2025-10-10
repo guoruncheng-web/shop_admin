@@ -12,8 +12,8 @@ export class UserLoginLog {
   @PrimaryGeneratedColumn({ type: 'bigint', comment: '日志ID' })
   id: number;
 
-  @Column({ type: 'bigint', comment: '用户ID' })
-  userId: number;
+  @Column({ type: 'bigint', nullable: true, comment: '用户ID' })
+  userId: number | null;
 
   @Column({ type: 'varchar', length: 45, comment: 'IP地址' })
   ip: string;
