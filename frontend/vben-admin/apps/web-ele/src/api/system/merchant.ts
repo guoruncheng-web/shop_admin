@@ -7,6 +7,38 @@ interface ApiResponse<T = any> {
   msg: string;
 }
 
+// 发货地址类型定义
+export interface MerchantShippingAddress {
+  id: number;
+  merchantId: number;
+  contactName: string;
+  contactPhone: string;
+  provinceCode: string;
+  provinceName: string;
+  cityCode: string;
+  cityName: string;
+  districtCode: string;
+  districtName: string;
+  detailAddress: string;
+  postalCode?: string;
+  isDefault: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShippingAddressParams {
+  contactName: string;
+  contactPhone: string;
+  provinceCode: string;
+  provinceName: string;
+  cityCode: string;
+  cityName: string;
+  districtCode: string;
+  districtName: string;
+  detailAddress: string;
+  postalCode?: string;
+}
+
 // 商户相关的类型定义
 export interface Merchant {
   id: number;
@@ -45,6 +77,8 @@ export interface Merchant {
   updatedAt: string;
   createdBy?: number;
   updatedBy?: number;
+  // 发货地址
+  shippingAddress?: MerchantShippingAddress;
   // 自动创建的超级管理员信息（仅创建时返回）
   superAdmin?: {
     username: string;
@@ -76,6 +110,7 @@ export interface CreateMerchantParams {
   commissionRate?: number;
   config?: Record<string, any>;
   webhookUrl?: string;
+  shippingAddress?: ShippingAddressParams;
 }
 
 export interface UpdateMerchantParams {
@@ -98,6 +133,7 @@ export interface UpdateMerchantParams {
   commissionRate?: number;
   config?: Record<string, any>;
   webhookUrl?: string;
+  shippingAddress?: ShippingAddressParams;
 }
 
 export interface QueryMerchantParams {
@@ -263,4 +299,30 @@ export async function regenerateMerchantKeysApi(id: number) {
   }
 
   throw new Error(response?.msg || '重新生成密钥失败');
+}
+
+/**
+ * 获取商户超级管理员信息
+ */
+export async function getMerchantSuperAdminApi(id: number) {
+  const response = await requestClient.get<ApiResponse<any>>(`/merchants/${id}/super-admin`);
+
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+
+  throw new Error(response?.msg || '获取超级管理员信息失败');
+}
+
+/**
+ * 重置商户超级管理员密码
+ */
+export async function resetSuperAdminPasswordApi(id: number) {
+  const response = await requestClient.post<ApiResponse<{ username: string; password: string; email: string }>>(`/merchants/${id}/reset-super-admin-password`, {});
+
+  if (response && response.code === 200 && response.data) {
+    return response.data;
+  }
+
+  throw new Error(response?.msg || '重置密码失败');
 }

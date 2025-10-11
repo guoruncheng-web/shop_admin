@@ -187,6 +187,9 @@
                   </ElButton>
                   <template #dropdown>
                     <ElDropdownMenu>
+                      <ElDropdownItem command="viewAdmin">
+                        查看管理员
+                      </ElDropdownItem>
                       <ElDropdownItem command="certification">
                         认证管理
                       </ElDropdownItem>
@@ -262,6 +265,54 @@
       </template>
     </ElDialog>
 
+    <!-- 超级管理员信息对话框 -->
+    <ElDialog
+      v-model="adminDialogVisible"
+      title="超级管理员信息"
+      width="600px"
+    >
+      <div v-loading="adminLoading" class="admin-container">
+        <ElDescriptions :column="2" border>
+          <ElDescriptionsItem label="商户名称" :span="2">
+            {{ currentMerchant?.merchantName }}
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="用户名">
+            {{ superAdminInfo?.username }}
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="姓名">
+            {{ superAdminInfo?.realName }}
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="邮箱">
+            {{ superAdminInfo?.email || '-' }}
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="电话">
+            {{ superAdminInfo?.phone || '-' }}
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="状态">
+            <ElTag :type="superAdminInfo?.status === 1 ? 'success' : 'danger'">
+              {{ superAdminInfo?.status === 1 ? '启用' : '禁用' }}
+            </ElTag>
+          </ElDescriptionsItem>
+          <ElDescriptionsItem label="创建时间">
+            {{ formatDateTime(superAdminInfo?.createdAt) }}
+          </ElDescriptionsItem>
+        </ElDescriptions>
+        <div class="admin-actions">
+          <ElAlert
+            title="密码说明"
+            type="warning"
+            :closable="false"
+            show-icon
+          >
+            密码已加密存储，无法直接查看。如需重置密码，请点击下方按钮。
+          </ElAlert>
+          <ElButton type="danger" @click="handleResetPassword" style="margin-top: 15px">
+            🔄 重置超级管理员密码
+          </ElButton>
+        </div>
+      </div>
+    </ElDialog>
+
     <!-- 统计信息对话框 -->
     <ElDialog
       v-model="statisticsDialogVisible"
@@ -325,6 +376,7 @@ import {
   ElDropdownItem,
   ElDescriptions,
   ElDescriptionsItem,
+  ElAlert,
 } from 'element-plus';
 import type {
   Merchant,
@@ -338,6 +390,8 @@ import {
   updateMerchantCertificationApi,
   getMerchantStatisticsApi,
   regenerateMerchantKeysApi,
+  getMerchantSuperAdminApi,
+  resetSuperAdminPasswordApi,
 } from '#/api/system/merchant';
 import MerchantForm from './components/MerchantForm.vue';
 import AdminCredentialsDialog from './components/AdminCredentialsDialog.vue';
@@ -356,6 +410,9 @@ const statisticsDialogVisible = ref(false);
 const newCertificationStatus = ref(0);
 const merchantStatistics = ref<MerchantStatistics | null>(null);
 const statisticsLoading = ref(false);
+const adminDialogVisible = ref(false);
+const adminLoading = ref(false);
+const superAdminInfo = ref<any>(null);
 
 // 搜索表单
 const searchForm = reactive<QueryMerchantParams>({
@@ -469,6 +526,9 @@ const handleDropdownCommand = (command: string, row: Merchant) => {
   currentMerchant.value = row;
 
   switch (command) {
+    case 'viewAdmin':
+      handleViewAdmin(row);
+      break;
     case 'certification':
       newCertificationStatus.value = row.certificationStatus;
       certificationDialogVisible.value = true;
@@ -564,6 +624,75 @@ const handleDelete = async (row: Merchant) => {
   } catch (error: any) {
     if (error !== 'cancel') {
       ElMessage.error(error.message || '删除失败');
+    }
+  }
+};
+
+// 查看超级管理员
+const handleViewAdmin = async (row: Merchant) => {
+  try {
+    adminLoading.value = true;
+    adminDialogVisible.value = true;
+    superAdminInfo.value = await getMerchantSuperAdminApi(row.id);
+  } catch (error: any) {
+    ElMessage.error(error.message || '获取超级管理员信息失败');
+    adminDialogVisible.value = false;
+  } finally {
+    adminLoading.value = false;
+  }
+};
+
+// 重置超级管理员密码
+const handleResetPassword = async () => {
+  if (!currentMerchant.value) return;
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要重置商户"${currentMerchant.value.merchantName}"的超级管理员密码吗？旧密码将立即失效！`,
+      '警告',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    );
+
+    const credentials = await resetSuperAdminPasswordApi(currentMerchant.value.id);
+
+    // 使用 dangerouslyUseHTMLString 来显示格式化的内容
+    await ElMessageBox.alert(
+      `<div style="padding: 20px; background: #f5f7fa; border-radius: 4px; margin: 10px 0;">
+        <div style="margin-bottom: 15px;">
+          <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">用户名</div>
+          <div style="font-size: 16px; font-weight: bold; color: #303133; user-select: all;">${credentials.username}</div>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">密码（明文）</div>
+          <div style="font-size: 16px; font-weight: bold; color: #E6A23C; user-select: all; font-family: monospace; background: white; padding: 8px; border-radius: 4px; border: 2px dashed #E6A23C;">${credentials.password}</div>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <div style="color: #909399; font-size: 12px; margin-bottom: 5px;">邮箱</div>
+          <div style="font-size: 14px; color: #606266; user-select: all;">${credentials.email}</div>
+        </div>
+      </div>
+      <div style="color: #F56C6C; font-size: 14px; margin-top: 15px;">
+        ⚠️ 请务必保存这些信息，关闭后将无法再次查看！
+      </div>`,
+      '密码重置成功',
+      {
+        confirmButtonText: '我已保存',
+        type: 'success',
+        dangerouslyUseHTMLString: true,
+      }
+    );
+
+    // 重新加载管理员信息
+    if (currentMerchant.value) {
+      superAdminInfo.value = await getMerchantSuperAdminApi(currentMerchant.value.id);
+    }
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '重置密码失败');
     }
   }
 };
@@ -722,8 +851,13 @@ onMounted(() => {
     }
   }
 
-  .statistics-container {
+  .statistics-container,
+  .admin-container {
     min-height: 200px;
+  }
+
+  .admin-actions {
+    margin-top: 20px;
   }
 }
 </style>

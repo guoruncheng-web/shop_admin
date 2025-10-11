@@ -9,7 +9,10 @@ import {
   Min,
   IsArray,
   IsObject,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ShippingAddressDto } from './shipping-address.dto';
 
 export class CreateMerchantDto {
   @ApiProperty({ description: '商户编码（唯一标识）', example: 'MERCHANT_001' })
@@ -173,4 +176,13 @@ export class CreateMerchantDto {
   @IsString()
   @MaxLength(500)
   webhookUrl?: string;
+
+  @ApiPropertyOptional({
+    description: '发货地址',
+    type: ShippingAddressDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ShippingAddressDto)
+  shippingAddress?: ShippingAddressDto;
 }

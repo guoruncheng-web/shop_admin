@@ -23,9 +23,15 @@ export async function uploadImage(file: File): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
+  // 从存储获取 token 并附加到请求头
+  const { useAccessStore } = await import('@vben/stores');
+  const accessStore = useAccessStore();
+  const token = accessStore?.accessToken;
+
   return requestClient.post('/upload/image', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 }
@@ -37,9 +43,15 @@ export async function uploadVideo(file: File): Promise<UploadResponse> {
   const formData = new FormData();
   formData.append('file', file);
 
+  // 从存储获取 token 并附加到请求头
+  const { useAccessStore } = await import('@vben/stores');
+  const accessStore = useAccessStore();
+  const token = accessStore?.accessToken;
+
   return requestClient.post('/upload/video', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
 }

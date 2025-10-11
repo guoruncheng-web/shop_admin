@@ -55,20 +55,6 @@ export class MerchantsController {
     return await this.merchantsService.findAll(query);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '查询单个商户详情' })
-  @ApiParam({ name: 'id', description: '商户ID' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  @ApiResponse({ status: 404, description: '商户不存在' })
-  async findOne(@Param('id') id: string) {
-    const merchant = await this.merchantsService.findOne(+id);
-    return {
-      code: 200,
-      data: merchant,
-      msg: '查询成功',
-    };
-  }
-
   @Get('code/:merchantCode')
   @ApiOperation({ summary: '根据商户编码查询' })
   @ApiParam({ name: 'merchantCode', description: '商户编码' })
@@ -76,6 +62,42 @@ export class MerchantsController {
   @ApiResponse({ status: 404, description: '商户不存在' })
   async findByCode(@Param('merchantCode') merchantCode: string) {
     const merchant = await this.merchantsService.findByCode(merchantCode);
+    return {
+      code: 200,
+      data: merchant,
+      msg: '查询成功',
+    };
+  }
+
+  @Get(':id/statistics')
+  @ApiOperation({ summary: '获取商户统计信息' })
+  @ApiParam({ name: 'id', description: '商户ID' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  async getStatistics(@Param('id') id: string) {
+    return await this.merchantsService.getStatistics(+id);
+  }
+
+  @Get(':id/super-admin')
+  @ApiOperation({ summary: '获取商户超级管理员信息' })
+  @ApiParam({ name: 'id', description: '商户ID' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  @ApiResponse({ status: 404, description: '商户或管理员不存在' })
+  async getSuperAdmin(@Param('id') id: string) {
+    const admin = await this.merchantsService.getSuperAdmin(+id);
+    return {
+      code: 200,
+      data: admin,
+      msg: '查询成功',
+    };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: '查询单个商户详情' })
+  @ApiParam({ name: 'id', description: '商户ID' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  @ApiResponse({ status: 404, description: '商户不存在' })
+  async findOne(@Param('id') id: string) {
+    const merchant = await this.merchantsService.findOne(+id);
     return {
       code: 200,
       data: merchant,
@@ -164,12 +186,22 @@ export class MerchantsController {
     };
   }
 
-  @Get(':id/statistics')
-  @ApiOperation({ summary: '获取商户统计信息' })
+  @Post(':id/reset-super-admin-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '重置商户超级管理员密码' })
   @ApiParam({ name: 'id', description: '商户ID' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  async getStatistics(@Param('id') id: string) {
-    return await this.merchantsService.getStatistics(+id);
+  @ApiResponse({ status: 200, description: '重置成功，返回新密码（仅此次）' })
+  @ApiResponse({ status: 404, description: '商户或管理员不存在' })
+  async resetSuperAdminPassword(@Param('id') id: string, @Request() req) {
+    const credentials = await this.merchantsService.resetSuperAdminPassword(
+      +id,
+      req.user,
+    );
+    return {
+      code: 200,
+      data: credentials,
+      msg: '密码重置成功，请妥善保存新密码',
+    };
   }
 
   @Post(':id/regenerate-keys')

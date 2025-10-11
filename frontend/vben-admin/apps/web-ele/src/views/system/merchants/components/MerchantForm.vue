@@ -61,6 +61,26 @@
             />
           </ElFormItem>
 
+          <ElFormItem label="商户Logo" prop="logo">
+            <ElUpload
+              class="logo-uploader"
+              action="#"
+              :show-file-list="false"
+              :http-request="handleLogoUpload"
+              :before-upload="beforeLogoUpload"
+              accept="image/*"
+            >
+              <img v-if="formData.logo" :src="formData.logo" class="logo" />
+              <div v-else class="logo-uploader-icon">
+                <span style="font-size: 28px">+</span>
+                <div class="logo-uploader-text">上传Logo</div>
+              </div>
+            </ElUpload>
+            <div class="form-tip">
+              支持 JPG、PNG、GIF 格式，建议尺寸 200x200，最大 5MB
+            </div>
+          </ElFormItem>
+
           <ElFormItem label="商户描述" prop="description">
             <ElInput
               v-model="formData.description"
@@ -179,6 +199,49 @@
             />
           </ElFormItem>
         </ElCollapseItem>
+
+        <!-- 发货地址 -->
+        <ElCollapseItem title="发货地址" name="shipping">
+          <ElFormItem label="联系人姓名" prop="shippingAddress.contactName">
+            <ElInput
+              v-model="formData.shippingAddress.contactName"
+              placeholder="请输入联系人姓名"
+              maxlength="50"
+            />
+          </ElFormItem>
+
+          <ElFormItem label="联系电话" prop="shippingAddress.contactPhone">
+            <ElInput
+              v-model="formData.shippingAddress.contactPhone"
+              placeholder="请输入联系电话"
+              maxlength="20"
+            />
+          </ElFormItem>
+
+          <RegionSelector
+            v-model="regionValue"
+            prop-prefix="shippingAddress."
+          />
+
+          <ElFormItem label="详细地址" prop="shippingAddress.detailAddress">
+            <ElInput
+              v-model="formData.shippingAddress.detailAddress"
+              type="textarea"
+              :rows="2"
+              placeholder="请输入详细地址"
+              maxlength="255"
+              show-word-limit
+            />
+          </ElFormItem>
+
+          <ElFormItem label="邮政编码" prop="shippingAddress.postalCode">
+            <ElInput
+              v-model="formData.shippingAddress.postalCode"
+              placeholder="请输入邮政编码（选填）"
+              maxlength="10"
+            />
+          </ElFormItem>
+        </ElCollapseItem>
       </ElCollapse>
     </ElForm>
 
@@ -211,11 +274,15 @@ import {
   ElMessage,
   ElCollapse,
   ElCollapseItem,
+  ElUpload,
   type FormInstance,
-  type FormRules
+  type FormRules,
+  type UploadRequestOptions,
 } from 'element-plus';
-import type { Merchant, CreateMerchantParams, UpdateMerchantParams } from '#/api/system/merchant';
+import type { Merchant, CreateMerchantParams, UpdateMerchantParams, ShippingAddressParams } from '#/api/system/merchant';
 import { createMerchantApi, updateMerchantApi } from '#/api/system/merchant';
+import { uploadImageApi } from '#/api/common/upload';
+import RegionSelector from './RegionSelector.vue';
 
 defineOptions({
   name: 'MerchantForm',
@@ -241,10 +308,11 @@ const emit = defineEmits<Emits>();
 // 响应式数据
 const formRef = ref<FormInstance>();
 const loading = ref(false);
-const activeCollapse = ref(['basic', 'contact', 'business', 'quota']);
+const uploadLoading = ref(false);
+const activeCollapse = ref(['basic', 'contact', 'business', 'quota', 'shipping']);
 
 // 表单数据
-const formData = reactive<CreateMerchantParams & UpdateMerchantParams>({
+const formData = reactive<CreateMerchantParams & UpdateMerchantParams & { shippingAddress: ShippingAddressParams }>({
   merchantCode: '',
   merchantName: '',
   merchantType: 2,
@@ -254,6 +322,7 @@ const formData = reactive<CreateMerchantParams & UpdateMerchantParams>({
   contactPhone: '',
   contactEmail: '',
   address: '',
+  logo: '',
   description: '',
   businessScope: '',
   settlementAccount: '',
@@ -262,6 +331,38 @@ const formData = reactive<CreateMerchantParams & UpdateMerchantParams>({
   maxAdmins: 10,
   maxStorage: 10737418240, // 10GB
   commissionRate: 0,
+  shippingAddress: {
+    contactName: '',
+    contactPhone: '',
+    provinceCode: '',
+    provinceName: '',
+    cityCode: '',
+    cityName: '',
+    districtCode: '',
+    districtName: '',
+    detailAddress: '',
+    postalCode: '',
+  },
+});
+
+// 地区值（用于组件双向绑定）
+const regionValue = computed({
+  get: () => ({
+    provinceCode: formData.shippingAddress.provinceCode,
+    provinceName: formData.shippingAddress.provinceName,
+    cityCode: formData.shippingAddress.cityCode,
+    cityName: formData.shippingAddress.cityName,
+    districtCode: formData.shippingAddress.districtCode,
+    districtName: formData.shippingAddress.districtName,
+  }),
+  set: (val) => {
+    formData.shippingAddress.provinceCode = val.provinceCode;
+    formData.shippingAddress.provinceName = val.provinceName;
+    formData.shippingAddress.cityCode = val.cityCode;
+    formData.shippingAddress.cityName = val.cityName;
+    formData.shippingAddress.districtCode = val.districtCode;
+    formData.shippingAddress.districtName = val.districtName;
+  },
 });
 
 // 存储空间GB格式
@@ -314,6 +415,7 @@ watch(
         contactPhone: newData.contactPhone || '',
         contactEmail: newData.contactEmail || '',
         address: newData.address || '',
+        logo: newData.logo || '',
         description: newData.description || '',
         businessScope: newData.businessScope || '',
         settlementAccount: newData.settlementAccount || '',
@@ -322,6 +424,18 @@ watch(
         maxAdmins: newData.maxAdmins,
         maxStorage: newData.maxStorage,
         commissionRate: newData.commissionRate,
+        shippingAddress: {
+          contactName: newData.shippingAddress?.contactName || '',
+          contactPhone: newData.shippingAddress?.contactPhone || '',
+          provinceCode: newData.shippingAddress?.provinceCode || '',
+          provinceName: newData.shippingAddress?.provinceName || '',
+          cityCode: newData.shippingAddress?.cityCode || '',
+          cityName: newData.shippingAddress?.cityName || '',
+          districtCode: newData.shippingAddress?.districtCode || '',
+          districtName: newData.shippingAddress?.districtName || '',
+          detailAddress: newData.shippingAddress?.detailAddress || '',
+          postalCode: newData.shippingAddress?.postalCode || '',
+        },
       });
     }
   },
@@ -332,6 +446,38 @@ watch(
 const handleClose = () => {
   formRef.value?.resetFields();
   emit('update:visible', false);
+};
+
+// Logo 上传前验证
+const beforeLogoUpload = (file: File) => {
+  const isImage = file.type.startsWith('image/');
+  const isLt5M = file.size / 1024 / 1024 < 5;
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件！');
+    return false;
+  }
+  if (!isLt5M) {
+    ElMessage.error('图片大小不能超过 5MB！');
+    return false;
+  }
+  return true;
+};
+
+// Logo 上传处理
+const handleLogoUpload = async (options: UploadRequestOptions) => {
+  const { file } = options;
+
+  try {
+    uploadLoading.value = true;
+    const result = await uploadImageApi(file as File);
+    formData.logo = result.url;
+    ElMessage.success('Logo 上传成功');
+  } catch (error: any) {
+    ElMessage.error(error.message || 'Logo 上传失败');
+  } finally {
+    uploadLoading.value = false;
+  }
 };
 
 const handleSubmit = async () => {
@@ -345,13 +491,36 @@ const handleSubmit = async () => {
 
     if (isEdit.value && props.merchantData?.id) {
       // 更新商户
-      const { merchantCode, merchantType, ...updateData } = formData;
-      const response = await updateMerchantApi(props.merchantData.id, updateData);
+      const { merchantCode, merchantType, shippingAddress, ...updateData } = formData;
+
+      // 检查发货地址是否填写完整，如果填写了就包含，否则不发送
+      const hasShippingAddress = shippingAddress.contactName &&
+                                 shippingAddress.contactPhone &&
+                                 shippingAddress.provinceCode &&
+                                 shippingAddress.detailAddress;
+
+      const finalData = hasShippingAddress
+        ? { ...updateData, shippingAddress }
+        : updateData;
+
+      const response = await updateMerchantApi(props.merchantData.id, finalData);
       ElMessage.success('商户更新成功');
       emit('success', response.data);
     } else {
       // 创建商户
-      const response = await createMerchantApi(formData as CreateMerchantParams);
+      const { shippingAddress, ...createData } = formData;
+
+      // 检查发货地址是否填写完整
+      const hasShippingAddress = shippingAddress.contactName &&
+                                 shippingAddress.contactPhone &&
+                                 shippingAddress.provinceCode &&
+                                 shippingAddress.detailAddress;
+
+      const finalData = hasShippingAddress
+        ? { ...createData, shippingAddress }
+        : createData;
+
+      const response = await createMerchantApi(finalData as CreateMerchantParams);
       ElMessage.success('商户创建成功');
       emit('success', response.data);
     }
@@ -394,11 +563,51 @@ const handleSubmit = async () => {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+  margin-left: 10px;
 }
 
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.logo-uploader {
+  :deep(.el-upload) {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+
+    &:hover {
+      border-color: #409eff;
+    }
+  }
+
+  .logo {
+    width: 178px;
+    height: 178px;
+    display: block;
+    object-fit: cover;
+  }
+
+  .logo-uploader-icon {
+    width: 178px;
+    height: 178px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #8c939d;
+    font-size: 28px;
+    background-color: #fafafa;
+  }
+
+  .logo-uploader-text {
+    font-size: 14px;
+    margin-top: 8px;
+  }
 }
 </style>

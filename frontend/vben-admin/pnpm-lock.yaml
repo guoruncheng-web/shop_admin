@@ -667,6 +667,9 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.13
+      element-china-area-data:
+        specifier: ^6.1.0
+        version: 6.1.0
       element-plus:
         specifier: 'catalog:'
         version: 2.10.2(vue@3.5.17(typescript@5.8.3))
@@ -5740,6 +5743,9 @@ packages:
     resolution: {integrity: sha512-+0hMx9eYhJvWbgpKV9hN7jg0JcwydpopZE4hgi+KvQtByZXPp04NiCWU0LzcAbP63abZckIHkTQaXVF52mX3xQ==}
     engines: {node: '>=18.17'}
 
+  china-division@2.7.0:
+    resolution: {integrity: sha512-4uUPAT+1WfqDh5jytq7omdCmHNk3j+k76zEG/2IqaGcYB90c2SwcixttcypdsZ3T/9tN1TTpBDoeZn+Yw/qBEA==}
+
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
@@ -6530,6 +6536,9 @@ packages:
 
   electron-to-chromium@1.5.178:
     resolution: {integrity: sha512-wObbz/ar3Bc6e4X5vf0iO8xTN8YAjN/tgiAOJLr7yjYFtP9wAjq8Mb5h0yn6kResir+VYx2DXBj9NNobs0ETSA==}
+
+  element-china-area-data@6.1.0:
+    resolution: {integrity: sha512-IkpcjwQv2A/2AxFiSoaISZ+oMw1rZCPUSOg5sOCwT5jKc96TaawmKZeY81xfxXsO0QbKxU5LLc6AirhG52hUmg==}
 
   element-plus@2.10.2:
     resolution: {integrity: sha512-p2KiAa0jEGXrzdlTAfpiS7HQFAhla4gvx6H7RuDf+OO0uC3DGpolxvdHjFR8gt7+vaWyxQNcHa1sAdBkmjqlgA==}
@@ -16069,6 +16078,8 @@ snapshots:
       undici: 7.11.0
       whatwg-mimetype: 4.0.0
 
+  china-division@2.7.0: {}
+
   chokidar@3.6.0:
     dependencies:
       anymatch: 3.1.3
@@ -16896,6 +16907,10 @@ snapshots:
       jake: 10.9.2
 
   electron-to-chromium@1.5.178: {}
+
+  element-china-area-data@6.1.0:
+    dependencies:
+      china-division: 2.7.0
 
   element-plus@2.10.2(vue@3.5.17(typescript@5.8.3)):
     dependencies:

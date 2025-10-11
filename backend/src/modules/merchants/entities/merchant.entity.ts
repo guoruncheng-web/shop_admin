@@ -5,12 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
 } from 'typeorm';
 import { Role } from '../../../database/entities/role.entity';
 import { Admin } from '../../../database/entities/admin.entity';
 import { Menu } from '../../menus/entities/menu.entity';
 import { Resource } from '../../resource/entities/resource.entity';
 import { ResourceCategory } from '../../resource/entities/resource-category.entity';
+import { MerchantShippingAddress } from './merchant-shipping-address.entity';
 
 @Entity('merchants')
 export class Merchant {
@@ -316,4 +318,10 @@ export class Merchant {
 
   @OneToMany(() => ResourceCategory, (category) => category.merchant)
   resourceCategories: ResourceCategory[];
+
+  @OneToOne(
+    () => MerchantShippingAddress,
+    (shippingAddress) => shippingAddress.merchant,
+  )
+  shippingAddress: MerchantShippingAddress;
 }

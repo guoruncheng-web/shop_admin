@@ -7,6 +7,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Merchant } from './entities/merchant.entity';
+import { MerchantShippingAddress } from './entities/merchant-shipping-address.entity';
 import { CreateMerchantDto } from './dto/create-merchant.dto';
 import { UpdateMerchantDto } from './dto/update-merchant.dto';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
@@ -22,6 +23,8 @@ export class MerchantsService {
   constructor(
     @InjectRepository(Merchant)
     private merchantRepository: Repository<Merchant>,
+    @InjectRepository(MerchantShippingAddress)
+    private shippingAddressRepository: Repository<MerchantShippingAddress>,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
     @InjectRepository(Role)
@@ -69,6 +72,18 @@ export class MerchantsService {
 
     const savedMerchant = await this.merchantRepository.save(merchant);
 
+    // 创建发货地址（如果提供）
+    if (createMerchantDto.shippingAddress) {
+      const shippingAddress = this.shippingAddressRepository.create({
+        ...createMerchantDto.shippingAddress,
+        merchantId: savedMerchant.id,
+        isDefault: 1,
+        createdBy: currentUser?.userId || null,
+        updatedBy: currentUser?.userId || null,
+      });
+      await this.shippingAddressRepository.save(shippingAddress);
+    }
+
     // 1. 生成随机唯一的管理员账号和密码
     const { username, plaintextPassword } =
       await this.generateUniqueAdminCredentials();
@@ -104,12 +119,27 @@ export class MerchantsService {
       .add(savedRole);
 
     // 5. 获取菜单管理相关的权限
-    const menuPermissions = await this.permissionRepository.find({
-      where: [
-        { code: Like('menu:%') }, // 菜单相关权限
-        { code: Like('system:menu:%') }, // 系统菜单权限
-      ],
-    });
+    // 为超级管理员分配完整的菜单管理权限
+    const menuPermissions = await this.permissionRepository
+      .createQueryBuilder('permission')
+      .where('permission.code LIKE :menuCode', { menuCode: 'menu:%' })
+      .orWhere('permission.code LIKE :systemMenuCode', {
+        systemMenuCode: 'system:menu:%',
+      })
+      .orWhere('permission.code IN (:...codes)', {
+        codes: [
+          'route:system:menu', // 菜单管理路由权限
+          'btn:menu:add', // 添加菜单按钮权限
+          'btn:menu:edit', // 编辑菜单按钮权限
+          'btn:menu:delete', // 删除菜单按钮权限
+          'btn:menu:view', // 查看菜单按钮权限
+        ],
+      })
+      .getMany();
+
+    console.log(
+      `为商户 ${savedMerchant.merchantName} 分配了 ${menuPermissions.length} 个菜单管理权限`,
+    );
 
     // 6. 将权限分配给角色（通过中间表 role_permissions）
     if (menuPermissions.length > 0) {
@@ -118,9 +148,50 @@ export class MerchantsService {
         .relation(Role, 'permissions')
         .of(savedRole)
         .add(menuPermissions);
+    } else {
+      console.warn(
+        `警告：未找到菜单管理权限数据，商户 ${savedMerchant.merchantName} 的超级管理员可能无法管理菜单`,
+      );
     }
 
-    // 7. 返回商户信息和管理员凭证
+    // 7. 为超级管理员分配菜单（如果菜单表中有数据）
+    // 获取所有菜单管理相关的菜单
+    const systemMenus = await this.menuRepository.find({
+      where: {
+        merchantId: savedMerchant.id,
+      },
+    });
+
+    // 如果该商户还没有菜单，从平台获取基础菜单模板
+    if (systemMenus.length === 0) {
+      // 查找平台（merchantId = 1）的菜单管理相关菜单
+      const platformMenus = await this.menuRepository.find({
+        where: [
+          { path: Like('%menu%'), merchantId: 1 }, // 路径包含menu的菜单
+          { name: Like('%菜单%'), merchantId: 1 }, // 名称包含菜单的菜单
+        ],
+      });
+
+      // 为新商户复制这些菜单
+      if (platformMenus.length > 0) {
+        const newMenus = platformMenus.map((menu) => {
+          return this.menuRepository.create({
+            ...menu,
+            id: undefined, // 移除ID，让数据库自动生成
+            merchantId: savedMerchant.id,
+            createdBy: savedAdmin.id,
+            updatedBy: savedAdmin.id,
+          });
+        });
+
+        await this.menuRepository.save(newMenus);
+        console.log(
+          `为商户 ${savedMerchant.merchantName} 复制了 ${newMenus.length} 个基础菜单`,
+        );
+      }
+    }
+
+    // 8. 返回商户信息和管理员凭证
     return {
       ...savedMerchant,
       superAdmin: {
@@ -233,7 +304,9 @@ export class MerchantsService {
   async findAll(queryDto: QueryMerchantDto) {
     const { page = 1, pageSize = 10, ...filters } = queryDto;
 
-    const queryBuilder = this.merchantRepository.createQueryBuilder('merchant');
+    const queryBuilder = this.merchantRepository
+      .createQueryBuilder('merchant')
+      .leftJoinAndSelect('merchant.shippingAddress', 'shippingAddress');
 
     // 应用过滤条件
     if (filters.merchantCode) {
@@ -310,6 +383,7 @@ export class MerchantsService {
   async findOne(id: number): Promise<Merchant> {
     const merchant = await this.merchantRepository.findOne({
       where: { id },
+      relations: ['shippingAddress'],
     });
 
     if (!merchant) {
@@ -360,8 +434,72 @@ export class MerchantsService {
       }
     }
 
+    // 处理发货地址
+    if (updateMerchantDto.shippingAddress) {
+      const addressData = updateMerchantDto.shippingAddress;
+
+      // 检查必填字段是否都有值
+      const hasAllRequiredFields =
+        addressData.contactName &&
+        addressData.contactPhone &&
+        addressData.provinceCode &&
+        addressData.provinceName &&
+        addressData.cityCode &&
+        addressData.cityName &&
+        addressData.districtCode &&
+        addressData.districtName &&
+        addressData.detailAddress;
+
+      if (!hasAllRequiredFields) {
+        throw new BadRequestException('发货地址信息不完整，请填写所有必填字段');
+      }
+
+      const existingAddress = await this.shippingAddressRepository.findOne({
+        where: { merchantId: id },
+      });
+
+      if (existingAddress) {
+        // 更新现有地址 - 只更新允许修改的字段
+        existingAddress.contactName = addressData.contactName;
+        existingAddress.contactPhone = addressData.contactPhone;
+        existingAddress.provinceCode = addressData.provinceCode;
+        existingAddress.provinceName = addressData.provinceName;
+        existingAddress.cityCode = addressData.cityCode;
+        existingAddress.cityName = addressData.cityName;
+        existingAddress.districtCode = addressData.districtCode;
+        existingAddress.districtName = addressData.districtName;
+        existingAddress.detailAddress = addressData.detailAddress;
+        existingAddress.postalCode = addressData.postalCode || null;
+        existingAddress.updatedBy = currentUser?.userId || null;
+
+        await this.shippingAddressRepository.save(existingAddress);
+      } else {
+        // 创建新地址
+        const shippingAddress = this.shippingAddressRepository.create({
+          contactName: addressData.contactName,
+          contactPhone: addressData.contactPhone,
+          provinceCode: addressData.provinceCode,
+          provinceName: addressData.provinceName,
+          cityCode: addressData.cityCode,
+          cityName: addressData.cityName,
+          districtCode: addressData.districtCode,
+          districtName: addressData.districtName,
+          detailAddress: addressData.detailAddress,
+          postalCode: addressData.postalCode || null,
+          merchantId: id,
+          isDefault: 1,
+          createdBy: currentUser?.userId || null,
+          updatedBy: currentUser?.userId || null,
+        });
+        await this.shippingAddressRepository.save(shippingAddress);
+      }
+    }
+
+    // 从 DTO 中移除 shippingAddress，避免直接保存到 merchant 表
+    const { shippingAddress, ...merchantData } = updateMerchantDto;
+
     // 更新字段
-    Object.assign(merchant, updateMerchantDto);
+    Object.assign(merchant, merchantData);
     merchant.updatedBy = currentUser?.userId || null;
 
     return await this.merchantRepository.save(merchant);
@@ -487,5 +625,69 @@ export class MerchantsService {
     await this.merchantRepository.save(merchant);
 
     return { apiKey, apiSecret };
+  }
+
+  /**
+   * 获取商户的超级管理员信息
+   */
+  async getSuperAdmin(id: number) {
+    const merchant = await this.findOne(id);
+
+    // 查找该商户的第一个管理员（通常是创建时自动生成的超级管理员）
+    const admin = await this.adminRepository.findOne({
+      where: { merchantId: id },
+      order: { createdAt: 'ASC' },
+      relations: ['roles'],
+    });
+
+    if (!admin) {
+      throw new NotFoundException(`商户 ${id} 没有关联的管理员`);
+    }
+
+    return {
+      id: admin.id,
+      username: admin.username,
+      realName: admin.realName,
+      email: admin.email,
+      phone: admin.phone,
+      status: admin.status,
+      roles: admin.roles?.map((role) => ({
+        id: role.id,
+        name: role.name,
+        code: role.code,
+      })),
+      createdAt: admin.createdAt,
+      // 注意：不返回密码，因为已加密
+    };
+  }
+
+  /**
+   * 重置商户超级管理员密码
+   */
+  async resetSuperAdminPassword(id: number, currentUser?: any) {
+    const merchant = await this.findOne(id);
+
+    // 查找该商户的第一个管理员
+    const admin = await this.adminRepository.findOne({
+      where: { merchantId: id },
+      order: { createdAt: 'ASC' },
+    });
+
+    if (!admin) {
+      throw new NotFoundException(`商户 ${id} 没有关联的管理员`);
+    }
+
+    // 生成新密码
+    const newPassword = this.generateRandomPassword(12);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    admin.password = hashedPassword;
+    await this.adminRepository.save(admin);
+
+    return {
+      username: admin.username,
+      password: newPassword, // 明文密码，仅此次返回
+      email: admin.email,
+    };
   }
 }
