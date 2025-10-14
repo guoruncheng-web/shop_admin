@@ -114,9 +114,21 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       // 这里可以根据业务进行定制,你可以拿到 error 内的信息进行定制化处理，根据不同的 code 做不同的提示，而不是直接使用 message.error 提示 msg
       // 当前mock接口返回的错误字段是 error 或者 message
       const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
-      // 如果没有错误信息，则会根据状态码进行提示
-      ElMessage.error(errorMessage || msg);
+      const statusCode = error?.response?.status;
+
+      // 403 时退出并跳转登录
+      if (statusCode === 403) {
+        const authStore = useAuthStore();
+        // 立即触发登出流程（通常会清理 token 并跳转到登录页）
+        authStore.logout();
+      }
+
+      // 优先使用后端 message，其次 error，最后回退到默认 msg
+      const preferredMessage = responseData?.message ?? responseData?.error ?? '';
+      const finalMessage = (preferredMessage || msg) as string;
+      // 显示形如：[500] 用户名或密码错误 或 [403] xxx
+      const showMessage = statusCode ? `[${statusCode}] ${finalMessage}` : finalMessage;
+      ElMessage.error(showMessage);
     }),
   );
 

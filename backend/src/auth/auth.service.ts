@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -249,7 +249,7 @@ export class AuthService {
           false,
           '用户名或密码错误',
         );
-        throw new UnauthorizedException('用户名或密码错误');
+        throw new InternalServerErrorException('用户名或密码错误');
       }
 
       userId = user.id;

@@ -122,8 +122,8 @@ export class AuthController {
     type: LoginResponseDto,
   })
   @ApiResponse({
-    status: 401,
-    description: '登录失败 - 用户名或密码错误',
+    status: 500,
+    description: '服务器错误 - 用户名或密码错误',
   })
   @ApiResponse({
     status: 400,
