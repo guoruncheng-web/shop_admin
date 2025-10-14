@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 @Entity('operation_logs')
 @Index(['userId', 'createdAt'])
@@ -70,6 +73,19 @@ export class OperationLog {
   @Column({ type: 'varchar', length: 50, nullable: true, comment: '业务标识' })
   businessId: string;
 
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    nullable: true,
+    comment: '所属商户ID',
+  })
+  merchantId: number | null;
+
   @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
+
+  // 关联商户信息
+  @ManyToOne(() => Merchant, { nullable: true })
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant | null;
 }

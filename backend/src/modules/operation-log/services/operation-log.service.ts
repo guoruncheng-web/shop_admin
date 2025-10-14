@@ -8,6 +8,7 @@ import {
   OperationLogResponseDto,
 } from '../dto/operation-log.dto';
 import { Admin } from '../../../database/entities/admin.entity';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 @Injectable()
 export class OperationLogService {
@@ -16,6 +17,8 @@ export class OperationLogService {
     private operationLogRepository: Repository<OperationLog>,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
+    @InjectRepository(Merchant)
+    private merchantRepository: Repository<Merchant>,
   ) {}
 
   async create(
@@ -39,10 +42,12 @@ export class OperationLogService {
       startTime,
       endTime,
       businessId,
+      merchantId,
     } = query;
 
     const queryBuilder =
-      this.operationLogRepository.createQueryBuilder('operationLog');
+      this.operationLogRepository.createQueryBuilder('operationLog')
+        .leftJoinAndSelect('operationLog.merchant', 'merchant');
 
     // 用户名筛选
     if (username && username !== '') {
@@ -80,6 +85,13 @@ export class OperationLogService {
       });
     }
 
+    // 商户ID筛选
+    if (merchantId) {
+      queryBuilder.andWhere('operationLog.merchantId = :merchantId', {
+        merchantId,
+      });
+    }
+
     // 时间范围筛选
     if (startTime && endTime) {
       queryBuilder.andWhere(
@@ -110,11 +122,23 @@ export class OperationLogService {
       userIds.length > 0
         ? await this.adminRepository.find({
             where: { id: In(userIds) },
-            select: ['id', 'username', 'realName', 'avatar'],
+            relations: ['merchant'],
           })
         : [];
 
     const userMap = new Map(users.map((user) => [user.id, user]));
+
+    // 获取所有相关商户信息
+    const merchantIds = [...new Set(items.map((log) => log.merchantId).filter(Boolean))];
+    const merchants =
+      merchantIds.length > 0
+        ? await this.merchantRepository.find({
+            where: { id: In(merchantIds) },
+            select: ['id', 'merchantCode', 'merchantName', 'merchantType'],
+          })
+        : [];
+
+    const merchantMap = new Map(merchants.map((merchant) => [merchant.id, merchant]));
 
     // 转换数据格式
     const transformedItems: OperationLogResponseDto[] = items.map((log) => {
@@ -135,6 +159,12 @@ export class OperationLogService {
               realName: '【用户不存在】',
               avatar: null,
             },
+        merchant: log.merchantId ? merchantMap.get(log.merchantId) || {
+          id: log.merchantId,
+          merchantCode: 'UNKNOWN',
+          merchantName: '未知商户',
+          merchantType: 2,
+        } : undefined,
       };
     });
 
@@ -154,6 +184,7 @@ export class OperationLogService {
   async findOne(id: number): Promise<OperationLogResponseDto | null> {
     const operationLog = await this.operationLogRepository.findOne({
       where: { id },
+      relations: ['merchant'],
     });
 
     if (!operationLog) {
@@ -181,6 +212,12 @@ export class OperationLogService {
             realName: '【用户不存在】',
             avatar: null,
           },
+      merchant: operationLog.merchant ? {
+        id: operationLog.merchant.id,
+        merchantCode: operationLog.merchant.merchantCode,
+        merchantName: operationLog.merchant.merchantName,
+        merchantType: operationLog.merchant.merchantType,
+      } : undefined,
     };
   }
 

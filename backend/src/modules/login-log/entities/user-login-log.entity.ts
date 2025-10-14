@@ -5,7 +5,9 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 
 @Entity('user_login_logs')
 export class UserLoginLog {
@@ -35,8 +37,21 @@ export class UserLoginLog {
   @Column({ type: 'varchar', length: 255, nullable: true, comment: '失败原因' })
   failReason: string;
 
+  @Column({
+    type: 'bigint',
+    name: 'merchant_id',
+    nullable: true,
+    comment: '所属商户ID',
+  })
+  merchantId: number | null;
+
   @CreateDateColumn({ comment: '创建时间' })
   createdAt: Date;
+
+  // 关联商户信息
+  @ManyToOne(() => Merchant, { nullable: true })
+  @JoinColumn({ name: 'merchant_id' })
+  merchant: Merchant | null;
 
   // 注意：这里不直接关联User实体，因为可能存在循环依赖
   // 如果需要用户信息，通过userId查询

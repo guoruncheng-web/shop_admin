@@ -35,7 +35,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false, // 临时禁用严格验证
       transform: true,
       transformOptions: {
         enableImplicitConversion: true,

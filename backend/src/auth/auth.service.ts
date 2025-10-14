@@ -168,19 +168,7 @@ export class AuthService {
     // 从数据库查找用户
     const user = await this.adminRepository.findOne({
       where: { username },
-      relations: ['roles'],
-      select: [
-        'id',
-        'username',
-        'password',
-        'realName',
-        'email',
-        'phone',
-        'avatar',
-        'status',
-        'lastLoginTime',
-        'lastLoginIp',
-      ],
+      relations: ['roles', 'merchant'],
     });
 
     if (!user) {

@@ -80,6 +80,12 @@ export class QueryOperationLogDto {
   @IsOptional()
   @IsString()
   businessId?: string;
+
+  @ApiPropertyOptional({ description: '商户ID' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  merchantId?: number;
 }
 
 export class OperationLogResponseDto {
@@ -102,6 +108,13 @@ export class OperationLogResponseDto {
   errorMessage?: string;
   businessId?: string;
   createdAt: Date;
+  merchantId?: number;
+  merchant?: {
+    id: number;
+    merchantCode: string;
+    merchantName: string;
+    merchantType: number;
+  };
   user?: {
     id: number;
     username: string;

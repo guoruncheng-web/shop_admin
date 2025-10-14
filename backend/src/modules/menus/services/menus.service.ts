@@ -244,27 +244,11 @@ export class MenusService {
 
   /**
    * 为菜单添加对应的按钮权限
+   * 只从数据库读取，不自动生成
    */
   private async addButtonsToMenus(menus: Menu[]): Promise<Menu[]> {
-    const result = [...menus];
-
-    // 为每个菜单类型的项目添加标准的按钮权限
-    const menuItems = menus.filter((menu) => menu.type === 2); // 菜单类型
-
-    for (const menu of menuItems) {
-      // 检查是否已经有对应的按钮，如果没有则创建标准按钮
-      const existingButtons = menus.filter(
-        (m) => m.parentId === menu.id && m.type === 3,
-      );
-
-      if (existingButtons.length === 0) {
-        // 创建标准的CRUD按钮
-        const buttons = this.createStandardButtons(menu);
-        result.push(...buttons);
-      }
-    }
-
-    return result;
+    // 直接返回数据库中的菜单，不自动生成按钮
+    return menus;
   }
 
   /**
@@ -1027,10 +1011,10 @@ export class MenusService {
 
   // 通过用户ID汇总完整用户档案（基础信息 + 角色 + 权限 + 菜单）
   async getFullUserProfile(userId: number): Promise<any> {
-    // 查询用户及其角色、权限、商户信息
+    // 查询用户及其角色、商户信息
     const user = await this.adminRepository.findOne({
       where: { id: userId },
-      relations: ['roles', 'roles.permissions', 'merchant'],
+      relations: ['roles', 'merchant'],
     });
     if (!user) {
       throw new NotFoundException('用户不存在');
@@ -1048,16 +1032,31 @@ export class MenusService {
       .filter((r) => r.status === 1)
       .map((r) => r.code);
 
+    // 从菜单的 button_key 提取权限标识
     const permissionSet = new Set<string>();
-    (user.roles || []).forEach((role) => {
-      if (role.status === 1) {
-        (role.permissions || []).forEach((permission) => {
-          if (permission.status === 1 && permission.code) {
-            permissionSet.add(permission.code);
-          }
-        });
-      }
-    });
+
+    // 获取用户所有启用角色的ID
+    const userRoleIds = (user.roles || [])
+      .filter((role) => role.status === 1)
+      .map((role) => role.id);
+
+    if (userRoleIds.length > 0) {
+      // 通过角色-菜单关联表获取用户的所有菜单
+      const roleMenus = await this.roleMenuRepository
+        .createQueryBuilder('roleMenu')
+        .leftJoinAndSelect('roleMenu.menu', 'menu')
+        .where('roleMenu.roleId IN (:...roleIds)', { roleIds: userRoleIds })
+        .andWhere('menu.status = :status', { status: 1 })
+        .getMany();
+
+      // 提取所有菜单的 button_key 作为权限标识
+      roleMenus.forEach((roleMenu) => {
+        if (roleMenu.menu && roleMenu.menu.buttonKey) {
+          permissionSet.add(roleMenu.menu.buttonKey);
+        }
+      });
+    }
+
     const permissions = Array.from(permissionSet);
 
     // 查询基于权限过滤的菜单树

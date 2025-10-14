@@ -106,6 +106,17 @@
             </template>
           </ElTableColumn>
 
+           <ElTableColumn label="用户角色" min-width="300">
+            <template #default="{ row }">
+               <div v-if="row.roles">
+                  <div class="row_item" v-for="(item, index) in row.roles" :key="item.id">
+                      <div class="row_name">{{ `角色名称:${item.name}` }}</div>
+                      <div class="row_code">{{ `角色编码:${item.code}` }}</div>
+                  </div>
+               </div>
+            </template>
+          </ElTableColumn>
+
           <ElTableColumn prop="email" label="邮箱" min-width="180" show-overflow-tooltip />
           <ElTableColumn prop="phone" label="手机号" width="130" />
           
@@ -618,7 +629,10 @@ onMounted(() => {
     gap: 4px;
   }
 }
-
+.row_item {
+  font-size: 12px;
+  color: red;
+}
 /* Element Plus 样式覆盖 */
 :deep(.el-table) {
   border-radius: 8px;

@@ -82,4 +82,9 @@ export class QueryUserLoginLogDto {
   @IsOptional()
   @IsString()
   endTime?: string;
+
+  @ApiProperty({ description: '商户ID', required: false })
+  @IsOptional()
+  @IsNumber()
+  merchantId?: number;
 }

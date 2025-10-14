@@ -20,6 +20,7 @@ import {
 import { OperationLogService } from '../services/operation-log.service';
 import { QueryOperationLogDto } from '../dto/operation-log.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { Types } from '../../../auth/decorators/types.decorator';
 import {
   OperationLog,
   ModuleNames,
@@ -88,6 +89,12 @@ export class OperationLogController {
         msg: { type: 'string', example: '获取成功' },
       },
     },
+  })
+  @Types('system:operation-log:view', {
+    name: '查看操作日志',
+    module: 'system',
+    operation: 'view',
+    includeParams: true
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -161,6 +168,11 @@ export class OperationLogController {
         msg: { type: 'string', example: '获取成功' },
       },
     },
+  })
+  @Types('system:operation-log:statistics', {
+    name: '查看操作日志统计',
+    module: 'system',
+    operation: 'view'
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -253,6 +265,11 @@ export class OperationLogController {
     status: 404,
     description: '操作日志不存在',
   })
+  @Types('system:operation-log:view', {
+    name: '查看操作日志详情',
+    module: 'system',
+    operation: 'view'
+  })
   @OperationLog({
     module: ModuleNames.SYSTEM,
     operation: OperationTypes.VIEW.operation,
@@ -289,6 +306,11 @@ export class OperationLogController {
     status: 200,
     description: '删除成功',
   })
+  @Types('system:operation-log:delete', {
+    name: '删除操作日志',
+    module: 'system',
+    operation: 'delete'
+  })
   @OperationLog({
     module: ModuleNames.SYSTEM,
     operation: OperationTypes.USER_DELETE.operation,
@@ -312,6 +334,12 @@ export class OperationLogController {
   @ApiResponse({
     status: 200,
     description: '批量删除成功',
+  })
+  @Types('system:operation-log:delete', {
+    name: '批量删除操作日志',
+    module: 'system',
+    operation: 'delete',
+    includeParams: true
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -346,6 +374,12 @@ export class OperationLogController {
     status: 200,
     description: '清理成功',
   })
+  @Types('system:operation-log:clear', {
+    name: '清理过期操作日志',
+    module: 'system',
+    operation: 'clear',
+    includeParams: true
+  })
   @OperationLog({
     module: ModuleNames.SYSTEM,
     operation: OperationTypes.SYSTEM_LOG_CLEAR.operation,
@@ -370,6 +404,11 @@ export class OperationLogController {
   @ApiResponse({
     status: 200,
     description: '清空成功',
+  })
+  @Types('system:operation-log:clear', {
+    name: '清空所有操作日志',
+    module: 'system',
+    operation: 'clear'
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,

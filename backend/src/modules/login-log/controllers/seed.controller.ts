@@ -3,13 +3,19 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { DataSource } from 'typeorm';
 import { seedUserLoginLogs } from '../seeds/user-login-log.seed';
 import { Public } from '../../../auth/decorators/public.decorator';
-
+import { Types } from '../../../auth/decorators/types.decorator';
 @ApiTags('数据初始化')
 @Controller('seed')
 export class SeedController {
   constructor(private readonly dataSource: DataSource) {}
 
   @Post('login-logs')
+  @Types('system:login-log:view', {
+    name: '查看登录日志',
+    module: 'login-log',
+    operation: 'view',
+    includeParams: false
+  })
   @Public()
   @ApiOperation({ summary: '初始化用户登录日志测试数据' })
   async seedLoginLogs() {

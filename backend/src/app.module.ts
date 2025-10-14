@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
 import { redisStore } from 'cache-manager-redis-store';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
@@ -22,6 +22,8 @@ import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { FixAdminsController } from './database/fix-admins.controller';
+import { InitLogMerchantController } from './database/init-log-merchant.controller';
+import { AddMerchantToUsersController } from './database/add-merchant-to-users';
 
 import { ResourceModule } from './modules/resource/resource.module';
 import { LoginLogModule } from './modules/login-log/login-log.module';
@@ -32,6 +34,7 @@ import { Permission } from './database/entities/permission.entity';
 import { Menu } from './modules/menus/entities/menu.entity';
 import { Role } from './database/entities/role.entity';
 import { Admin } from './database/entities/admin.entity';
+import { OperationLogInterceptor } from './common/interceptors/operation-log.interceptor';
 
 @Module({
   imports: [
@@ -113,12 +116,16 @@ import { Admin } from './database/entities/admin.entity';
     // 为迁移控制器添加TypeORM实体
     TypeOrmModule.forFeature([Permission, Menu, Role, Admin]),
   ],
-  controllers: [AppController, MigrationController, FixAdminsController],
+  controllers: [AppController, MigrationController, FixAdminsController, InitLogMerchantController, AddMerchantToUsersController],
   providers: [
     AppService,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: OperationLogInterceptor,
     },
   ],
 })

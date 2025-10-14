@@ -7,6 +7,7 @@ import {
   QueryUserLoginLogDto,
 } from '../dto/create-login-log.dto';
 import { Admin } from '../../../database/entities/admin.entity';
+import { Merchant } from '../../merchants/entities/merchant.entity';
 import { IpLocationService } from './ip-location.service';
 
 @Injectable()
@@ -16,6 +17,8 @@ export class UserLoginLogService {
     private userLoginLogRepository: Repository<UserLoginLog>,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
+    @InjectRepository(Merchant)
+    private merchantRepository: Repository<Merchant>,
     private ipLocationService: IpLocationService,
   ) {}
 
@@ -32,12 +35,15 @@ export class UserLoginLogService {
       pageSize = 20,
       status,
       userId,
+      username,
+      merchantId,
       startDate,
       endDate,
     } = query;
 
     const queryBuilder =
-      this.userLoginLogRepository.createQueryBuilder('loginLog');
+      this.userLoginLogRepository.createQueryBuilder('loginLog')
+        .leftJoinAndSelect('loginLog.merchant', 'merchant');
 
     if (
       status &&
@@ -49,6 +55,16 @@ export class UserLoginLogService {
 
     if (userId) {
       queryBuilder.andWhere('loginLog.userId = :userId', { userId });
+    }
+
+    if (merchantId) {
+      queryBuilder.andWhere('loginLog.merchantId = :merchantId', { merchantId });
+    }
+
+    if (username) {
+      queryBuilder.andWhere('loginLog.username LIKE :username', {
+        username: `%${username}%`
+      });
     }
 
     if (startDate) {
@@ -75,15 +91,7 @@ export class UserLoginLogService {
       userIds.length > 0
         ? await this.adminRepository.find({
             where: { id: In(userIds) },
-            select: [
-              'id',
-              'username',
-              'realName',
-              'email',
-              'phone',
-              'avatar',
-              'status',
-            ],
+            relations: ['merchant'],
           })
         : [];
 
@@ -112,6 +120,7 @@ export class UserLoginLogService {
         loginTime: log.createdAt.toISOString(),
         logoutTime: null, // 暂时为空，后续可扩展
         sessionId: null, // 暂时为空，后续可扩展
+        merchant: log.merchant || user?.merchant || null,
         user: user
           ? {
               id: user.id,
@@ -121,6 +130,7 @@ export class UserLoginLogService {
               phone: user.phone || null,
               avatar: user.avatar || null,
               status: user.status,
+              merchant: user.merchant || null,
             }
           : {
               id: log.userId,
@@ -130,6 +140,7 @@ export class UserLoginLogService {
               phone: null,
               avatar: null,
               status: 0,
+              merchant: null,
             },
       };
     });
@@ -262,6 +273,7 @@ export class UserLoginLogService {
     userAgent?: string,
     success: boolean = true,
     failReason?: string,
+    merchantId?: number | null,
   ) {
     // 异步获取位置信息，但不阻塞登录流程
     let location = this.getLocationFromIp(ip);
@@ -282,6 +294,7 @@ export class UserLoginLogService {
       ip,
       userAgent,
       location,
+      merchantId,
       status: success ? ('success' as const) : ('failed' as const),
       failReason: success ? null : failReason,
     };

@@ -25,16 +25,24 @@ import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
 import { QueryMenuDto } from '../dto/query-menu.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { TypesGuard } from '../../../auth/guards/types.guard';
+import { Types } from '../../../auth/decorators/types.decorator';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 
 @ApiTags('菜单管理')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TypesGuard)
 @Controller('menus')
 export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
   @Post()
+  @Types('system:menu:create', {
+    name: '创建菜单',
+    module: 'menu',
+    operation: 'create',
+    includeParams: true
+  })
   @ApiOperation({ summary: '创建菜单', description: '创建新的菜单项' })
   @ApiResponse({
     status: 201,
@@ -76,6 +84,12 @@ export class MenusController {
   }
 
   @Get('tree')
+  @Types('system:menu:view', {
+    name: '查看菜单树',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({ summary: '获取菜单树', description: '获取菜单的树形结构' })
   @ApiResponse({
     status: 200,
@@ -119,6 +133,12 @@ export class MenusController {
   }
 
   @Get()
+  @Types('system:menu:view', {
+    name: '查询菜单列表',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({
     summary: '查询菜单列表',
     description: '查询菜单列表，支持模糊查询',
@@ -145,6 +165,12 @@ export class MenusController {
   }
 
   @Get('user')
+  @Types('system:menu:view', {
+    name: '获取用户菜单',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({
     summary: '获取用户菜单',
     description: '根据用户权限获取菜单',
@@ -167,8 +193,7 @@ export class MenusController {
       },
     },
   })
-  async getUserMenus(@Query('permissions') permissions?: string) {
-    const userPermissions = permissions ? permissions.split(',') : [];
+  async getUserMenus() {
     const menus = await this.menusService.getUserMenusByUserId(1); // 临时使用用户ID 1
     return {
       code: 200,
@@ -178,6 +203,12 @@ export class MenusController {
   }
 
   @Get('user/:userId')
+  @Types('system:menu:view', {
+    name: '根据用户ID获取菜单',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({
     summary: '根据用户ID获取菜单',
     description: '根据用户ID获取该用户角色对应的菜单列表',
@@ -205,6 +236,12 @@ export class MenusController {
   }
 
   @Get('user/:userId/buttons')
+  @Types('system:menu:view', {
+    name: '获取用户按钮权限',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({
     summary: '获取用户按钮权限',
     description: '根据用户ID获取该用户的按钮权限列表',
@@ -232,6 +269,12 @@ export class MenusController {
   }
 
   @Get(':id')
+  @Types('system:menu:view', {
+    name: '获取菜单详情',
+    module: 'menu',
+    operation: 'view',
+    includeParams: false
+  })
   @ApiOperation({
     summary: '获取菜单详情',
     description: '根据ID获取菜单详细信息',
@@ -259,6 +302,12 @@ export class MenusController {
   }
 
   @Patch(':id')
+  @Types('system:menu:update', {
+    name: '更新菜单',
+    module: 'menu',
+    operation: 'update',
+    includeParams: true
+  })
   @ApiOperation({ summary: '更新菜单', description: '根据ID更新菜单信息' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
@@ -287,6 +336,12 @@ export class MenusController {
   }
 
   @Put(':id')
+  @Types('system:menu:update', {
+    name: '更新菜单(PUT)',
+    module: 'menu',
+    operation: 'update',
+    includeParams: true
+  })
   @ApiOperation({
     summary: '更新菜单 (PUT)',
     description: '根据ID更新菜单信息 (PUT方法)',
@@ -318,6 +373,12 @@ export class MenusController {
   }
 
   @Patch(':id/status')
+  @Types('system:menu:update', {
+    name: '更新菜单状态',
+    module: 'menu',
+    operation: 'update',
+    includeParams: true
+  })
   @ApiOperation({
     summary: '更新菜单状态 (PATCH)',
     description: '启用或禁用菜单',
@@ -348,6 +409,12 @@ export class MenusController {
   }
 
   @Put(':id/status')
+  @Types('system:menu:update', {
+    name: '更新菜单状态(PUT)',
+    module: 'menu',
+    operation: 'update',
+    includeParams: true
+  })
   @ApiOperation({
     summary: '更新菜单状态 (PUT)',
     description: '启用或禁用菜单',
@@ -378,7 +445,12 @@ export class MenusController {
   }
 
   @Patch(':id/sort')
-  @Put(':id/sort')
+  @Types('system:menu:update', {
+    name: '更新菜单排序',
+    module: 'menu',
+    operation: 'update',
+    includeParams: true
+  })
   @ApiOperation({ summary: '更新菜单排序', description: '更新菜单的排序值' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
@@ -404,6 +476,12 @@ export class MenusController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @Types('system:menu:delete', {
+    name: '删除菜单',
+    module: 'menu',
+    operation: 'delete',
+    includeParams: false
+  })
   @ApiOperation({ summary: '删除菜单', description: '根据ID删除菜单' })
   @ApiParam({ name: 'id', description: '菜单ID', type: 'number' })
   @ApiResponse({
@@ -429,6 +507,12 @@ export class MenusController {
 
   @Post('batch-delete')
   @HttpCode(HttpStatus.OK)
+  @Types('system:menu:delete', {
+    name: '批量删除菜单',
+    module: 'menu',
+    operation: 'delete',
+    includeParams: true
+  })
   @ApiOperation({ summary: '批量删除菜单', description: '批量删除多个菜单' })
   @ApiResponse({
     status: 200,

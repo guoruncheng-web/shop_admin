@@ -44,7 +44,7 @@
       </ElFormItem>
 
       <ElFormItem 
-        v-if="formData.type === 3"
+        v-if="formData.type !== 1"
         label="权限标识" 
         prop="code"
       >
