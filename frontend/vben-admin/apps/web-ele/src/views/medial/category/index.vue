@@ -3,7 +3,7 @@
     <div class="category-management">
       <!-- 操作栏 -->
       <div class="action-bar">
-        <el-button type="primary" @click="showAddDialog = true">
+        <el-button type="primary" @click="showAddDialog = true" v-permission="['system:medialCategory:add']">
           <span class="icon">+</span>
           添加一级分类
         </el-button>
@@ -44,6 +44,7 @@
                   type="primary" 
                   @click.stop="addSubCategoryFromTree(data)"
                   title="添加子分类"
+                  v-permission="['system:medialCategory:add']"
                 >
                   新增
                 </el-button>
@@ -52,6 +53,7 @@
                   size="small" 
                   type="warning" 
                   @click.stop="editCategoryFromTree(data)"
+                  v-permission="['system:medialCategory:edit']"
                   title="编辑"
                 >
                   编辑
@@ -62,6 +64,7 @@
                   type="danger" 
                   @click.stop="deleteCategoryFromTree(data)"
                   title="删除"
+                  v-permission="['system:medialCategory:delete']"
                 >
                   删除
                 </el-button>

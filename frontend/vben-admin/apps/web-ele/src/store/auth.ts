@@ -20,6 +20,8 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const loginLoading = ref(false);
+  // 存储后端返回的权限码
+  const userPermissions = ref<string[]>([]);
 
   /**
    * 异步处理登录操作
@@ -48,6 +50,12 @@ export const useAuthStore = defineStore('auth', () => {
         ]);
 
         userInfo = fetchUserInfoResult;
+        // 若 profile 返回了权限，存入本地
+        if (userInfo?.permissions && Array.isArray(userInfo.permissions)) {
+          userPermissions.value = userInfo.permissions;
+          // 同步到 accessStore，供指令使用
+          accessStore.setAccessCodes(userInfo.permissions);
+        }
 
         userStore.setUserInfo(userInfo);
         accessStore.setAccessCodes(accessCodes);
@@ -105,6 +113,16 @@ export const useAuthStore = defineStore('auth', () => {
     userInfo = await getProfile();
     // 将用户信息保存到Pinia store中
     userStore.setUserInfo(userInfo);
+    // 同步保存 permissions
+    if (userInfo?.permissions && Array.isArray(userInfo.permissions)) {
+      userPermissions.value = userInfo.permissions;
+      // 同步到 accessStore，供指令使用
+      accessStore.setAccessCodes(userInfo.permissions);
+      console.log('✅ 用户权限已保存到Pinia store:', userPermissions.value);
+    } else {
+      userPermissions.value = [];
+      accessStore.setAccessCodes([]);
+    }
     console.log('✅ 用户信息已保存到Pinia store:', userInfo);
     return userInfo;
   }
@@ -119,5 +137,7 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserInfo,
     loginLoading,
     logout,
+    // 暴露权限给指令/组件使用
+    userPermissions,
   };
 });

@@ -49,7 +49,7 @@
         </div>
         
         <div class="action-buttons">
-          <ElButton type="primary" @click="handleAdd">
+          <ElButton type="primary" @click="handleAdd" v-permission="['system:menu:add']">
             ➕ 新增菜单
           </ElButton>
           <ElButton 
@@ -77,6 +77,7 @@
             ref="tableRef"
             :data="menuTreeData"
             row-key="id"
+            :check-strictly="true"
             :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
             :default-expand-all="isExpandAll"
             stripe
@@ -207,18 +208,19 @@
             <ElTableColumn label="操作" width="200" align="center" fixed="right">
               <template #default="{ row }">
                 <div class="action-buttons">
-                  <ElButton type="primary" size="small" @click="handleEdit(row)">
+                  <ElButton type="primary" size="small" @click="handleEdit(row)" v-permission="['system:menu:edit']">
                     编辑
                   </ElButton>
                   <ElButton 
                     v-if="row.type !== 3"
                     type="success" 
                     size="small" 
+                    v-permission="['system:menu:add']"
                     @click="handleAddChild(row)"
                   >
                     新增子项
                   </ElButton>
-                  <ElButton type="danger" size="small" @click="handleDelete(row)">
+                  <ElButton type="danger" size="small" @click="handleDelete(row)" v-permission="['system:menu:delete']">
                     删除
                   </ElButton>
                 </div>
@@ -315,109 +317,6 @@ const menuTreeOptions = computed(() => {
   ];
 });
 
-// 方法
-// 根据菜单ID、类型和路径生成默认名称
-const getDefaultMenuName = (menu: any): string => {
-  // 根据具体的菜单ID映射中文名称
-  const menuNameMap: Record<number, string> = {
-    // 一级目录
-    1: '系统管理',
-    5: '商品管理', 
-    19: '日志管理',
-    40: '资源管理',
-    
-    // 系统管理子菜单
-    2: '用户管理',
-    3: '角色管理',
-    4: '菜单管理',
-    22: '权限管理',
-    
-    // 商品管理子菜单
-    7: '分类管理',
-    
-    // 资源管理子菜单
-    41: '静态资源',
-    
-    // 按钮权限
-    23: '新增用户',
-    24: '编辑用户', 
-    25: '删除用户',
-    26: '新增权限',
-    27: '编辑权限',
-    28: '删除权限',
-    29: '查看角色',
-    30: '新增角色',
-    31: '编辑角色',
-    32: '删除角色',
-    34: '查看菜单',
-    36: '新增菜单',
-    37: '编辑菜单',
-    39: '删除菜单',
-    
-    // 分类管理按钮
-    7001: '查看分类',
-    7002: '新增分类',
-    7003: '编辑分类',
-    7004: '删除分类',
-    
-    // 静态资源按钮
-    41001: '查看资源',
-    41002: '上传资源',
-    41003: '编辑资源',
-    41004: '删除资源',
-  };
-  
-  // 优先使用ID映射
-  if (menu.id && menuNameMap[menu.id]) {
-    return menuNameMap[menu.id];
-  }
-  
-  // 如果有非空的 name 或 title，使用它们
-  if (menu.name && menu.name.trim() && menu.name !== '') {
-    return menu.name;
-  }
-  if (menu.title && menu.title.trim() && menu.title !== '') {
-    return menu.title;
-  }
-  
-  // 根据类型和路径生成名称
-  if (menu.type === 1) {
-    // 目录类型
-    if (menu.path === '/system') return '系统管理';
-    if (menu.path === '/product') return '商品管理';
-    if (menu.path === '/media') return '资源管理';
-    if (menu.path === '/logs') return '日志管理';
-    return '未命名目录';
-  } else if (menu.type === 2) {
-    // 菜单类型
-    if (menu.path?.includes('/user')) return '用户管理';
-    if (menu.path?.includes('/role')) return '角色管理';
-    if (menu.path?.includes('/menu')) return '菜单管理';
-    if (menu.path?.includes('/permission')) return '权限管理';
-    if (menu.path?.includes('/category')) return '分类管理';
-    if (menu.path?.includes('/static')) return '静态资源';
-    if (menu.component?.includes('user')) return '用户管理';
-    if (menu.component?.includes('role')) return '角色管理';
-    if (menu.component?.includes('menu')) return '菜单管理';
-    if (menu.component?.includes('permission')) return '权限管理';
-    if (menu.component?.includes('category')) return '分类管理';
-    if (menu.component?.includes('static')) return '静态资源';
-    return '未命名菜单';
-  } else if (menu.type === 3) {
-    // 按钮类型
-    if (menu.buttonKey?.includes('view')) return '查看';
-    if (menu.buttonKey?.includes('add')) return '新增';
-    if (menu.buttonKey?.includes('edit')) return '编辑';
-    if (menu.buttonKey?.includes('delete')) return '删除';
-    if (menu.buttonKey?.includes(':view')) return '查看';
-    if (menu.buttonKey?.includes(':add')) return '新增';
-    if (menu.buttonKey?.includes(':edit')) return '编辑';
-    if (menu.buttonKey?.includes(':delete')) return '删除';
-    return '未命名按钮';
-  }
-  return '未命名';
-};
-
 const loadMenuList = async () => {
   try {
     loading.value = true;
@@ -448,9 +347,7 @@ const loadMenuList = async () => {
             displayName = menu.name;
           } else if (menu.title && menu.title.trim() && menu.title !== '') {
             displayName = menu.title;
-          } else {
-            displayName = getDefaultMenuName(menu);
-          }
+          } 
           
           return {
             id: menu.id,
@@ -550,7 +447,32 @@ const handleExpandAll = () => {
 
 // 表格选择变化
 const handleSelectionChange = (selection: MenuPermission[]) => {
-  selectedIds.value = selection.map(item => item.id);
+  // 构建父映射：child id -> parent id
+  const parentMap = new Map<number, number>();
+  const buildMap = (menus: MenuPermission[]) => {
+    for (const item of menus) {
+      if (item.children && item.children.length > 0) {
+        for (const child of item.children) {
+          parentMap.set(child.id, item.id);
+        }
+        buildMap(item.children);
+      }
+    }
+  };
+  buildMap(menuTreeData.value);
+
+  const result = new Set<number>();
+  // 将选中节点及其所有祖先节点一并加入
+  selection.forEach((item) => {
+    result.add(item.id);
+    let pid = parentMap.get(item.id);
+    while (pid) {
+      result.add(pid);
+      pid = parentMap.get(pid);
+    }
+  });
+
+  selectedIds.value = Array.from(result);
 };
 
 // 新增菜单

@@ -13,7 +13,7 @@
       :props="treeProps"
       :default-expanded-keys="expandedKeys"
       :default-checked-keys="checkedKeys"
-      :check-strictly="checkStrictly"
+      :check-strictly="true"
       show-checkbox
       node-key="id"
       @check="handleCheck"
@@ -309,9 +309,49 @@ watch(
   { immediate: true }
 );
 
+// 获取选中的keys，包含父节点
+const getCheckedKeysWithParent = (): (string | number)[] => {
+  if (!treeRef.value) return [];
+
+  const checkedKeys = treeRef.value.getCheckedKeys() || [];
+
+  // 如果不是严格模式，直接返回
+  if (!props.checkStrictly) {
+    return checkedKeys;
+  }
+
+  // 严格模式下，需要手动添加有子节点被选中的父节点
+  const result = new Set<string | number>(checkedKeys);
+
+  // 构建父节点映射
+  const parentMap = new Map<string | number, string | number>();
+  const buildParentMap = (nodes: UnifiedPermissionNode[], parentId?: string | number) => {
+    nodes.forEach(node => {
+      if (parentId !== undefined) {
+        parentMap.set(node.id, parentId);
+      }
+      if (node.children && node.children.length > 0) {
+        buildParentMap(node.children, node.id);
+      }
+    });
+  };
+  buildParentMap(treeData.value);
+
+  // 将所有选中节点的父节点也加入结果
+  checkedKeys.forEach(key => {
+    let parentId = parentMap.get(key);
+    while (parentId !== undefined) {
+      result.add(parentId);
+      parentId = parentMap.get(parentId);
+    }
+  });
+
+  return Array.from(result);
+};
+
 // 暴露方法给父组件
 defineExpose({
-  getCheckedKeys: () => treeRef.value?.getCheckedKeys() || [],
+  getCheckedKeys: getCheckedKeysWithParent,
   getCheckedNodes: () => treeRef.value?.getCheckedNodes() || [],
   setCheckedKeys: (keys: (string | number)[]) => treeRef.value?.setCheckedKeys(keys),
   expandAll,

@@ -19,7 +19,7 @@ import { Public } from '../../../auth/decorators/public.decorator';
 import { ResourceCategoryService } from '../services/resource-category.service';
 import { CreateResourceCategoryDto } from '../dto/create-resource-category.dto';
 import { ResourceCategory } from '../entities/resource-category.entity';
-
+import { Types } from '../../../auth/decorators/types.decorator';
 @ApiTags('资源分类管理')
 @Controller('resource-categories')
 @Public() // 暂时公开访问，用于测试
@@ -37,6 +37,12 @@ export class ResourceCategoryController {
 
   @Get('tree')
   @ApiOperation({ summary: '获取分类树结构' })
+  @Types('system:medialCategory:view', {
+      name: '查看资源分类',
+      module: 'medialCategory',
+      operation: 'view',
+      includeParams: false
+  })
   @ApiResponse({
     status: 200,
     description: '获取成功',
@@ -60,6 +66,12 @@ export class ResourceCategoryController {
   @Put(':id')
   @ApiOperation({ summary: '更新资源分类' })
   @ApiResponse({ status: 200, description: '更新成功', type: ResourceCategory })
+  @Types('system:medialCategory:edit', {
+      name: '更新资源分类',
+      module: 'medialCategory',
+      operation: 'view',
+      includeParams: false
+  })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: Partial<CreateResourceCategoryDto>,
@@ -70,6 +82,12 @@ export class ResourceCategoryController {
   @Delete(':id')
   @ApiOperation({ summary: '删除资源分类' })
   @ApiResponse({ status: 200, description: '删除成功' })
+  @Types('system:medialCategory:delete', {
+      name: '删除资源分类',
+      module: 'medialCategory',
+      operation: 'view',
+      includeParams: false
+  })
   async delete(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<{ message: string }> {

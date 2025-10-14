@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from '../services/categories.service';
-
+import { Types } from '../../../auth/decorators/types.decorator';
 @ApiTags('分类管理')
 @Controller('categories')
 export class CategoriesController {
