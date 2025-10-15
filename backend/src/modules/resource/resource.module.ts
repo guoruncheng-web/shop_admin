@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../../auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ResourceCategory } from './entities/resource-category.entity';
 import { Resource } from './entities/resource.entity';
@@ -12,7 +13,7 @@ import { ResourceMenuController } from './controllers/menu-init.controller';
 import { Menu } from '../menus/entities/menu.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ResourceCategory, Resource, Menu])],
+  imports: [TypeOrmModule.forFeature([ResourceCategory, Resource, Menu]), AuthModule],
   controllers: [
     ResourceCategoryController,
     ResourceController,

@@ -10,6 +10,7 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
@@ -22,9 +23,10 @@ import { CreateResourceDto } from '../dto/create-resource.dto';
 import { QueryResourceDto } from '../dto/query-resource.dto';
 import { Resource } from '../entities/resource.entity';
 import { Types } from '../../../auth/decorators/types.decorator';
+import { TypesGuard } from '../../../auth/guards/types.guard';
 @ApiTags('资源管理')
 @Controller('resources')
-@Public() // 暂时公开访问，用于测试
+@ApiBearerAuth()
 export class ResourceController {
   constructor(private readonly resourceService: ResourceService) {}
 
@@ -38,6 +40,7 @@ export class ResourceController {
   @Get()
   @ApiOperation({ summary: '分页查询资源' })
   @ApiResponse({ status: 200, description: '查询成功' })
+  @UseGuards(AuthGuard('jwt'), TypesGuard)
   @Types('system:medial:viewPage', {
       name: '分页查询资源',
       module: 'medial',
