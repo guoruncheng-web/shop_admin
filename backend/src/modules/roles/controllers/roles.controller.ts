@@ -17,6 +17,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 import { RolesService } from '../services/roles.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -36,6 +41,11 @@ export class RolesController {
   ) {}
 
   @Get('all')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取所有角色列表',
+  })
   @ApiOperation({ summary: '获取所有角色列表' })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getAllRoles() {
@@ -48,6 +58,12 @@ export class RolesController {
   }
 
   @Get()
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '分页查询角色列表',
+    includeParams: true,
+  })
   @ApiOperation({ summary: '分页查询角色列表' })
   @ApiResponse({ status: 200, description: '查询成功' })
   async getRoles(@Query() query: QueryRoleDto) {
@@ -60,6 +76,12 @@ export class RolesController {
   }
 
   @Get(':id')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '根据ID获取角色详情',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '根据ID获取角色详情' })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getRoleById(@Param('id', ParseIntPipe) id: number) {
@@ -72,6 +94,13 @@ export class RolesController {
   }
 
   @Post()
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.ROLE_CREATE.operation,
+    description: '创建角色',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({ summary: '创建角色' })
   @ApiResponse({ status: 201, description: '创建成功' })
   async createRole(@Body() createRoleDto: CreateRoleDto) {
@@ -84,6 +113,14 @@ export class RolesController {
   }
 
   @Put(':id')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.ROLE_UPDATE.operation,
+    description: '更新角色',
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '更新角色' })
   @ApiResponse({ status: 200, description: '更新成功' })
   async updateRole(
@@ -99,6 +136,12 @@ export class RolesController {
   }
 
   @Delete(':id')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.ROLE_DELETE.operation,
+    description: '删除角色',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '删除角色' })
   @ApiResponse({ status: 200, description: '删除成功' })
   async deleteRole(@Param('id', ParseIntPipe) id: number) {
@@ -111,6 +154,12 @@ export class RolesController {
   }
 
   @Put(':id/toggle-status')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: 'change_status',
+    description: '切换角色状态',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '切换角色状态' })
   @ApiResponse({ status: 200, description: '状态切换成功' })
   async toggleStatus(@Param('id', ParseIntPipe) id: number) {
@@ -125,6 +174,11 @@ export class RolesController {
   // ==================== 菜单权限相关接口 ====================
 
   @Get('menu-tree')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取菜单树（供角色权限分配使用）',
+  })
   @ApiOperation({
     summary: '获取菜单树（供角色权限分配使用）',
     description:
@@ -202,6 +256,12 @@ export class RolesController {
   }
 
   @Get(':id/menus')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取角色已分配的菜单权限',
+    businessIdField: 'id',
+  })
   @ApiOperation({
     summary: '获取角色已分配的菜单权限',
     description: '获取指定角色已分配的菜单权限列表',
@@ -217,6 +277,12 @@ export class RolesController {
   }
 
   @Get(':id/menu-ids')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取角色已分配的菜单ID列表',
+    businessIdField: 'id',
+  })
   @ApiOperation({
     summary: '获取角色已分配的菜单ID列表',
     description: '获取指定角色已分配的菜单ID列表，用于前端复选框回显',
@@ -232,6 +298,13 @@ export class RolesController {
   }
 
   @Post(':id/assign-menus')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.ROLE_ASSIGN_PERMISSIONS.operation,
+    description: '为角色分配菜单权限',
+    includeParams: true,
+    businessIdField: 'id',
+  })
   @ApiOperation({
     summary: '为角色分配菜单权限',
     description: '为指定角色分配菜单权限，会覆盖原有的菜单权限',

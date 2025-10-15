@@ -20,6 +20,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 import { UploadService, UploadResult } from '../services/upload.service';
 import { ChunkUploadService } from '../services/chunk-upload.service';
 import {
@@ -42,6 +47,13 @@ export class UploadController {
   ) {}
 
   @Post('image')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '上传图片',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({
     summary: '上传图片',
     description:
@@ -107,6 +119,13 @@ export class UploadController {
   }
 
   @Post('video')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '上传视频',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({
     summary: '上传视频',
     description:
@@ -172,6 +191,12 @@ export class UploadController {
   }
 
   @Delete('file/:key')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_DELETE.operation,
+    description: '删除文件',
+    businessIdField: 'key',
+  })
   @ApiOperation({
     summary: '删除文件',
     description: '从腾讯云COS删除指定的文件',
@@ -201,6 +226,12 @@ export class UploadController {
   }
 
   @Post('batch-delete')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_DELETE.operation,
+    description: '批量删除文件',
+    includeParams: true,
+  })
   @ApiOperation({
     summary: '批量删除文件',
     description: '从腾讯云COS批量删除多个文件',
@@ -234,6 +265,12 @@ export class UploadController {
   }
 
   @Post('signed-url')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取文件临时访问链接',
+    includeParams: true,
+  })
   @ApiOperation({
     summary: '获取文件临时访问链接',
     description: '获取腾讯云COS文件的临时访问链接（用于私有文件）',
@@ -286,6 +323,13 @@ export class UploadController {
   // ==================== 分片上传相关接口 ====================
 
   @Post('chunk/init')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '初始化分片上传',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({
     summary: '初始化分片上传',
     description: '初始化大文件分片上传，返回上传ID',
@@ -320,6 +364,13 @@ export class UploadController {
   }
 
   @Post('chunk')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '上传分片',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({
     summary: '上传分片',
     description: '上传文件分片',
@@ -402,6 +453,12 @@ export class UploadController {
   }
 
   @Get('chunk/check/:uploadId')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '检查已上传分片',
+    businessIdField: 'uploadId',
+  })
   @ApiOperation({
     summary: '检查已上传分片',
     description: '检查指定上传ID的已上传分片状态',
@@ -440,6 +497,13 @@ export class UploadController {
   }
 
   @Post('chunk/complete')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '完成分片上传',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({
     summary: '完成分片上传',
     description: '合并所有分片，完成文件上传',
@@ -482,6 +546,12 @@ export class UploadController {
   }
 
   @Delete('chunk/:uploadId')
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_DELETE.operation,
+    description: '取消分片上传',
+    businessIdField: 'uploadId',
+  })
   @ApiOperation({
     summary: '取消分片上传',
     description: '取消指定的分片上传任务',

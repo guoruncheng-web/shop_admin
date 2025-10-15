@@ -14,7 +14,6 @@ import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { Admin } from '../../database/entities/admin.entity';
 import { Role } from '../../database/entities/role.entity';
 
-
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 
@@ -36,7 +35,7 @@ export class MerchantsService {
    */
   async create(
     createMerchantDto: CreateMerchantDto,
-    currentUser?: any,
+    currentUser?: { userId?: number; id?: number },
   ): Promise<any> {
     // 检查商户编码是否已存在
     const existingMerchant = await this.merchantRepository.findOne({
@@ -62,8 +61,8 @@ export class MerchantsService {
       balance: 0,
       frozenBalance: 0,
       totalSales: 0,
-      createdBy: currentUser?.userId || null,
-      updatedBy: currentUser?.userId || null,
+      createdBy: currentUser?.userId || currentUser?.id || null,
+      updatedBy: currentUser?.userId || currentUser?.id || null,
     });
 
     const savedMerchant = await this.merchantRepository.save(merchant);
@@ -74,8 +73,8 @@ export class MerchantsService {
         ...createMerchantDto.shippingAddress,
         merchantId: savedMerchant.id,
         isDefault: 1,
-        createdBy: currentUser?.userId || null,
-        updatedBy: currentUser?.userId || null,
+        createdBy: currentUser?.userId || currentUser?.id || null,
+        updatedBy: currentUser?.userId || currentUser?.id || null,
       });
       await this.shippingAddressRepository.save(shippingAddress);
     }
@@ -113,10 +112,6 @@ export class MerchantsService {
       .relation(Admin, 'roles')
       .of(savedAdmin)
       .add(savedRole);
-
-
-
-
 
     // 8. 返回商户信息和管理员凭证
     return {
@@ -341,7 +336,7 @@ export class MerchantsService {
   async update(
     id: number,
     updateMerchantDto: UpdateMerchantDto,
-    currentUser?: any,
+    currentUser?: { userId?: number; id?: number },
   ): Promise<Merchant> {
     const merchant = await this.findOne(id);
 
@@ -397,7 +392,8 @@ export class MerchantsService {
         existingAddress.districtName = addressData.districtName;
         existingAddress.detailAddress = addressData.detailAddress;
         existingAddress.postalCode = addressData.postalCode || null;
-        existingAddress.updatedBy = currentUser?.userId || null;
+        existingAddress.updatedBy =
+          currentUser?.userId || currentUser?.id || null;
 
         await this.shippingAddressRepository.save(existingAddress);
       } else {
@@ -415,19 +411,20 @@ export class MerchantsService {
           postalCode: addressData.postalCode || null,
           merchantId: id,
           isDefault: 1,
-          createdBy: currentUser?.userId || null,
-          updatedBy: currentUser?.userId || null,
+          createdBy: currentUser?.userId || currentUser?.id || null,
+          updatedBy: currentUser?.userId || currentUser?.id || null,
         });
         await this.shippingAddressRepository.save(shippingAddress);
       }
     }
 
     // 从 DTO 中移除 shippingAddress，避免直接保存到 merchant 表
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { shippingAddress, ...merchantData } = updateMerchantDto;
 
     // 更新字段
     Object.assign(merchant, merchantData);
-    merchant.updatedBy = currentUser?.userId || null;
+    merchant.updatedBy = currentUser?.userId || currentUser?.id || null;
 
     return await this.merchantRepository.save(merchant);
   }
@@ -455,7 +452,7 @@ export class MerchantsService {
   async updateStatus(
     id: number,
     status: number,
-    currentUser?: any,
+    currentUser?: { userId?: number; id?: number },
   ): Promise<Merchant> {
     const merchant = await this.findOne(id);
 
@@ -464,7 +461,7 @@ export class MerchantsService {
     }
 
     merchant.status = status;
-    merchant.updatedBy = currentUser?.userId || null;
+    merchant.updatedBy = currentUser?.userId || currentUser?.id || null;
 
     return await this.merchantRepository.save(merchant);
   }
@@ -475,7 +472,7 @@ export class MerchantsService {
   async updateCertificationStatus(
     id: number,
     certificationStatus: number,
-    currentUser?: any,
+    currentUser?: { userId?: number; id?: number },
   ): Promise<Merchant> {
     const merchant = await this.findOne(id);
 
@@ -486,7 +483,7 @@ export class MerchantsService {
       merchant.certificationTime = new Date();
     }
 
-    merchant.updatedBy = currentUser?.userId || null;
+    merchant.updatedBy = currentUser?.userId || currentUser?.id || null;
 
     return await this.merchantRepository.save(merchant);
   }
@@ -538,7 +535,7 @@ export class MerchantsService {
    */
   async regenerateApiKeys(
     id: number,
-    currentUser?: any,
+    currentUser?: { userId?: number; id?: number },
   ): Promise<{ apiKey: string; apiSecret: string }> {
     const merchant = await this.findOne(id);
 
@@ -547,7 +544,7 @@ export class MerchantsService {
 
     merchant.apiKey = apiKey;
     merchant.apiSecret = apiSecret;
-    merchant.updatedBy = currentUser?.userId || null;
+    merchant.updatedBy = currentUser?.userId || currentUser?.id || null;
 
     await this.merchantRepository.save(merchant);
 
@@ -591,7 +588,11 @@ export class MerchantsService {
   /**
    * 重置商户超级管理员密码
    */
-  async resetSuperAdminPassword(id: number) {
+  async resetSuperAdminPassword(
+    id: number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _currentUser?: { userId?: number; id?: number },
+  ) {
     await this.findOne(id);
 
     // 查找该商户的第一个管理员

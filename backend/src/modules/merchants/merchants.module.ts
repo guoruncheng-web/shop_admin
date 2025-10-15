@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MerchantsController } from './merchants.controller';
 import { MerchantsService } from './merchants.service';
@@ -8,6 +8,7 @@ import { Admin } from '../../database/entities/admin.entity';
 import { Role } from '../../database/entities/role.entity';
 import { Permission } from '../../database/entities/permission.entity';
 import { Menu } from '../menus/entities/menu.entity';
+import { AuthModule } from '../../auth/auth.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { Menu } from '../menus/entities/menu.entity';
       Permission,
       Menu,
     ]),
+    forwardRef(() => AuthModule),
   ],
   controllers: [MerchantsController],
   providers: [MerchantsService],

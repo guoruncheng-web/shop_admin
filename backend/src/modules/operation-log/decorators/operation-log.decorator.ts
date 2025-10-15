@@ -81,6 +81,15 @@ export const OperationTypes = {
   FILE_UPLOAD: { operation: 'upload', description: '上传文件' },
   FILE_DELETE: { operation: 'delete', description: '删除文件' },
 
+  // 商户管理
+  MERCHANT_CREATE: { operation: 'create', description: '创建商户' },
+  MERCHANT_UPDATE: { operation: 'update', description: '更新商户' },
+  MERCHANT_DELETE: { operation: 'delete', description: '删除商户' },
+  MERCHANT_CHANGE_STATUS: { operation: 'change_status', description: '修改商户状态' },
+  MERCHANT_CERTIFICATION: { operation: 'certification', description: '商户认证' },
+  MERCHANT_RESET_PASSWORD: { operation: 'reset_password', description: '重置管理员密码' },
+  MERCHANT_REGENERATE_KEYS: { operation: 'regenerate_keys', description: '重新生成API密钥' },
+
   // 系统管理
   SYSTEM_CONFIG_UPDATE: { operation: 'update', description: '更新系统配置' },
   SYSTEM_CACHE_CLEAR: { operation: 'clear_cache', description: '清除缓存' },
@@ -103,6 +112,7 @@ export const ModuleNames = {
   ORDER: 'order',
   BANNER: 'banner',
   FILE: 'file',
+  MERCHANT: 'merchant',
   SYSTEM: 'system',
   AUTH: 'auth',
 } as const;

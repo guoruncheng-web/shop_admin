@@ -158,7 +158,7 @@ export class OperationLogInterceptor implements NestInterceptor {
         }
 
         // 提取业务ID
-        logData.businessId = this.extractBusinessId(params.request);
+        logData.businessId = this.extractBusinessId(params.request, params.typesOptions.businessIdField);
 
         // 记录操作日志
         await this.operationLogService.create(logData as any);
@@ -202,9 +202,17 @@ export class OperationLogInterceptor implements NestInterceptor {
   /**
    * 提取业务ID
    */
-  private extractBusinessId(request: Request): string {
+  private extractBusinessId(request: Request, businessIdField?: string): string {
     const urlParams = request.params as any;
     const bodyParams = request.body as any;
+    
+    if (businessIdField) {
+      // 使用指定的字段名提取业务ID
+      const id = urlParams?.[businessIdField] || bodyParams?.[businessIdField];
+      return String(id || '');
+    }
+    
+    // 默认逻辑：优先使用id字段
     const id = urlParams?.id || bodyParams?.id;
     return String(id || '');
   }

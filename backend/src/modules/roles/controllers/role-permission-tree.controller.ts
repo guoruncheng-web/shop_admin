@@ -14,6 +14,11 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 import { RoleMenuService } from '../../menus/services/role-menu.service';
 import { MenusService } from '../../menus/services/menus.service';
 
@@ -28,6 +33,11 @@ export class RolePermissionTreeController {
   ) {}
 
   @Get('menu-tree')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取菜单权限树（专用于角色权限分配）',
+  })
   @ApiOperation({
     summary: '获取菜单权限树（专用于角色权限分配）',
     description: '返回标准的树形结构菜单数据，专用于前端权限分配组件',
@@ -96,6 +106,12 @@ export class RolePermissionTreeController {
   }
 
   @Get('role/:id/selected-menu-ids')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取角色已选中的菜单ID列表',
+    businessIdField: 'id',
+  })
   @ApiOperation({
     summary: '获取角色已选中的菜单ID列表',
     description: '获取指定角色已分配的菜单ID数组，用于前端权限树的回显',
@@ -111,6 +127,13 @@ export class RolePermissionTreeController {
   }
 
   @Post('role/:id/save-permissions')
+  @OperationLog({
+    module: ModuleNames.ROLE,
+    operation: OperationTypes.ROLE_ASSIGN_PERMISSIONS.operation,
+    description: '保存角色菜单权限',
+    includeParams: true,
+    businessIdField: 'id',
+  })
   @ApiOperation({
     summary: '保存角色菜单权限',
     description: '保存角色的菜单权限分配',

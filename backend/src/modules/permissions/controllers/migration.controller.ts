@@ -1,8 +1,23 @@
-import { Controller, Post, Get } from '@nestjs/common';
+import { Controller, Post, Get, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Permission } from '../../../database/entities/permission.entity';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 
+@ApiTags('权限迁移管理')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
 @Controller('api/migration')
 export class MigrationController {
   constructor(
@@ -12,6 +27,14 @@ export class MigrationController {
   ) {}
 
   @Post('permissions')
+  @OperationLog({
+    module: ModuleNames.PERMISSION,
+    operation: OperationTypes.SYSTEM_CONFIG_UPDATE.operation,
+    description: '执行权限迁移',
+    includeResponse: true,
+  })
+  @ApiOperation({ summary: '执行权限迁移' })
+  @ApiResponse({ status: 200, description: '迁移成功' })
   async migratePermissions() {
     try {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -206,6 +229,13 @@ export class MigrationController {
   }
 
   @Get('permissions/status')
+  @OperationLog({
+    module: ModuleNames.PERMISSION,
+    operation: OperationTypes.VIEW.operation,
+    description: '检查权限迁移状态',
+  })
+  @ApiOperation({ summary: '检查权限迁移状态' })
+  @ApiResponse({ status: 200, description: '检查成功' })
   async getPermissionStatus() {
     try {
       const count = await this.permissionRepository.count();

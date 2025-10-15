@@ -7,6 +7,7 @@ export interface TypesOptions {
   operation?: string;
   includeParams?: boolean;
   includeResponse?: boolean;
+  businessIdField?: string;
 }
 
 export const TYPES_KEY = 'types';

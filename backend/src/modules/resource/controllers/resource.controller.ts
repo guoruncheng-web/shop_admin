@@ -17,20 +17,40 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { Public } from '../../../auth/decorators/public.decorator';
 import { ResourceService, PaginatedResult } from '../services/resource.service';
 import { CreateResourceDto } from '../dto/create-resource.dto';
 import { QueryResourceDto } from '../dto/query-resource.dto';
 import { Resource } from '../entities/resource.entity';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 import { Types } from '../../../auth/decorators/types.decorator';
 import { TypesGuard } from '../../../auth/guards/types.guard';
+
 @ApiTags('资源管理')
 @Controller('resources')
 @ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'), TypesGuard)
 export class ResourceController {
   constructor(private readonly resourceService: ResourceService) {}
 
   @Post()
+  @Types('system:resource:create', {
+    name: '创建资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    includeParams: true,
+    includeResponse: true,
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '创建资源',
+    includeParams: true,
+    includeResponse: true,
+  })
   @ApiOperation({ summary: '创建资源' })
   @ApiResponse({ status: 201, description: '创建成功', type: Resource })
   async create(@Body() createDto: CreateResourceDto): Promise<Resource> {
@@ -38,14 +58,19 @@ export class ResourceController {
   }
 
   @Get()
+  @Types('system:medial:viewPage', {
+    name: '分页查询资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+  })
   @ApiOperation({ summary: '分页查询资源' })
   @ApiResponse({ status: 200, description: '查询成功' })
-  @UseGuards(AuthGuard('jwt'), TypesGuard)
-  @Types('system:medial:viewPage', {
-      name: '分页查询资源',
-      module: 'medial',
-      operation: 'view',
-      includeParams: false
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '分页查询资源',
+    includeParams: true,
   })
   async findAll(
     @Query() queryDto: QueryResourceDto,
@@ -54,6 +79,18 @@ export class ResourceController {
   }
 
   @Get('popular')
+  @Types('system:resource:view', {
+    name: '获取热门资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取热门资源',
+    includeParams: true,
+  })
   @ApiOperation({ summary: '获取热门资源' })
   @ApiResponse({ status: 200, description: '获取成功', type: [Resource] })
   async getPopular(
@@ -63,6 +100,18 @@ export class ResourceController {
   }
 
   @Get('latest')
+  @Types('system:resource:view', {
+    name: '获取最新资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取最新资源',
+    includeParams: true,
+  })
   @ApiOperation({ summary: '获取最新资源' })
   @ApiResponse({ status: 200, description: '获取成功', type: [Resource] })
   async getLatest(
@@ -72,6 +121,18 @@ export class ResourceController {
   }
 
   @Get('search')
+  @Types('system:resource:view', {
+    name: '搜索资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '搜索资源',
+    includeParams: true,
+  })
   @ApiOperation({ summary: '搜索资源' })
   @ApiResponse({ status: 200, description: '搜索成功', type: [Resource] })
   async search(
@@ -82,6 +143,16 @@ export class ResourceController {
   }
 
   @Get('statistics')
+  @Types('system:resource:view', {
+    name: '获取资源统计信息',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取资源统计信息',
+  })
   @ApiOperation({ summary: '获取资源统计信息' })
   @ApiResponse({ status: 200, description: '获取成功' })
   async getStatistics() {
@@ -89,6 +160,18 @@ export class ResourceController {
   }
 
   @Get(':id')
+  @Types('system:resource:view', {
+    name: '获取资源详情',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    businessIdField: 'id',
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.VIEW.operation,
+    description: '获取资源详情',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '获取资源详情' })
   @ApiResponse({ status: 200, description: '获取成功', type: Resource })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<Resource> {
@@ -99,6 +182,22 @@ export class ResourceController {
   }
 
   @Put(':id')
+  @Types('system:resource:edit', {
+    name: '更新资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_UPLOAD.operation,
+    description: '更新资源',
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '更新资源' })
   @ApiResponse({ status: 200, description: '更新成功', type: Resource })
   async update(
@@ -109,6 +208,18 @@ export class ResourceController {
   }
 
   @Delete(':id')
+  @Types('system:resource:delete', {
+    name: '删除资源',
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_DELETE.operation,
+    businessIdField: 'id',
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: OperationTypes.FILE_DELETE.operation,
+    description: '删除资源',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '删除资源' })
   @ApiResponse({ status: 200, description: '删除成功' })
   async delete(
@@ -119,6 +230,18 @@ export class ResourceController {
   }
 
   @Post(':id/download')
+  @Types('system:resource:download', {
+    name: '记录资源下载',
+    module: ModuleNames.FILE,
+    operation: 'download',
+    businessIdField: 'id',
+  })
+  @OperationLog({
+    module: ModuleNames.FILE,
+    operation: 'download',
+    description: '记录资源下载',
+    businessIdField: 'id',
+  })
   @ApiOperation({ summary: '记录资源下载' })
   @ApiResponse({ status: 200, description: '记录成功' })
   async recordDownload(
