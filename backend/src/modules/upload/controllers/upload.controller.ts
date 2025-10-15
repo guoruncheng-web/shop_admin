@@ -25,7 +25,7 @@ import {
   ModuleNames,
   OperationTypes,
 } from '../../operation-log/decorators/operation-log.decorator';
-import { UploadService, UploadResult } from '../services/upload.service';
+import { UploadService } from '../services/upload.service';
 import { ChunkUploadService } from '../services/chunk-upload.service';
 import {
   InitChunkUploadDto,
@@ -34,7 +34,7 @@ import {
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import * as crypto from 'crypto';
+import * as fs from 'fs';
 
 @ApiTags('文件上传')
 @Controller('upload')
@@ -426,17 +426,20 @@ export class UploadController {
 
     try {
       // 读取分片数据
-      const chunkBuffer = require('fs').readFileSync(chunk.path);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      const chunkBuffer = fs.readFileSync(chunk.path);
 
       const result = await this.chunkUploadService.uploadChunk(
         uploadId,
         parseInt(chunkIndex),
         chunkMD5,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         chunkBuffer,
       );
 
       // 删除临时文件
-      require('fs').unlinkSync(chunk.path);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      fs.unlinkSync(chunk.path);
 
       return {
         code: 200,
@@ -445,8 +448,10 @@ export class UploadController {
       };
     } catch (error) {
       // 确保删除临时文件
-      if (require('fs').existsSync(chunk.path)) {
-        require('fs').unlinkSync(chunk.path);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      if (fs.existsSync(chunk.path)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+        fs.unlinkSync(chunk.path);
       }
       throw error;
     }

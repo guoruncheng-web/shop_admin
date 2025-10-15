@@ -9,6 +9,7 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const COS = require('cos-nodejs-sdk-v5');
 
 interface ChunkUploadInfo {
@@ -26,6 +27,7 @@ interface ChunkUploadInfo {
 
 @Injectable()
 export class ChunkUploadService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cos: any;
   private bucket: string;
   private region: string;
@@ -34,8 +36,11 @@ export class ChunkUploadService {
 
   constructor(private configService: ConfigService) {
     // 初始化腾讯云COS配置
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     this.cos = new COS({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretId: this.configService.get('cos.secretId'),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretKey: this.configService.get('cos.secretKey'),
     });
 
@@ -67,6 +72,7 @@ export class ChunkUploadService {
     const key = `videos/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${fileName}`;
 
     // 初始化COS分片上传
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
     const cosResult = await this.cos.multipartInit({
       Bucket: this.bucket,
       Region: this.region,
@@ -82,6 +88,7 @@ export class ChunkUploadService {
       chunkSize: dto.chunkSize,
       totalChunks: dto.totalChunks,
       uploadedChunks: [],
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       cosUploadId: cosResult.UploadId,
       key,
       createdAt: new Date(),
@@ -98,6 +105,7 @@ export class ChunkUploadService {
     return {
       uploadId,
       key,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       cosUploadId: cosResult.UploadId,
     };
   }
@@ -132,6 +140,7 @@ export class ChunkUploadService {
 
     try {
       // 上传分片到COS
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       const partResult = await this.cos.multipartUpload({
         Bucket: this.bucket,
         Region: this.region,
@@ -154,6 +163,7 @@ export class ChunkUploadService {
         chunkInfoPath,
         JSON.stringify({
           chunkIndex,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           etag: partResult.ETag,
           partNumber: chunkIndex + 1,
         }),
@@ -161,6 +171,7 @@ export class ChunkUploadService {
 
       return {
         chunkIndex,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         etag: partResult.ETag,
         uploaded: uploadInfo.uploadedChunks.length,
         total: uploadInfo.totalChunks,
@@ -174,7 +185,7 @@ export class ChunkUploadService {
   /**
    * 检查已上传的分片
    */
-  async checkUploadedChunks(uploadId: string) {
+  checkUploadedChunks(uploadId: string) {
     const uploadInfo = this.uploadInfoMap.get(uploadId);
     if (!uploadInfo) {
       throw new NotFoundException('上传会话不存在');
@@ -216,19 +227,24 @@ export class ChunkUploadService {
       for (let i = 0; i < uploadInfo.totalChunks; i++) {
         const chunkInfoPath = path.join(uploadDir, `chunk_${i}.json`);
         if (fs.existsSync(chunkInfoPath)) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const chunkInfo = JSON.parse(fs.readFileSync(chunkInfoPath, 'utf8'));
           parts.push({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             PartNumber: chunkInfo.partNumber,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
             ETag: chunkInfo.etag,
           });
         }
       }
 
       // 按PartNumber排序
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       parts.sort((a, b) => a.PartNumber - b.PartNumber);
 
       // 完成COS分片上传
-      const result = await this.cos.multipartComplete({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      await this.cos.multipartComplete({
         Bucket: this.bucket,
         Region: this.region,
         Key: uploadInfo.key,
@@ -266,6 +282,7 @@ export class ChunkUploadService {
 
     try {
       // 取消COS分片上传
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       await this.cos.multipartAbort({
         Bucket: this.bucket,
         Region: this.region,

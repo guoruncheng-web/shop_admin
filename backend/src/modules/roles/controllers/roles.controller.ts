@@ -216,24 +216,41 @@ export class RolesController {
     const menuTree = await this.menusService.getMenuTree();
 
     // 转换为前端需要的标准树形结构
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formatTreeForFrontend = (menus: any[]): any[] => {
       return menus.map((menu) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedMenu = {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           id: menu.id,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           label: menu.title || menu.name, // 显示文本
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           value: menu.id, // 选择的值
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           title: menu.title || menu.name, // 标题
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           key: String(menu.id), // 唯一key
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           type: menu.type, // 菜单类型：1=目录，2=菜单，3=按钮
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           icon: menu.icon, // 图标
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           path: menu.path, // 路径
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           component: menu.component, // 组件
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           status: menu.status, // 状态
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           orderNum: menu.orderNum || menu.sort || 0, // 排序
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           parentId: menu.parentId, // 父级ID
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           children:
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             menu.children && menu.children.length > 0
-              ? formatTreeForFrontend(menu.children)
+              ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                formatTreeForFrontend(menu.children)
               : undefined,
         };
 

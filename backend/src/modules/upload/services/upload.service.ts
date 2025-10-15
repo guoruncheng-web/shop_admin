@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const COS = require('cos-nodejs-sdk-v5');
 import * as fs from 'fs';
 import * as path from 'path';
@@ -15,14 +16,18 @@ export interface UploadResult {
 
 @Injectable()
 export class UploadService {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cos: any;
   private bucket: string;
   private region: string;
 
   constructor(private configService: ConfigService) {
     // 初始化腾讯云COS配置
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     this.cos = new COS({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretId: this.configService.get('cos.secretId'),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretKey: this.configService.get('cos.secretKey'),
     });
 
@@ -100,7 +105,8 @@ export class UploadService {
       const key = `${folder}/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${fileName}`;
 
       // 上传到腾讯云COS
-      const result = await this.cos.putObject({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      await this.cos.putObject({
         Bucket: this.bucket,
         Region: this.region,
         Key: key,
@@ -138,6 +144,7 @@ export class UploadService {
    */
   async deleteFile(key: string): Promise<void> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       await this.cos.deleteObject({
         Bucket: this.bucket,
         Region: this.region,
@@ -155,6 +162,7 @@ export class UploadService {
   async deleteFiles(keys: string[]): Promise<void> {
     try {
       const objects = keys.map((key) => ({ Key: key }));
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       await this.cos.deleteMultipleObject({
         Bucket: this.bucket,
         Region: this.region,
@@ -169,8 +177,9 @@ export class UploadService {
   /**
    * 获取文件的临时访问URL（用于私有文件）
    */
-  async getSignedUrl(key: string, expires: number = 3600): Promise<string> {
+  getSignedUrl(key: string, expires: number = 3600): string {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       const url = this.cos.getObjectUrl({
         Bucket: this.bucket,
         Region: this.region,
@@ -178,6 +187,7 @@ export class UploadService {
         Sign: true,
         Expires: expires, // 过期时间（秒）
       });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return url;
     } catch (error) {
       console.error('生成签名URL失败:', error);

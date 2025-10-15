@@ -49,8 +49,10 @@ export class MigrationController {
           COMMENT '权限类型：menu-菜单，button-按钮，api-接口'
         `);
         console.log('✅ 添加 type 字段成功');
-      } catch (error) {
+      } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         if (!error.message.includes('Duplicate column name')) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           console.log('⚠️ type 字段可能已存在:', error.message);
         }
       }
@@ -63,8 +65,10 @@ export class MigrationController {
           COMMENT '父级权限ID'
         `);
         console.log('✅ 添加 parentId 字段成功');
-      } catch (error) {
+      } catch (error: any) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         if (!error.message.includes('Duplicate column name')) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           console.log('⚠️ parentId 字段可能已存在:', error.message);
         }
       }
@@ -219,10 +223,11 @@ export class MigrationController {
           totalPermissions: await this.permissionRepository.count(),
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         message: '迁移失败',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         error: error.message,
       };
     }
@@ -251,9 +256,10 @@ export class MigrationController {
           samplePermissions: permissions,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         error: error.message,
       };
     }

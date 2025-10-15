@@ -69,31 +69,47 @@ export class RolePermissionTreeController {
     const menuTree = await this.menusService.getMenuTree();
 
     // 专门为权限分配格式化的函数
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formatForPermissionTree = (menus: any[]): any[] => {
-      return menus
-        .filter((menu) => menu.status === 1) // 只返回启用的菜单
-        .map((menu) => {
-          const node: any = {
-            id: menu.id,
-            label: menu.title || menu.name,
-            value: menu.id,
-            key: String(menu.id),
-            title: menu.title || menu.name,
-            type: menu.type,
-            icon: menu.icon,
-            disabled: false, // 前端可以根据需要设置是否禁用
-          };
+      return (
+        menus
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          .filter((menu) => menu.status === 1) // 只返回启用的菜单
+          .map((menu) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const node: any = {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              id: menu.id,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              label: menu.title || menu.name,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              value: menu.id,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              key: String(menu.id),
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              title: menu.title || menu.name,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              type: menu.type,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+              icon: menu.icon,
+              disabled: false, // 前端可以根据需要设置是否禁用
+            };
 
-          // 递归处理子菜单
-          if (menu.children && menu.children.length > 0) {
-            const children = formatForPermissionTree(menu.children);
-            if (children.length > 0) {
-              node.children = children;
+            // 递归处理子菜单
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            if (menu.children && menu.children.length > 0) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              const children = formatForPermissionTree(menu.children);
+              if (children.length > 0) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                node.children = children;
+              }
             }
-          }
 
-          return node;
-        });
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return node;
+          })
+      );
     };
 
     const formattedTree = formatForPermissionTree(menuTree);

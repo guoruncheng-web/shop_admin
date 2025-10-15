@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { OperationLog, ModuleNames, OperationTypes } from '../../operation-log/decorators/operation-log.decorator';
+import {
+  OperationLog,
+  ModuleNames,
+  OperationTypes,
+} from '../../operation-log/decorators/operation-log.decorator';
 
 @Injectable()
 export class ProductsService {
