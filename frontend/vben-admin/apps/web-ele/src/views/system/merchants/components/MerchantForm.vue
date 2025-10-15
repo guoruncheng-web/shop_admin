@@ -221,6 +221,7 @@
           <RegionSelector
             v-model="regionValue"
             prop-prefix="shippingAddress."
+            :required="true"
           />
 
           <ElFormItem label="详细地址" prop="shippingAddress.detailAddress">
@@ -383,11 +384,34 @@ const formRules: FormRules = {
     { required: true, message: '请输入商户名称', trigger: 'blur' },
     { min: 2, max: 100, message: '长度在 2 到 100 个字符', trigger: 'blur' },
   ],
+  contactName: [
+    { required: true, message: '请输入联系人姓名', trigger: 'blur' },
+  ],
+  contactPhone: [
+    { required: true, message: '请输入联系电话', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' },
+  ],
   contactEmail: [
     { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' },
   ],
-  contactPhone: [
+  'shippingAddress.contactName': [
+    { required: true, message: '请输入发货联系人姓名', trigger: 'blur' },
+  ],
+  'shippingAddress.contactPhone': [
+    { required: true, message: '请输入发货联系电话', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' },
+  ],
+  'shippingAddress.provinceCode': [
+    { required: true, message: '请选择省份', trigger: 'change' },
+  ],
+  'shippingAddress.cityCode': [
+    { required: true, message: '请选择城市', trigger: 'change' },
+  ],
+  'shippingAddress.districtCode': [
+    { required: true, message: '请选择区/县', trigger: 'change' },
+  ],
+  'shippingAddress.detailAddress': [
+    { required: true, message: '请输入详细地址', trigger: 'blur' },
   ],
 };
 

@@ -5,7 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Merchant } from './entities/merchant.entity';
 import { MerchantShippingAddress } from './entities/merchant-shipping-address.entity';
 import { CreateMerchantDto } from './dto/create-merchant.dto';
@@ -13,8 +13,8 @@ import { UpdateMerchantDto } from './dto/update-merchant.dto';
 import { QueryMerchantDto } from './dto/query-merchant.dto';
 import { Admin } from '../../database/entities/admin.entity';
 import { Role } from '../../database/entities/role.entity';
-import { Permission } from '../../database/entities/permission.entity';
-import { Menu } from '../menus/entities/menu.entity';
+
+
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 
@@ -29,10 +29,6 @@ export class MerchantsService {
     private adminRepository: Repository<Admin>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
-    @InjectRepository(Permission)
-    private permissionRepository: Repository<Permission>,
-    @InjectRepository(Menu)
-    private menuRepository: Repository<Menu>,
   ) {}
 
   /**
@@ -118,78 +114,9 @@ export class MerchantsService {
       .of(savedAdmin)
       .add(savedRole);
 
-    // 5. 获取菜单管理相关的权限
-    // 为超级管理员分配完整的菜单管理权限
-    const menuPermissions = await this.permissionRepository
-      .createQueryBuilder('permission')
-      .where('permission.code LIKE :menuCode', { menuCode: 'menu:%' })
-      .orWhere('permission.code LIKE :systemMenuCode', {
-        systemMenuCode: 'system:menu:%',
-      })
-      .orWhere('permission.code IN (:...codes)', {
-        codes: [
-          'route:system:menu', // 菜单管理路由权限
-          'btn:menu:add', // 添加菜单按钮权限
-          'btn:menu:edit', // 编辑菜单按钮权限
-          'btn:menu:delete', // 删除菜单按钮权限
-          'btn:menu:view', // 查看菜单按钮权限
-        ],
-      })
-      .getMany();
 
-    console.log(
-      `为商户 ${savedMerchant.merchantName} 分配了 ${menuPermissions.length} 个菜单管理权限`,
-    );
 
-    // 6. 将权限分配给角色（通过中间表 role_permissions）
-    if (menuPermissions.length > 0) {
-      await this.roleRepository
-        .createQueryBuilder()
-        .relation(Role, 'permissions')
-        .of(savedRole)
-        .add(menuPermissions);
-    } else {
-      console.warn(
-        `警告：未找到菜单管理权限数据，商户 ${savedMerchant.merchantName} 的超级管理员可能无法管理菜单`,
-      );
-    }
 
-    // 7. 为超级管理员分配菜单（如果菜单表中有数据）
-    // 获取所有菜单管理相关的菜单
-    const systemMenus = await this.menuRepository.find({
-      where: {
-        merchantId: savedMerchant.id,
-      },
-    });
-
-    // 如果该商户还没有菜单，从平台获取基础菜单模板
-    if (systemMenus.length === 0) {
-      // 查找平台（merchantId = 1）的菜单管理相关菜单
-      const platformMenus = await this.menuRepository.find({
-        where: [
-          { path: Like('%menu%'), merchantId: 1 }, // 路径包含menu的菜单
-          { name: Like('%菜单%'), merchantId: 1 }, // 名称包含菜单的菜单
-        ],
-      });
-
-      // 为新商户复制这些菜单
-      if (platformMenus.length > 0) {
-        const newMenus = platformMenus.map((menu) => {
-          return this.menuRepository.create({
-            ...menu,
-            id: undefined, // 移除ID，让数据库自动生成
-            merchantId: savedMerchant.id,
-            createdBy: savedAdmin.id,
-            updatedBy: savedAdmin.id,
-          });
-        });
-
-        await this.menuRepository.save(newMenus);
-        console.log(
-          `为商户 ${savedMerchant.merchantName} 复制了 ${newMenus.length} 个基础菜单`,
-        );
-      }
-    }
 
     // 8. 返回商户信息和管理员凭证
     return {
@@ -631,7 +558,7 @@ export class MerchantsService {
    * 获取商户的超级管理员信息
    */
   async getSuperAdmin(id: number) {
-    const merchant = await this.findOne(id);
+    await this.findOne(id);
 
     // 查找该商户的第一个管理员（通常是创建时自动生成的超级管理员）
     const admin = await this.adminRepository.findOne({
@@ -664,8 +591,8 @@ export class MerchantsService {
   /**
    * 重置商户超级管理员密码
    */
-  async resetSuperAdminPassword(id: number, currentUser?: any) {
-    const merchant = await this.findOne(id);
+  async resetSuperAdminPassword(id: number) {
+    await this.findOne(id);
 
     // 查找该商户的第一个管理员
     const admin = await this.adminRepository.findOne({

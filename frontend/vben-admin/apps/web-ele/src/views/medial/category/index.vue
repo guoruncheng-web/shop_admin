@@ -126,7 +126,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import { ResourceCategoryApi, type ResourceCategory } from '#/api/resource';
+import { ResourceCategoryApi } from '#/api/resource';
+import type { ResourceCategory } from '#/api/resource/types';
 import { ElTree, ElButton, ElMessage } from 'element-plus';
 import { Page } from '@vben/common-ui';
 
@@ -341,15 +342,9 @@ const closeDialog = () => {
   };
 };
 
-const getResourceCount = (categoryId: number) => {
-  // 这里可以从资源统计中获取具体数量
-  return Math.floor(Math.random() * 10); // 临时随机数
-};
 
-const viewResources = (category: ResourceCategory) => {
-  // 跳转到资源列表页面，并筛选该分类
-  window.location.href = `/medial/static?categoryId=${category.id}`;
-};
+
+
 
 // 生命周期
 onMounted(() => {

@@ -136,7 +136,7 @@ const getNodeIcon = (node: UnifiedPermissionNode): string => {
   }
 };
 
-const getTagType = (type: string | number): string => {
+const getTagType = (type: string | number): 'success' | 'primary' | 'warning' | 'info' | 'danger' => {
   if (typeof type === 'number') {
     switch (type) {
       case 1: return 'info';    // 目录
@@ -202,9 +202,9 @@ const buildTree = (flatData: PermissionNode[]): PermissionNode[] => {
 
 // 事件处理
 const handleCheck = (data: UnifiedPermissionNode, checked: any) => {
-  const checkedNodes = treeRef.value?.getCheckedNodes() || [];
+  const checkedNodes = (treeRef.value?.getCheckedNodes() as any[]) || [];
   const checkedKeys = treeRef.value?.getCheckedKeys() || [];
-  emit('change', checkedKeys as (string | number)[], checkedNodes);
+  emit('change', checkedKeys as (string | number)[], checkedNodes as unknown as UnifiedPermissionNode[]);
 };
 
 // 树操作方法
@@ -222,8 +222,9 @@ const expandAll = () => {
   expandedKeys.value = allKeys;
   
   nextTick(() => {
+    const store = (treeRef.value as any)?.store;
     allKeys.forEach(key => {
-      treeRef.value?.store.nodesMap[key]?.expand();
+      store?.nodesMap?.[key]?.expand();
     });
   });
 };
@@ -242,8 +243,9 @@ const collapseAll = () => {
     };
     collectKeys(treeData.value);
     
+    const store = (treeRef.value as any)?.store;
     allKeys.forEach(key => {
-      treeRef.value?.store.nodesMap[key]?.collapse();
+      store?.nodesMap?.[key]?.collapse();
     });
   });
 };
@@ -352,7 +354,7 @@ const getCheckedKeysWithParent = (): (string | number)[] => {
 // 暴露方法给父组件
 defineExpose({
   getCheckedKeys: getCheckedKeysWithParent,
-  getCheckedNodes: () => treeRef.value?.getCheckedNodes() || [],
+  getCheckedNodes: () => (treeRef.value?.getCheckedNodes() as any[]) || [],
   setCheckedKeys: (keys: (string | number)[]) => treeRef.value?.setCheckedKeys(keys),
   expandAll,
   collapseAll,
