@@ -37,7 +37,7 @@ export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
   @Post()
-  @Types('system:menu:create', {
+  @Types('system:menu:add', {
     name: '创建菜单',
     module: 'menu',
     operation: 'create',
@@ -302,7 +302,7 @@ export class MenusController {
   }
 
   @Patch(':id')
-  @Types('system:menu:update', {
+  @Types('system:menu:edit', {
     name: '更新菜单',
     module: 'menu',
     operation: 'update',
@@ -336,7 +336,7 @@ export class MenusController {
   }
 
   @Put(':id')
-  @Types('system:menu:update', {
+  @Types('system:menu:edit', {
     name: '更新菜单(PUT)',
     module: 'menu',
     operation: 'update',

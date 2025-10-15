@@ -15,6 +15,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { TypesGuard } from './auth/guards/types.guard';
 
 // 业务模块
 import { MenusModule } from './modules/menus/menus.module';
@@ -122,6 +123,10 @@ import { OperationLogInterceptor } from './common/interceptors/operation-log.int
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TypesGuard,
     },
     {
       provide: APP_INTERCEPTOR,

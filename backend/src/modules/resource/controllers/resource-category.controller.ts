@@ -22,13 +22,19 @@ import { ResourceCategory } from '../entities/resource-category.entity';
 import { Types } from '../../../auth/decorators/types.decorator';
 @ApiTags('资源分类管理')
 @Controller('resource-categories')
-@Public() // 暂时公开访问，用于测试
+@ApiBearerAuth()
 export class ResourceCategoryController {
   constructor(private readonly categoryService: ResourceCategoryService) {}
 
   @Post()
   @ApiOperation({ summary: '创建资源分类' })
   @ApiResponse({ status: 201, description: '创建成功', type: ResourceCategory })
+  @Types('system:medialCategory:add', {
+      name: '创建资源分类',
+      module: 'medialCategory',
+      operation: 'add',
+      includeParams: false
+  })
   async create(
     @Body() createDto: CreateResourceCategoryDto,
   ): Promise<ResourceCategory> {
@@ -59,6 +65,12 @@ export class ResourceCategoryController {
     description: '获取成功',
     type: [ResourceCategory],
   })
+  @Types('system:medialCategory:view', {
+      name: '查看二级分类列表',
+      module: 'medialCategory',
+      operation: 'view',
+      includeParams: false
+  })
   async getSecondLevelCategories(): Promise<ResourceCategory[]> {
     return await this.categoryService.getSecondLevelCategories();
   }
@@ -69,7 +81,7 @@ export class ResourceCategoryController {
   @Types('system:medialCategory:edit', {
       name: '更新资源分类',
       module: 'medialCategory',
-      operation: 'view',
+      operation: 'edit',
       includeParams: false
   })
   async update(
@@ -85,7 +97,7 @@ export class ResourceCategoryController {
   @Types('system:medialCategory:delete', {
       name: '删除资源分类',
       module: 'medialCategory',
-      operation: 'view',
+      operation: 'delete',
       includeParams: false
   })
   async delete(

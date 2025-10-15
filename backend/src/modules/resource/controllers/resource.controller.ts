@@ -21,7 +21,7 @@ import { ResourceService, PaginatedResult } from '../services/resource.service';
 import { CreateResourceDto } from '../dto/create-resource.dto';
 import { QueryResourceDto } from '../dto/query-resource.dto';
 import { Resource } from '../entities/resource.entity';
-
+import { Types } from '../../../auth/decorators/types.decorator';
 @ApiTags('资源管理')
 @Controller('resources')
 @Public() // 暂时公开访问，用于测试
@@ -38,6 +38,12 @@ export class ResourceController {
   @Get()
   @ApiOperation({ summary: '分页查询资源' })
   @ApiResponse({ status: 200, description: '查询成功' })
+  @Types('system:medial:viewPage', {
+      name: '分页查询资源',
+      module: 'medial',
+      operation: 'view',
+      includeParams: false
+  })
   async findAll(
     @Query() queryDto: QueryResourceDto,
   ): Promise<PaginatedResult<Resource>> {

@@ -10,6 +10,7 @@ import { MenusModule } from '../modules/menus/menus.module';
 import { LoginLogModule } from '../modules/login-log/login-log.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { TypesGuard } from './guards/types.guard';
 import { TokenRefreshInterceptor } from '../common/interceptors/token-refresh.interceptor';
 import { Admin } from '../database/entities/admin.entity';
 
@@ -37,11 +38,12 @@ import { Admin } from '../database/entities/admin.entity';
     AuthService,
     JwtStrategy,
     JwtAuthGuard,
+    TypesGuard,
     {
       provide: APP_INTERCEPTOR,
       useClass: TokenRefreshInterceptor,
     },
   ],
-  exports: [AuthService, JwtAuthGuard, JwtModule],
+  exports: [AuthService, JwtAuthGuard, TypesGuard, JwtModule],
 })
 export class AuthModule {}

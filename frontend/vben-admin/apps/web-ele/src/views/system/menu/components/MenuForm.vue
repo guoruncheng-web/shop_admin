@@ -207,10 +207,10 @@ const formRules: FormRules = {
   code: [
     {
       validator: (rule, value, callback) => {
-        // 只有按钮类型才需要权限标识
-        if (formData.type === 3) {
+        // 菜单/按钮类型必须配置权限标识
+        if (formData.type === 2 || formData.type === 3) {
           if (!value) {
-            callback(new Error('按钮权限必须配置权限标识'));
+            callback(new Error('菜单或按钮必须配置权限标识'));
             return;
           }
           if (value.length < 2 || value.length > 100) {
@@ -299,8 +299,7 @@ watch(
       formData.component = '';
       formData.code = '';
     } else if (newType === 2) {
-      // 菜单类型不需要权限标识
-      formData.code = '';
+      // 菜单类型需要权限标识，保留现有值
     }
   },
 );

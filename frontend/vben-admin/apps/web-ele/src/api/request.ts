@@ -119,8 +119,8 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
       // 403 时退出并跳转登录
       if (statusCode === 403) {
         const authStore = useAuthStore();
-        // 立即触发登出流程（通常会清理 token 并跳转到登录页）
-        authStore.logout();
+        // 403 自动登出时不携带 redirect，避免再次登录回到无权限页面
+        authStore.logout(false);
       }
 
       // 优先使用后端 message，其次 error，最后回退到默认 msg

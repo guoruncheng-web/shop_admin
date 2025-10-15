@@ -44,6 +44,11 @@ export class TypesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const user = request.user;
 
+    console.log('🔒 TypesGuard - 检查权限:', {
+      requiredPermission: typesOptions.permission,
+      user: user ? { id: user.userId || user.id, username: user.username } : null,
+    });
+
     // 检查用户是否存在
     if (!user) {
       throw new UnauthorizedException('用户未登录');
@@ -54,12 +59,18 @@ export class TypesGuard implements CanActivate {
       user.userId || user.id,
     );
 
+    console.log('🔒 TypesGuard - 用户权限列表:', userPermissions);
+    console.log('🔒 TypesGuard - 是否有权限:', userPermissions.includes(typesOptions.permission));
+
     // 检查用户是否有权限
     const hasPermission = userPermissions.includes(typesOptions.permission);
 
     if (!hasPermission) {
+      console.log('❌ TypesGuard - 权限不足，拒绝访问');
       throw new ForbiddenException('你当前没有操作权限');
     }
+
+    console.log('✅ TypesGuard - 权限验证通过');
 
     // 将权限信息添加到请求中，供后续使用
     request.permission = typesOptions;

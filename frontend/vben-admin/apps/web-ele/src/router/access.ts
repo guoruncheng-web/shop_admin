@@ -47,6 +47,11 @@ function transformMenusToRoutes(menus: any[]): RouteRecordStringComponent[] {
         const childOrder = child.meta?.order || child.order || 0;
         const childHideInMenu = child.meta?.hideInMenu || child.hidden === true;
         const childKeepAlive = child.meta?.keepAlive !== false;
+
+        // 过滤按钮/权限节点：同时缺少 path 与 component 的不生成路由
+        if (!child.path && !child.component) {
+          return;
+        }
         
         children.push({
           name: child.name || childTitle,
@@ -152,8 +157,9 @@ async function generateAccess(options: GenerateMenuAndRoutesOptions) {
           
           // 🚫 过滤掉与前端静态路由重复的后端菜单项
           // 静态路由定义在 /router/routes/modules 和 /router/routes/static
-          const staticRoutePaths = ['/dashboard', '/medail'];
-          const staticRouteNames = ['Dashboard', 'Medail', '概览', '静态资源'];
+          // 仅过滤真正的静态路由，避免误过滤“静态资源”等后端返回菜单
+          const staticRoutePaths = ['/dashboard'];
+          const staticRouteNames = ['Dashboard', '概览'];
 
           const filteredBackendMenus = backendMenus.filter((menu: any) => {
             const menuPath = menu.path || menu.route || menu.url;
