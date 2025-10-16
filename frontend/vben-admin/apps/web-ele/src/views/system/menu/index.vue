@@ -49,7 +49,7 @@
         </div>
         
         <div class="action-buttons">
-          <ElButton type="primary" @click="handleAdd" v-permission="['system:menu:add']">
+          <ElButton type="primary" @click="handleAdd" v-permission="['system:menu:create']">
             ➕ 新增菜单
           </ElButton>
           <ElButton 
@@ -215,7 +215,7 @@
                     v-if="row.type !== 3"
                     type="success" 
                     size="small" 
-                    v-permission="['system:menu:add']"
+                    v-permission="['system:menu:create']"
                     @click="handleAddChild(row)"
                   >
                     新增子项

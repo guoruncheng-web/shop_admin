@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import {
   OperationLog,
   ModuleNames,
@@ -65,8 +66,9 @@ export class RolePermissionTreeController {
       },
     },
   })
-  async getMenuTreeForPermissionAssign() {
-    const menuTree = await this.menusService.getMenuTree();
+  async getMenuTreeForPermissionAssign(@CurrentUser() user: any) {
+    console.log("getMenuTreeForPermissionAssign")
+    const menuTree = await this.menusService.getMenuTree({}, user);
 
     // 专门为权限分配格式化的函数
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -113,7 +115,7 @@ export class RolePermissionTreeController {
     };
 
     const formattedTree = formatForPermissionTree(menuTree);
-
+    console.log("formattedTree",formattedTree)
     return {
       code: 200,
       data: formattedTree,

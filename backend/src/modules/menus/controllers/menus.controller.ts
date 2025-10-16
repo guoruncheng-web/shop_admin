@@ -25,6 +25,8 @@ import { CreateMenuDto } from '../dto/create-menu.dto';
 import { UpdateMenuDto } from '../dto/update-menu.dto';
 import { QueryMenuDto } from '../dto/query-menu.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { Types } from '../../../auth/decorators/types.decorator';
+import { TypesGuard } from '../../../auth/guards/types.guard';
 import {
   OperationLog,
   ModuleNames,
@@ -34,12 +36,19 @@ import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 
 @ApiTags('菜单管理')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TypesGuard)
 @Controller('menus')
 export class MenusController {
   constructor(private readonly menusService: MenusService) {}
 
   @Post()
+  @Types('system:menu:create', {
+    name: '创建菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_CREATE.operation,
+    includeParams: true,
+    includeResponse: true,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_CREATE.operation,
@@ -88,6 +97,13 @@ export class MenusController {
   }
 
   @Get('tree')
+  @Types('system:menu:viewTree', {
+    name: '查看菜单树',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -127,8 +143,8 @@ export class MenusController {
       },
     },
   })
-  async getMenuTree(@Query() query: QueryMenuDto) {
-    const menus = await this.menusService.getMenuTree(query);
+  async getMenuTree(@Query() query: QueryMenuDto, @CurrentUser() user: any) {
+    const menus = await this.menusService.getMenuTree(query, user);
     return {
       code: 200,
       data: menus,
@@ -137,6 +153,13 @@ export class MenusController {
   }
 
   @Get()
+  @Types('system:menu:view', {
+    name: '查询菜单列表',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: true,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -159,8 +182,8 @@ export class MenusController {
       },
     },
   })
-  async getMenus(@Query() query: QueryMenuDto) {
-    const menus = await this.menusService.getMenus(query);
+  async getMenus(@Query() query: QueryMenuDto, @CurrentUser() user: any) {
+    const menus = await this.menusService.getMenus(query, user);
     return {
       code: 200,
       data: menus,
@@ -169,6 +192,13 @@ export class MenusController {
   }
 
   @Get('user')
+  @Types('system:menu:viewUser', {
+    name: '获取用户菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    includeParams: false,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -206,6 +236,14 @@ export class MenusController {
   }
 
   @Get('user/:userId')
+  @Types('system:menu:Details', {
+    name: '根据用户ID获取菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    businessIdField: 'userId',
+    includeParams: false,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -239,6 +277,14 @@ export class MenusController {
   }
 
   @Get('user/:userId/buttons')
+  @Types('system:menu:view', {
+    name: '获取用户按钮权限',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    businessIdField: 'userId',
+    includeParams: false,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -272,6 +318,14 @@ export class MenusController {
   }
 
   @Get(':id')
+  @Types('system:menu:Details', {
+    name: '获取菜单详情',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.VIEW.operation,
+    businessIdField: 'id',
+    includeParams: false,
+    includeResponse: false,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.VIEW.operation,
@@ -305,6 +359,14 @@ export class MenusController {
   }
 
   @Patch(':id')
+  @Types('system:menu:edit', {
+    name: '更新菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_UPDATE.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_UPDATE.operation,
@@ -341,6 +403,14 @@ export class MenusController {
   }
 
   @Put(':id')
+  @Types('system:menu:edit', {
+    name: '更新菜单(PUT)',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_UPDATE.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_UPDATE.operation,
@@ -380,6 +450,14 @@ export class MenusController {
   }
 
   @Patch(':id/status')
+  @Types('system:menu:update', {
+    name: '更新菜单状态',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_UPDATE.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_UPDATE.operation,
@@ -418,6 +496,14 @@ export class MenusController {
   }
 
   @Put(':id/status')
+  @Types('system:menu:update', {
+    name: '更新菜单状态(PUT)',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_UPDATE.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_UPDATE.operation,
@@ -456,6 +542,14 @@ export class MenusController {
   }
 
   @Patch(':id/sort')
+  @Types('system:menu:update', {
+    name: '更新菜单排序',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_UPDATE.operation,
+    includeParams: true,
+    includeResponse: true,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_UPDATE.operation,
@@ -489,6 +583,12 @@ export class MenusController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
+  @Types('system:menu:delete', {
+    name: '删除菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_DELETE.operation,
+    businessIdField: 'id',
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_DELETE.operation,
@@ -520,6 +620,12 @@ export class MenusController {
 
   @Post('batch-delete')
   @HttpCode(HttpStatus.OK)
+  @Types('system:menu:delete', {
+    name: '批量删除菜单',
+    module: ModuleNames.MENU,
+    operation: OperationTypes.MENU_DELETE.operation,
+    includeParams: true,
+  })
   @OperationLog({
     module: ModuleNames.MENU,
     operation: OperationTypes.MENU_DELETE.operation,

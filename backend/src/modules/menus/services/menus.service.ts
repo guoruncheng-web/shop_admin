@@ -111,6 +111,8 @@ export class MenusService {
       hideInMenu: isHidden ? 1 : 0,
       keepAlive: isKeepAlive ? 1 : 0,
       ignoreAccess: 0,
+      // 设置商户ID
+      merchantId: currentUser?.merchantId || 1,
       // 根据菜单类型自动设置组件路径
       component: this.getComponentByMenuType(menuData.type, menuData.component),
       // 如果是按钮类型，优先使用permission作为buttonKey
@@ -207,10 +209,18 @@ export class MenusService {
   }
 
   // 获取菜单树
-  async getMenuTree(query: QueryMenuDto = {}): Promise<Menu[]> {
+  async getMenuTree(query: QueryMenuDto = {}, currentUser?: any): Promise<Menu[]> {
+    console.log("getMenuTree")
     const { name, type, status } = query;
 
     const queryBuilder = this.menuRepository.createQueryBuilder('menu');
+    console.log("merchantId",currentUser)
+    // 添加商户过滤条件
+    if (currentUser && currentUser.merchantId) {
+      queryBuilder.andWhere('menu.merchantId = :merchantId', {
+        merchantId: currentUser.merchantId
+      });
+    }
 
     if (name) {
       queryBuilder.andWhere('menu.name LIKE :name', { name: `%${name}%` });
@@ -228,13 +238,13 @@ export class MenusService {
 
     // 获取所有符合条件的菜单（包括按钮）
     const menus = await queryBuilder.getMany();
-
+    console.log("@@@@@@@",menus)
     // 为每个菜单添加对应的按钮权限（无论是否有类型过滤）
     const menusWithButtons = await this.addButtonsToMenus(menus);
 
     // 手动构建树形结构
-    const tree = this.buildMenuTree(menusWithButtons);
-
+    const tree = this.buildMenuTree(menus);
+    
     // 对外输出前统一规范 status/children
     return tree.map((n) => this.normalizeStatusForOutput(n));
   }
@@ -323,10 +333,15 @@ export class MenusService {
   }
 
   // 分页查询菜单
-  async getMenus(query: QueryMenuDto): Promise<Menu[]> {
+  async getMenus(query: QueryMenuDto, currentUser?: any): Promise<Menu[]> {
     const { name, type, status } = query;
 
     const queryBuilder = this.menuRepository.createQueryBuilder('menu');
+
+    // 添加商户过滤条件
+    if (currentUser && currentUser.merchantId) {
+      queryBuilder.andWhere('menu.merchantId = :merchantId', { merchantId: currentUser.merchantId });
+    }
 
     if (name) {
       queryBuilder.andWhere('menu.name LIKE :name', { name: `%${name}%` });

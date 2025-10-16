@@ -68,6 +68,7 @@ export class UsersService {
       realName,
       email,
       status,
+      merchantId,
     } = queryDto;
 
     const queryBuilder = this.adminRepository
@@ -106,6 +107,11 @@ export class UsersService {
     }
     if (status !== undefined) {
       queryBuilder.andWhere('admin.status = :status', { status });
+    }
+    
+    // 添加商户ID过滤条件
+    if (merchantId !== undefined) {
+      queryBuilder.andWhere('admin.merchantId = :merchantId', { merchantId });
     }
 
     // 分页

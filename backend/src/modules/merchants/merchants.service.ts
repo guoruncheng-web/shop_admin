@@ -300,6 +300,24 @@ export class MerchantsService {
   }
 
   /**
+   * 获取所有商户（用于下拉选择）
+   */
+  async findAllForSelect() {
+    const merchants = await this.merchantRepository
+      .createQueryBuilder('merchant')
+      .select(['merchant.id', 'merchant.merchantCode', 'merchant.merchantName'])
+      .where('merchant.status = :status', { status: 1 })
+      .orderBy('merchant.merchantName', 'ASC')
+      .getMany();
+
+    return {
+      code: 200,
+      data: merchants,
+      msg: '查询成功',
+    };
+  }
+
+  /**
    * 查询单个商户
    */
   async findOne(id: number): Promise<Merchant> {

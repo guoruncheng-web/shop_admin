@@ -185,6 +185,19 @@ export async function getMerchantListApi(params?: QueryMerchantParams) {
 }
 
 /**
+ * 获取所有商户（用于下拉选择）
+ */
+export async function getAllMerchantsForSelectApi() {
+  const response = await requestClient.get<ApiResponse<Merchant[]>>('/merchants/all');
+
+  if (response && response.code === 200 && response.data) {
+    return response;
+  }
+
+  throw new Error(response?.msg || '获取商户列表失败');
+}
+
+/**
  * 获取商户详情
  */
 export async function getMerchantDetailApi(id: number) {

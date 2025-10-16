@@ -121,6 +121,13 @@ export class MerchantsController {
     return await this.merchantsService.findAll(query);
   }
 
+  @Get('all')
+  @ApiOperation({ summary: '获取所有商户（用于下拉选择）' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  async findAllForSelect() {
+    return await this.merchantsService.findAllForSelect();
+  }
+
   @Get('code/:merchantCode')
   @OperationLog({
     module: ModuleNames.MERCHANT,
@@ -308,7 +315,7 @@ export class MerchantsController {
 
   @Post(':id/reset-super-admin-password')
   @HttpCode(HttpStatus.OK)
-  @Types('system:merchant:reset-password', {
+  @Types('system:merchant:resetPassword', {
     name: '重置商户超级管理员密码',
     module: ModuleNames.MERCHANT,
     operation: OperationTypes.MERCHANT_RESET_PASSWORD.operation,
@@ -336,7 +343,7 @@ export class MerchantsController {
 
   @Post(':id/regenerate-keys')
   @HttpCode(HttpStatus.OK)
-  @Types('system:merchant:regenerate-keys', {
+  @Types('system:merchant:regenerateKeys', {
     name: '重新生成商户API密钥对',
     module: ModuleNames.MERCHANT,
     operation: OperationTypes.MERCHANT_REGENERATE_KEYS.operation,

@@ -37,4 +37,10 @@ export class QueryUserDto {
   @Type(() => Number)
   @IsNumber()
   status?: number;
+
+  @ApiProperty({ description: '商户ID筛选', required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  merchantId?: number;
 }
