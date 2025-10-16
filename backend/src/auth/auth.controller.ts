@@ -158,10 +158,13 @@ export class AuthController {
       if (clientIp && this.isValidIP(clientIp)) return clientIp;
 
       // 从连接信息获取IP
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const connectionIp =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         req.ip || (req as any).connection?.remoteAddress || '127.0.0.1';
 
       if (connectionIp && this.isValidIP(connectionIp)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return this.cleanIPv6(connectionIp);
       }
 
@@ -263,7 +266,10 @@ export class AuthController {
                 merchantType: { type: 'number', example: 1 },
                 status: { type: 'number', example: 1 },
                 logo: { type: 'string' },
-                description: { type: 'string', example: '平台超级商户，拥有最高权限' },
+                description: {
+                  type: 'string',
+                  example: '平台超级商户，拥有最高权限',
+                },
                 certificationStatus: { type: 'number', example: 2 },
                 maxProducts: { type: 'number' },
                 maxAdmins: { type: 'number' },
@@ -297,16 +303,20 @@ export class AuthController {
     description: '未授权 - JWT令牌无效或已过期',
   })
   async getProfile(@Request() req: CustomRequest) {
+    console.log('🔍 getProfile - req.user 对象:', req.user);
+
     const uid = req?.user?.userId ?? req?.user?.id;
     if (!uid) {
       throw new UnauthorizedException('无法识别用户ID');
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const fullProfile = await this.authService.getUserProfileByUserId(
       Number(uid),
     );
 
     return {
       code: 200,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       data: fullProfile, // 包含 基础信息 + roles + permissions + roleInfo + menus + merchant
       msg: '获取成功',
     };
@@ -330,7 +340,7 @@ export class AuthController {
       },
     },
   })
-  async logout() {
+  logout() {
     return {
       code: 200,
       data: {},
@@ -354,6 +364,7 @@ export class AuthController {
       code: 200,
       data: {
         accessToken: result.accessToken,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expiresIn: this.configService.get('jwt.expiresIn'),
       },
       msg: '令牌刷新成功',
@@ -385,6 +396,8 @@ export class AuthController {
   })
   async getAccessCodes(@Request() req: CustomRequest) {
     try {
+      console.log('🔍 getAccessCodes - req.user 对象:', req.user);
+
       const uid = req?.user?.userId ?? req?.user?.id;
       if (!uid) {
         throw new UnauthorizedException('无法识别用户ID');

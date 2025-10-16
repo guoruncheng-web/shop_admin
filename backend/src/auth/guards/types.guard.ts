@@ -46,7 +46,9 @@ export class TypesGuard implements CanActivate {
 
     console.log('🔒 TypesGuard - 检查权限:', {
       requiredPermission: typesOptions.permission,
-      user: user ? { id: user.userId || user.id, username: user.username } : null,
+      user: user
+        ? { id: user.userId || user.id, username: user.username }
+        : null,
     });
 
     // 检查用户是否存在
@@ -60,7 +62,10 @@ export class TypesGuard implements CanActivate {
     );
 
     console.log('🔒 TypesGuard - 用户权限列表:', userPermissions);
-    console.log('🔒 TypesGuard - 是否有权限:', userPermissions.includes(typesOptions.permission));
+    console.log(
+      '🔒 TypesGuard - 是否有权限:',
+      userPermissions.includes(typesOptions.permission),
+    );
 
     // 检查用户是否有权限
     const hasPermission = userPermissions.includes(typesOptions.permission);

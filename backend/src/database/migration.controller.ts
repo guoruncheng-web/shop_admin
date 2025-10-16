@@ -3,11 +3,11 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Public } from '../auth/decorators/public.decorator';
 import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { Permission } from './entities/permission.entity';
 import { Menu } from '../modules/menus/entities/menu.entity';
 import { Role } from './entities/role.entity';
 import { Admin } from './entities/admin.entity';
-import { RoleMenu } from './entities/role-menu.entity';
 
 @ApiTags('数据库迁移')
 @Controller('migration')
@@ -1120,22 +1120,38 @@ export class MigrationController {
     superAdminRole.permissions = allPermissions;
     await this.roleRepository.save(superAdminRole);
 
-    // 创建测试管理员用户
+    // 创建默认管理员用户（仅在系统初始化时使用）
+    // 注意：生产环境中应该修改默认密码或删除此用户
     let adminUser = await this.adminRepository.findOne({
-      where: { username: 'admin' },
+      where: { username: process.env.DEFAULT_ADMIN_USERNAME || 'admin' },
     });
 
     if (!adminUser) {
+      // 使用环境变量或默认值创建管理员用户
+      const defaultUsername = process.env.DEFAULT_ADMIN_USERNAME || 'admin';
+      const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || '123456';
+      const defaultEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
+      const defaultPhone = process.env.DEFAULT_ADMIN_PHONE || '13800138000';
+      const defaultRealName = process.env.DEFAULT_ADMIN_REALNAME || '系统管理员';
+
+      // 密码加密
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(defaultPassword, saltRounds);
+
       adminUser = this.adminRepository.create({
-        username: 'admin',
-        password:
-          '$2b$10$N.zmdr9k7uOCQb376NoUnuTJ8iKXieNjMm8rI5lHDxGwwkjTlBeQy', // 123456
-        realName: '系统管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
+        username: defaultUsername,
+        password: hashedPassword,
+        realName: defaultRealName,
+        email: defaultEmail,
+        phone: defaultPhone,
         status: 1,
       });
       adminUser = await this.adminRepository.save(adminUser);
+
+      console.log('⚠️  创建了默认管理员用户，请立即修改默认密码！');
+      console.log(`用户名: ${defaultUsername}`);
+      console.log(`邮箱: ${defaultEmail}`);
+      console.log(`手机: ${defaultPhone}`);
     }
 
     // 给管理员分配超级管理员角色

@@ -53,10 +53,10 @@ export class OperationLog {
   @Column({ type: 'varchar', length: 500, nullable: true, comment: '用户代理' })
   userAgent: string;
 
-  @Column({ type: 'int', comment: '响应状态码' })
+  @Column({ type: 'int', comment: '响应状态码', default: 200 })
   statusCode: number;
 
-  @Column({ type: 'int', comment: '执行时间(ms)' })
+  @Column({ type: 'int', comment: '执行时间(ms)', default: 0 })
   executionTime: number;
 
   @Column({

@@ -50,11 +50,11 @@ export class LoginResponseDto {
       user: {
         id: 1,
         username: 'admin',
-        realName: '超级管理员',
+        realName: '管理员',
         email: 'admin@example.com',
         phone: '13800138000',
         avatar: '/images/avatar/admin.png',
-        roles: ['super_admin'],
+        roles: ['admin'],
         permissions: [
           'system:admin',
           'system:user',
@@ -64,9 +64,9 @@ export class LoginResponseDto {
         roleInfo: [
           {
             id: 1,
-            name: '超级管理员',
-            code: 'super_admin',
-            description: '系统超级管理员，拥有所有权限',
+            name: '管理员',
+            code: 'admin',
+            description: '系统管理员，拥有基础权限',
           },
         ],
       },

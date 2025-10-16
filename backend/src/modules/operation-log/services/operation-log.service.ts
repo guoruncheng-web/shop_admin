@@ -24,10 +24,44 @@ export class OperationLogService {
   async create(
     createOperationLogDto: CreateOperationLogDto,
   ): Promise<OperationLog> {
-    const operationLog = this.operationLogRepository.create(
-      createOperationLogDto,
-    );
-    return await this.operationLogRepository.save(operationLog);
+    console.log('📝 操作日志服务 - 收到的创建数据:', {
+      ...createOperationLogDto,
+      merchantId: createOperationLogDto.merchantId,
+    });
+
+    // 确保所有必填字段都有值
+    const logData = {
+      ...createOperationLogDto,
+      statusCode: createOperationLogDto.statusCode || 200,
+      executionTime: createOperationLogDto.executionTime || 0,
+      status: createOperationLogDto.status || 'success',
+    };
+
+    console.log('📝 操作日志服务 - 处理后的创建数据:', {
+      ...logData,
+      merchantId: logData.merchantId,
+    });
+
+    const operationLog = this.operationLogRepository.create(logData);
+
+    console.log('📝 操作日志服务 - 创建的实体对象:', {
+      ...operationLog,
+      merchantId: operationLog.merchantId,
+    });
+
+    try {
+      const savedLog = await this.operationLogRepository.save(operationLog);
+
+      console.log('📝 操作日志服务 - 保存后的日志:', {
+        id: savedLog.id,
+        merchantId: savedLog.merchantId,
+      });
+
+      return savedLog;
+    } catch (error) {
+      console.error('📝 操作日志服务 - 保存失败:', error);
+      throw error;
+    }
   }
 
   async findAll(query: QueryOperationLogDto) {
@@ -43,11 +77,12 @@ export class OperationLogService {
       endTime,
       businessId,
       merchantId,
+      merchantName,
     } = query;
 
-    const queryBuilder =
-      this.operationLogRepository.createQueryBuilder('operationLog')
-        .leftJoinAndSelect('operationLog.merchant', 'merchant');
+    const queryBuilder = this.operationLogRepository
+      .createQueryBuilder('operationLog')
+      .leftJoinAndSelect('operationLog.merchant', 'merchant');
 
     // 用户名筛选
     if (username && username !== '') {
@@ -92,6 +127,13 @@ export class OperationLogService {
       });
     }
 
+    // 商户名称筛选
+    if (merchantName && merchantName !== '') {
+      queryBuilder.andWhere('merchant.merchantName LIKE :merchantName', {
+        merchantName: `%${merchantName}%`,
+      });
+    }
+
     // 时间范围筛选
     if (startTime && endTime) {
       queryBuilder.andWhere(
@@ -129,7 +171,9 @@ export class OperationLogService {
     const userMap = new Map(users.map((user) => [user.id, user]));
 
     // 获取所有相关商户信息
-    const merchantIds = [...new Set(items.map((log) => log.merchantId).filter(Boolean))];
+    const merchantIds = [
+      ...new Set(items.map((log) => log.merchantId).filter(Boolean)),
+    ];
     const merchants =
       merchantIds.length > 0
         ? await this.merchantRepository.find({
@@ -138,7 +182,9 @@ export class OperationLogService {
           })
         : [];
 
-    const merchantMap = new Map(merchants.map((merchant) => [merchant.id, merchant]));
+    const merchantMap = new Map(
+      merchants.map((merchant) => [merchant.id, merchant]),
+    );
 
     // 转换数据格式
     const transformedItems: OperationLogResponseDto[] = items.map((log) => {
@@ -159,12 +205,14 @@ export class OperationLogService {
               realName: '【用户不存在】',
               avatar: null,
             },
-        merchant: log.merchantId ? merchantMap.get(log.merchantId) || {
-          id: log.merchantId,
-          merchantCode: 'UNKNOWN',
-          merchantName: '未知商户',
-          merchantType: 2,
-        } : undefined,
+        merchant: log.merchantId
+          ? merchantMap.get(log.merchantId) || {
+              id: log.merchantId,
+              merchantCode: 'UNKNOWN',
+              merchantName: '未知商户',
+              merchantType: 2,
+            }
+          : undefined,
       };
     });
 
@@ -212,12 +260,14 @@ export class OperationLogService {
             realName: '【用户不存在】',
             avatar: null,
           },
-      merchant: operationLog.merchant ? {
-        id: operationLog.merchant.id,
-        merchantCode: operationLog.merchant.merchantCode,
-        merchantName: operationLog.merchant.merchantName,
-        merchantType: operationLog.merchant.merchantType,
-      } : undefined,
+      merchant: operationLog.merchant
+        ? {
+            id: operationLog.merchant.id,
+            merchantCode: operationLog.merchant.merchantCode,
+            merchantName: operationLog.merchant.merchantName,
+            merchantType: operationLog.merchant.merchantType,
+          }
+        : undefined,
     };
   }
 
@@ -305,7 +355,8 @@ export class OperationLogService {
       .getRawMany();
 
     // 平均执行时间
-    const avgExecutionTime = await this.operationLogRepository
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const avgExecutionTimeResult = await this.operationLogRepository
       .createQueryBuilder('log')
       .select('AVG(log.executionTime)', 'avgTime')
       .where('log.createdAt >= :startDate', { startDate })
@@ -319,17 +370,25 @@ export class OperationLogService {
         failedOperations,
         successRate:
           totalOperations > 0 ? (successOperations / totalOperations) * 100 : 0,
-        avgExecutionTime: parseFloat(avgExecutionTime?.avgTime || '0'),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+        avgExecutionTime: parseFloat(avgExecutionTimeResult?.avgTime || '0'),
         moduleStats: moduleStats.map((item) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
           module: item.module,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           count: parseInt(item.count),
         })),
         operationStats: operationStats.map((item) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
           operation: item.operation,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           count: parseInt(item.count),
         })),
         activeUsers: activeUsers.map((item) => ({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
           username: item.username,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           count: parseInt(item.count),
         })),
       },
@@ -345,6 +404,7 @@ export class OperationLogService {
       .orderBy('log.module', 'ASC')
       .getRawMany();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     return modules.map((item) => item.module);
   }
 
@@ -362,6 +422,7 @@ export class OperationLogService {
       .orderBy('log.operation', 'ASC')
       .getRawMany();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     return operations.map((item) => item.operation);
   }
 }

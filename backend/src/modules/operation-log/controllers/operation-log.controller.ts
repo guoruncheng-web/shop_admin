@@ -65,6 +65,16 @@ export class OperationLogController {
               executionTime: { type: 'number' },
               status: { type: 'string', enum: ['success', 'failed'] },
               createdAt: { type: 'string', format: 'date-time' },
+              merchantId: { type: 'number' },
+              merchant: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  merchantCode: { type: 'string' },
+                  merchantName: { type: 'string' },
+                  merchantType: { type: 'number' },
+                },
+              },
               user: {
                 type: 'object',
                 properties: {
@@ -90,11 +100,23 @@ export class OperationLogController {
       },
     },
   })
-  @Types('system:operation-log:view', {
+  @ApiQuery({
+    name: 'merchantId',
+    required: false,
+    description: '商户ID，用于筛选特定商户的操作日志',
+    type: 'number',
+  })
+  @ApiQuery({
+    name: 'merchantName',
+    required: false,
+    description: '商户名称，支持模糊搜索',
+    type: 'string',
+  })
+  @Types('system:operationLog:view', {
     name: '查看操作日志',
     module: 'system',
     operation: 'view',
-    includeParams: true
+    includeParams: true,
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -169,10 +191,10 @@ export class OperationLogController {
       },
     },
   })
-  @Types('system:operation-log:statistics', {
+  @Types('system:operationLog:statistics', {
     name: '查看操作日志统计',
     module: 'system',
-    operation: 'view'
+    operation: 'view',
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -265,10 +287,10 @@ export class OperationLogController {
     status: 404,
     description: '操作日志不存在',
   })
-  @Types('system:operation-log:view', {
+  @Types('system:operationLog:viewDetails', {
     name: '查看操作日志详情',
     module: 'system',
-    operation: 'view'
+    operation: 'view',
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -306,10 +328,10 @@ export class OperationLogController {
     status: 200,
     description: '删除成功',
   })
-  @Types('system:operation-log:delete', {
+  @Types('system:operationLog:delete', {
     name: '删除操作日志',
     module: 'system',
-    operation: 'delete'
+    operation: 'delete',
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -335,11 +357,11 @@ export class OperationLogController {
     status: 200,
     description: '批量删除成功',
   })
-  @Types('system:operation-log:delete', {
+  @Types('system:operationLog:deleteBatch', {
     name: '批量删除操作日志',
     module: 'system',
     operation: 'delete',
-    includeParams: true
+    includeParams: true,
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -374,11 +396,11 @@ export class OperationLogController {
     status: 200,
     description: '清理成功',
   })
-  @Types('system:operation-log:clear', {
+  @Types('system:operationLog:clearHistory', {
     name: '清理过期操作日志',
     module: 'system',
     operation: 'clear',
-    includeParams: true
+    includeParams: true,
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,
@@ -405,10 +427,10 @@ export class OperationLogController {
     status: 200,
     description: '清空成功',
   })
-  @Types('system:operation-log:clear', {
+  @Types('system:operationLog:clearAll', {
     name: '清空所有操作日志',
     module: 'system',
-    operation: 'clear'
+    operation: 'clear',
   })
   @OperationLog({
     module: ModuleNames.SYSTEM,

@@ -75,6 +75,7 @@ export class OperationLogInterceptor implements NestInterceptor {
           ip,
           userAgent,
           startTime,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           responseData,
           status: 'success',
           error: null,
@@ -96,6 +97,7 @@ export class OperationLogInterceptor implements NestInterceptor {
           startTime,
           responseData: null,
           status: 'failed',
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           error,
         });
 
@@ -121,6 +123,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     error: any;
   }): void {
     // 异步记录，不阻塞主流程
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     setImmediate(async () => {
       try {
         const endTime = Date.now();
@@ -130,8 +133,11 @@ export class OperationLogInterceptor implements NestInterceptor {
         const logData: Record<string, any> = {
           userId: params.userId,
           username: params.username,
-          module: params.typesOptions.module || this.extractModuleFromPath(params.path),
-          operation: params.typesOptions.operation || params.method.toLowerCase(),
+          module:
+            params.typesOptions.module ||
+            this.extractModuleFromPath(params.path),
+          operation:
+            params.typesOptions.operation || params.method.toLowerCase(),
           description: params.typesOptions.name,
           method: params.method,
           path: params.path,
@@ -144,13 +150,20 @@ export class OperationLogInterceptor implements NestInterceptor {
 
         // 处理参数
         if (params.typesOptions.includeParams !== false) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           const requestParams = params.request.body || params.request.query;
           logData.params = JSON.stringify(this.sanitizeParams(requestParams));
         }
 
         // 处理响应
-        if (params.typesOptions.includeResponse && params.responseData && params.status === 'success') {
-          logData.response = JSON.stringify(this.sanitizeResponse(params.responseData));
+        if (
+          params.typesOptions.includeResponse &&
+          params.responseData &&
+          params.status === 'success'
+        ) {
+          logData.response = JSON.stringify(
+            this.sanitizeResponse(params.responseData),
+          );
           logData.statusCode = params.response.statusCode;
         } else if (params.status === 'failed') {
           logData.statusCode = this.getErrorStatus(params.error);
@@ -158,9 +171,13 @@ export class OperationLogInterceptor implements NestInterceptor {
         }
 
         // 提取业务ID
-        logData.businessId = this.extractBusinessId(params.request, params.typesOptions.businessIdField);
+        logData.businessId = this.extractBusinessId(
+          params.request,
+          params.typesOptions.businessIdField,
+        );
 
         // 记录操作日志
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         await this.operationLogService.create(logData as any);
       } catch (error) {
         this.logger.error('操作日志记录失败:', error);
@@ -202,17 +219,24 @@ export class OperationLogInterceptor implements NestInterceptor {
   /**
    * 提取业务ID
    */
-  private extractBusinessId(request: Request, businessIdField?: string): string {
-    const urlParams = request.params as any;
-    const bodyParams = request.body as any;
-    
+  private extractBusinessId(
+    request: Request,
+    businessIdField?: string,
+  ): string {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const urlParams = request.params;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const bodyParams = request.body;
+
     if (businessIdField) {
       // 使用指定的字段名提取业务ID
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const id = urlParams?.[businessIdField] || bodyParams?.[businessIdField];
       return String(id || '');
     }
-    
+
     // 默认逻辑：优先使用id字段
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     const id = urlParams?.id || bodyParams?.id;
     return String(id || '');
   }
@@ -226,10 +250,12 @@ export class OperationLogInterceptor implements NestInterceptor {
     }
 
     const sensitiveFields = ['password', 'token', 'secret', 'key'];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const sanitized = { ...params };
 
     for (const field of sensitiveFields) {
       if (field in sanitized) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         sanitized[field] = '***';
       }
     }
@@ -262,6 +288,7 @@ export class OperationLogInterceptor implements NestInterceptor {
    * 获取错误状态码
    */
   private getErrorStatus(error: any): number {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return error?.status || error?.statusCode || 500;
   }
 
@@ -269,6 +296,7 @@ export class OperationLogInterceptor implements NestInterceptor {
    * 获取错误消息
    */
   private getErrorMessage(error: any): string {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return error?.message || error?.description || '操作失败';
   }
 }

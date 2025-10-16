@@ -17,7 +17,6 @@ import { QueryUserLoginLogDto } from '../dto/create-login-log.dto';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
 import { TypesGuard } from '../../../auth/guards/types.guard';
 import { Types } from '../../../auth/decorators/types.decorator';
-import { Public } from '../../../auth/decorators/public.decorator';
 
 @ApiTags('用户登录日志')
 @Controller('login-logs')
@@ -27,11 +26,11 @@ export class UserLoginLogController {
   constructor(private readonly userLoginLogService: UserLoginLogService) {}
 
   @Get()
-  @Types('system:login-log:view', {
+  @Types('system:loginLog:view', {
     name: '查看登录日志',
     module: 'login-log',
     operation: 'view',
-    includeParams: false
+    includeParams: false,
   })
   @ApiOperation({ summary: '获取用户登录日志列表' })
   @ApiResponse({ status: 200, description: '获取成功' })
@@ -44,7 +43,7 @@ export class UserLoginLogController {
     name: '查看登录日志详情',
     module: 'login-log',
     operation: 'view',
-    includeParams: false
+    includeParams: false,
   })
   @ApiOperation({ summary: '获取单个登录日志详情' })
   @ApiResponse({ status: 200, description: '获取成功' })
@@ -62,7 +61,7 @@ export class UserLoginLogController {
     name: '删除登录日志',
     module: 'login-log',
     operation: 'delete',
-    includeParams: false
+    includeParams: false,
   })
   @ApiOperation({ summary: '删除登录日志' })
   @ApiResponse({ status: 200, description: '删除成功' })
@@ -80,7 +79,7 @@ export class UserLoginLogController {
     name: '清理登录日志',
     module: 'login-log',
     operation: 'clear',
-    includeParams: false
+    includeParams: false,
   })
   @ApiOperation({ summary: '清理旧的登录日志' })
   @ApiResponse({ status: 200, description: '清理成功' })

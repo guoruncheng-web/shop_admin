@@ -10,7 +10,7 @@ export class SeedController {
   constructor(private readonly dataSource: DataSource) {}
 
   @Post('login-logs')
-  @Types('system:login-log:view', {
+  @Types('system:loginLog:view', {
     name: '查看登录日志',
     module: 'login-log',
     operation: 'view',

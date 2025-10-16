@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,9 +32,13 @@ export class AuthService {
     private userLoginLogService: UserLoginLogService,
   ) {
     // 获取Redis配置
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const redisHost = this.configService.get('redis.host') || 'localhost';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const redisPort = this.configService.get('redis.port') || 6379;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const redisPassword = this.configService.get('redis.password') || '';
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const redisDb = this.configService.get('redis.db') || 0;
 
     // 打印Redis连接信息
@@ -43,6 +51,7 @@ export class AuthService {
     });
 
     // 初始化Redis连接
+
     this.redis = new Redis({
       host: redisHost,
       port: redisPort,
@@ -76,6 +85,7 @@ export class AuthService {
       ignoreChars: '0o1il', // 排除容易混淆的字符
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const expiresIn = this.configService.get('captcha.expires') || 300;
     const expiresAt = Date.now() + expiresIn * 1000;
 
@@ -95,6 +105,7 @@ export class AuthService {
     return {
       captchaId,
       captchaImage: `data:image/svg+xml;base64,${Buffer.from(captcha.data).toString('base64')}`,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       expiresIn,
     };
   }
@@ -102,6 +113,7 @@ export class AuthService {
   // 验证验证码
   async validateCaptcha(captchaId: string, captcha: string): Promise<boolean> {
     // 开发模式：如果Redis不可用，跳过验证码验证
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const nodeEnv = this.configService.get('app.nodeEnv') || 'development';
     if (nodeEnv === 'development') {
       console.log('🚀 开发模式：跳过验证码验证');
@@ -116,7 +128,11 @@ export class AuthService {
         return false;
       }
 
-      const captchaData = JSON.parse(stored);
+      const captchaData = JSON.parse(stored) as {
+        text: string;
+        expiresAt: number;
+        createdAt: number;
+      };
       if (Date.now() > captchaData.expiresAt) {
         await this.redis.del(key);
         return false;
@@ -130,7 +146,10 @@ export class AuthService {
       return isValid;
     } catch (error) {
       // Redis连接失败时，返回验证码无效
-      console.error('Redis连接失败:', error.message);
+      console.error(
+        'Redis连接失败:',
+        error instanceof Error ? error.message : String(error),
+      );
       return false;
     }
   }
@@ -141,14 +160,30 @@ export class AuthService {
   }
 
   // 获取所有验证码（调试用）
-  async getAllCaptchas(): Promise<any[]> {
+  async getAllCaptchas(): Promise<
+    Array<{
+      id: string;
+      text: string;
+      expiresAt: number;
+      createdAt: number;
+    }>
+  > {
     const keys = await this.redis.keys('captcha:*');
-    const captchas: any[] = [];
+    const captchas: Array<{
+      id: string;
+      text: string;
+      expiresAt: number;
+      createdAt: number;
+    }> = [];
 
     for (const key of keys) {
       const data = await this.redis.get(key);
       if (data) {
-        const captcha = JSON.parse(data);
+        const captcha = JSON.parse(data) as {
+          text: string;
+          expiresAt: number;
+          createdAt: number;
+        };
         captchas.push({
           id: key.replace('captcha:', ''),
           ...captcha,
@@ -164,7 +199,28 @@ export class AuthService {
     username: string,
     password: string,
     loginIp?: string,
-  ): Promise<any> {
+  ): Promise<{
+    id: number;
+    username: string;
+    realName: string;
+    email: string;
+    phone?: string;
+    avatar?: string;
+    status: number;
+    lastLoginTime?: Date;
+    lastLoginIp?: string;
+    createdAt: Date;
+    updatedAt: Date;
+    roles: string[];
+    roleInfo: Array<{
+      id: number;
+      name: string;
+      code: string;
+      description: string;
+    }>;
+    permissions: string[];
+    merchantId: number;
+  } | null> {
     // 从数据库查找用户
     const user = await this.adminRepository.findOne({
       where: { username },
@@ -193,7 +249,8 @@ export class AuthService {
     });
 
     // 构建返回的用户信息
-    const { password: _, ...userInfo } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...userInfo } = user;
 
     // 提取角色信息
     const roles = user.roles?.map((role) => role.code) || [];
@@ -213,6 +270,7 @@ export class AuthService {
       roles,
       roleInfo,
       permissions,
+      merchantId: user.merchantId,
     };
   }
 
@@ -258,7 +316,9 @@ export class AuthService {
       const userMenus = await this.menusService.getUserMenusByUserId(user.id);
 
       // 生成JWT令牌
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const jwtSecret = this.configService.get('jwt.secret');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const jwtExpiresIn = this.configService.get('jwt.expiresIn');
 
       // 调试信息
@@ -273,14 +333,23 @@ export class AuthService {
         username: user.username,
         roles: user.roles,
         permissions: user.permissions,
+        merchantId: user.merchantId,
         iat: Math.floor(Date.now() / 1000),
       };
 
+      console.log('🔐 登录 - JWT payload 包含商户ID:', {
+        userId: user.id,
+        username: user.username,
+        merchantId: user.merchantId,
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const accessToken = jwt.sign(payload, jwtSecret, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expiresIn: jwtExpiresIn,
         issuer: 'wechat-mall-api',
         audience: 'wechat-mall-client',
-      });
+      } as jwt.SignOptions);
 
       // 记录登录成功日志
       await this.userLoginLogService.recordLogin(
@@ -294,10 +363,11 @@ export class AuthService {
         code: 200,
         data: {
           accessToken,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           user: {
             ...user,
             menus: userMenus, // 添加用户菜单信息
-          },
+          } as any,
         },
         msg: '登录成功',
       };
@@ -309,7 +379,7 @@ export class AuthService {
           loginIp || '127.0.0.1',
           userAgent,
           false,
-          error.message,
+          error instanceof Error ? error.message : String(error),
         );
       }
       throw error;
@@ -317,14 +387,17 @@ export class AuthService {
   }
 
   // 验证JWT令牌
-  async verifyToken(token: string): Promise<any> {
+  verifyToken(token: string): Promise<any> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const jwtSecret = this.configService.get('jwt.secret');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const decoded = jwt.verify(token, jwtSecret, {
         issuer: 'wechat-mall-api',
         audience: 'wechat-mall-client',
       });
-      return decoded;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return decoded as any;
     } catch (error) {
       console.error('JWT verification error:', error);
       return null;
@@ -332,85 +405,79 @@ export class AuthService {
   }
 
   // 从JWT中提取用户信息
-  async getUserFromToken(token: string): Promise<any> {
+  async getUserFromToken(token: string): Promise<{
+    id: number;
+    username: string;
+    realName: string;
+    email: string;
+    phone?: string;
+    avatar?: string;
+    roles: string[];
+    permissions: string[];
+    roleInfo: Array<{
+      id: number;
+      name: string;
+      code: string;
+      description: string;
+    }>;
+    merchantId: number;
+  } | null> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const decoded = await this.verifyToken(token);
     if (!decoded) {
       return null;
     }
 
     // 从token中获取用户ID，然后查询完整的用户信息
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
     const userId = decoded.sub;
-    const mockUsers = [
-      {
-        id: 1,
-        username: 'admin',
-        realName: '超级管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        avatar: '/images/avatar/admin.png',
-        roles: ['super_admin'],
-        permissions: [
-          'system:admin',
-          'system:user',
-          'system:role',
-          'system:permission',
-          'product:list',
-          'product:create',
-          'product:update',
-          'product:delete',
-          'order:list',
-          'order:update',
-          'order:delete',
-          'banner:list',
-          'banner:create',
-          'banner:update',
-          'banner:delete',
-        ],
-        roleInfo: [
-          {
-            id: 1,
-            name: '超级管理员',
-            code: 'super_admin',
-            description: '系统超级管理员，拥有所有权限',
-          },
-        ],
-      },
-      {
-        id: 2,
-        username: 'product_admin',
-        realName: '商品管理员',
-        email: 'product@example.com',
-        phone: '13800138001',
-        avatar: '/images/avatar/product.png',
-        roles: ['product_admin'],
-        permissions: [
-          'product:list',
-          'product:create',
-          'product:update',
-          'product:delete',
-          'category:list',
-          'category:create',
-          'category:update',
-          'category:delete',
-        ],
-        roleInfo: [
-          {
-            id: 2,
-            name: '商品管理员',
-            code: 'product_admin',
-            description: '负责商品和分类管理',
-          },
-        ],
-      },
-    ];
 
-    return mockUsers.find((user) => user.id === userId) || null;
+    try {
+      // 使用 MenusService 的 getFullUserProfile 方法获取完整用户信息
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const userProfile = await this.menusService.getFullUserProfile(userId);
+
+      if (!userProfile) {
+        return null;
+      }
+
+      // 返回符合接口要求的用户信息
+      return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        id: userProfile.id,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        username: userProfile.username,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        realName: userProfile.realName,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        email: userProfile.email,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        phone: userProfile.phone,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        avatar: userProfile.avatar,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        roles: userProfile.roles,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        permissions: userProfile.permissions,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        roleInfo: userProfile.roleInfo,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        merchantId: userProfile.merchantId,
+      };
+    } catch (error) {
+      console.error(
+        '获取用户信息失败:',
+        error instanceof Error ? error.message : String(error),
+      );
+      return null;
+    }
   }
 
   // 刷新JWT令牌
   async refreshToken(token: string): Promise<{ accessToken: string }> {
     try {
       // 验证当前token
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const decoded = await this.verifyToken(token);
       if (!decoded) {
         throw new UnauthorizedException('无效的访问令牌');
@@ -418,6 +485,7 @@ export class AuthService {
 
       // 检查token是否即将过期（24小时内）
       const now = Math.floor(Date.now() / 1000);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
       const tokenExp = decoded.exp;
       const refreshThreshold = 24 * 60 * 60; // 24小时（秒）
 
@@ -426,22 +494,32 @@ export class AuthService {
       }
 
       // 生成新的token
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const jwtSecret = this.configService.get('jwt.secret');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const jwtExpiresIn = this.configService.get('jwt.expiresIn');
 
       const newPayload = {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         sub: decoded.sub,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         username: decoded.username,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         roles: decoded.roles,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         permissions: decoded.permissions,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        merchantId: decoded.merchantId,
         iat: now,
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const newToken = jwt.sign(newPayload, jwtSecret, {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         expiresIn: jwtExpiresIn,
         issuer: 'wechat-mall-api',
         audience: 'wechat-mall-client',
-      });
+      } as jwt.SignOptions);
 
       return { accessToken: newToken };
     } catch (error) {
@@ -455,10 +533,15 @@ export class AuthService {
   // 通过用户ID获取用户权限码
   async getUserPermissionsByUserId(userId: number): Promise<string[]> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const userProfile = await this.menusService.getFullUserProfile(userId);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
       return userProfile?.permissions || [];
     } catch (error) {
-      console.error('获取用户权限码失败:', error);
+      console.error(
+        '获取用户权限码失败:',
+        error instanceof Error ? error.message : String(error),
+      );
       return [];
     }
   }

@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsNumber,
-  IsEnum,
-  IsDateString,
-} from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsDateString } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -26,6 +20,7 @@ export class CreateOperationLogDto {
   status: 'success' | 'failed';
   errorMessage?: string;
   businessId?: string;
+  merchantId?: number;
 }
 
 export class QueryOperationLogDto {
@@ -86,6 +81,11 @@ export class QueryOperationLogDto {
   @Type(() => Number)
   @IsNumber()
   merchantId?: number;
+
+  @ApiPropertyOptional({ description: '商户名称' })
+  @IsOptional()
+  @IsString()
+  merchantName?: string;
 }
 
 export class OperationLogResponseDto {

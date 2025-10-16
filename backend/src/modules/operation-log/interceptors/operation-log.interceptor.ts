@@ -21,6 +21,7 @@ interface CustomRequest extends Request {
     id?: number;
     username?: string;
     sub?: number;
+    merchantId?: number;
   };
   startTime?: number;
 }
@@ -52,6 +53,8 @@ export class OperationLogInterceptor implements NestInterceptor {
 
     // 提取用户信息
     const user = request.user;
+    console.log('🔍 操作日志拦截器 - 请求对象用户信息:', user);
+
     if (!user) {
       return next.handle();
     }
@@ -59,12 +62,19 @@ export class OperationLogInterceptor implements NestInterceptor {
     const userId = user.userId || user.id || user.sub;
     const username = user.username || `user_${userId}`;
 
+    console.log('🔍 操作日志拦截器 - 提取的用户信息:', {
+      userId,
+      username,
+      merchantId: user.merchantId,
+      userKeys: Object.keys(user || {}),
+    });
+
     // 提取IP地址
     const ip = this.extractClientIp(request);
 
     return next.handle().pipe(
       tap((responseData) => {
-        this.logOperation(
+        void this.logOperation(
           request,
           response,
           logOptions,
@@ -74,10 +84,11 @@ export class OperationLogInterceptor implements NestInterceptor {
           username,
           ip,
           'success',
+          user,
         );
       }),
       catchError((error) => {
-        this.logOperation(
+        void this.logOperation(
           request,
           response,
           logOptions,
@@ -88,6 +99,7 @@ export class OperationLogInterceptor implements NestInterceptor {
           ip,
           'failed',
           error,
+          user,
         );
         throw error;
       }),
@@ -105,6 +117,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     ip: string,
     status: 'success' | 'failed',
     error?: any,
+    user?: CustomRequest['user'],
   ) {
     try {
       const endTime = Date.now();
@@ -116,7 +129,12 @@ export class OperationLogInterceptor implements NestInterceptor {
         const locationInfo = await this.ipLocationService.getLocationInfo(ip);
         location = locationInfo.location || '未知';
       } catch (locationError) {
-        console.warn('获取IP位置信息失败:', locationError.message);
+        console.warn(
+          '获取IP位置信息失败:',
+          locationError instanceof Error
+            ? locationError.message
+            : String(locationError),
+        );
       }
 
       // 提取业务ID
@@ -126,6 +144,15 @@ export class OperationLogInterceptor implements NestInterceptor {
           request,
           logOptions.businessIdField,
         );
+      }
+
+      // 提取商户ID
+      let merchantId: number | null = null;
+      if (user && user.merchantId) {
+        merchantId = user.merchantId;
+        console.log('🔍 操作日志 - 提取到商户ID:', merchantId);
+      } else {
+        console.log('🔍 操作日志 - 未找到商户ID, 用户信息:', user);
       }
 
       // 准备参数数据
@@ -139,9 +166,8 @@ export class OperationLogInterceptor implements NestInterceptor {
       if (logOptions.includeResponse && status === 'success') {
         responseStr = this.formatResponse(responseData);
       }
-
       // 创建操作日志
-      await this.operationLogService.create({
+      const logData = {
         userId,
         username,
         module: logOptions.module,
@@ -154,12 +180,22 @@ export class OperationLogInterceptor implements NestInterceptor {
         ip,
         location,
         userAgent: request.headers['user-agent'] || '',
-        statusCode: response.statusCode,
+        statusCode: response.statusCode || 200, // 确保statusCode有默认值
         executionTime,
         status,
         errorMessage: error ? this.formatError(error) : undefined,
         businessId,
+        merchantId,
+      };
+
+      console.log('📝 操作日志 - 即将创建的日志数据:', {
+        ...logData,
+        merchantId: logData.merchantId,
+        userMerchantId: user?.merchantId,
+        statusCode: logData.statusCode,
       });
+
+      await this.operationLogService.create(logData);
     } catch (logError) {
       console.error('记录操作日志失败:', logError);
     }
@@ -188,19 +224,21 @@ export class OperationLogInterceptor implements NestInterceptor {
 
     // 从查询参数中提取
     if (request.query && request.query[fieldName]) {
-      return String(request.query[fieldName]);
+      const value = request.query[fieldName];
+      return typeof value === 'string' ? value : JSON.stringify(value);
     }
 
     // 从请求体中提取
-    if (request.body && request.body[fieldName]) {
-      return String(request.body[fieldName]);
+    if (request.body && (request.body as Record<string, unknown>)[fieldName]) {
+      const value = (request.body as Record<string, unknown>)[fieldName];
+      return typeof value === 'string' ? value : JSON.stringify(value);
     }
 
     return undefined;
   }
 
   private formatParams(request: Request): string {
-    const params: any = {};
+    const params: Record<string, unknown> = {};
 
     // 添加路径参数
     if (request.params && Object.keys(request.params).length > 0) {
@@ -230,7 +268,7 @@ export class OperationLogInterceptor implements NestInterceptor {
         return responseStr.substring(0, 5000) + '...(truncated)';
       }
       return responseStr;
-    } catch (error) {
+    } catch {
       return '[响应数据格式化失败]';
     }
   }
@@ -242,7 +280,7 @@ export class OperationLogInterceptor implements NestInterceptor {
     return String(error);
   }
 
-  private filterSensitiveData(data: any): any {
+  private filterSensitiveData(data: unknown): unknown {
     if (!data || typeof data !== 'object') {
       return data;
     }
@@ -260,11 +298,11 @@ export class OperationLogInterceptor implements NestInterceptor {
       'email',
     ];
 
-    const filtered = { ...data };
+    const filtered = { ...(data as Record<string, unknown>) };
 
     for (const field of sensitiveFields) {
-      if (filtered[field]) {
-        filtered[field] = '***';
+      if ((filtered as Record<string, unknown>)[field]) {
+        (filtered as Record<string, unknown>)[field] = '***';
       }
     }
 
