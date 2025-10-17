@@ -1,46 +1,35 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsOptional,
-  IsArray,
-  IsEnum,
-  IsUrl,
-} from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsBoolean, IsArray, IsNotEmpty } from 'class-validator';
 
 export class CreateBrandDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({
-    description: '品牌名称',
-    example: '苹果',
-  })
   name: string;
 
   @IsString()
-  @IsNotEmpty()
-  @IsUrl()
-  @ApiProperty({
-    description: '品牌图标URL',
-    example: 'https://example.com/icon.png',
-  })
-  iconUrl: string;
+  @IsOptional()
+  description?: string;
+
+  @IsString()
+  @IsOptional()
+  logo?: string;
+
+  @IsString()
+  @IsOptional()
+  iconUrl?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  status?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isAuth?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isHot?: boolean;
 
   @IsArray()
-  @IsString({ each: true })
   @IsOptional()
-  @ApiProperty({
-    description: '品牌标签',
-    example: ['new', 'popular'],
-  })
   label?: string[];
-
-  @IsEnum([0, 1])
-  @IsOptional()
-  @ApiProperty({
-    description: '是否热门品牌',
-    example: 0,
-    enum: [0, 1],
-  })
-  isHot?: number;
 }

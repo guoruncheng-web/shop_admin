@@ -67,8 +67,17 @@ export class BrandsController {
     @Query() query: QueryBrandDto,
     @Request() req: AuthenticatedRequest,
   ): Promise<PaginatedBrandResponse> {
-    const merchantId = req.user?.merchantId;
-    return await this.brandsService.findAll(query, merchantId);
+    const result = await this.brandsService.findAll(query, req.user);
+    return {
+      code: 200,
+      message: '查询成功',
+      data: {
+        list: result.items,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+      },
+    };
   }
 
   @Get('all')
@@ -99,8 +108,7 @@ export class BrandsController {
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    const merchantId = req.user?.merchantId;
-    const brand = await this.brandsService.findOne(+id, merchantId);
+    const brand = await this.brandsService.findOne(+id, req.user);
     return {
       code: 200,
       message: '查询成功',
@@ -119,14 +127,7 @@ export class BrandsController {
     @Body() createBrandDto: CreateBrandDto,
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    const creatorId = req.user?.userId;
-    const merchantId = req.user?.merchantId;
-
-    const brand = await this.brandsService.create(
-      createBrandDto,
-      merchantId,
-      creatorId,
-    );
+    const brand = await this.brandsService.create(createBrandDto, req.user);
     return {
       code: 201,
       message: '创建成功',
@@ -146,14 +147,10 @@ export class BrandsController {
     @Body() updateBrandDto: UpdateBrandDto,
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    const merchantId = req.user?.merchantId;
-    const updaterId = req.user?.userId;
-
     const brand = await this.brandsService.update(
       +id,
       updateBrandDto,
-      merchantId,
-      updaterId,
+      req.user,
     );
     return {
       code: 200,
@@ -173,14 +170,69 @@ export class BrandsController {
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    const merchantId = req.user?.merchantId;
-    const deleterId = req.user?.userId;
-
-    await this.brandsService.remove(+id, merchantId, deleterId);
+    await this.brandsService.remove(+id, req.user);
     return {
       code: 200,
       message: '删除成功',
       data: null,
+    };
+  }
+
+  @Put('batch/status')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '批量更新品牌状态' })
+  @ApiResponse({ status: 200, description: '批量更新成功' })
+  @Types('system:brands:batchStatus', { name: '批量更新品牌状态' })
+  async batchUpdateStatus(
+    @Body() body: { ids: number[]; status: number },
+    @Request() req: AuthenticatedRequest,
+  ): Promise<BrandResponse> {
+    await this.brandsService.batchUpdateStatus(
+      body.ids,
+      !!body.status,
+      req.user,
+    );
+    return {
+      code: 200,
+      message: '批量更新状态成功',
+      data: null,
+    };
+  }
+
+  @Put('batch/auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '批量认证品牌' })
+  @ApiResponse({ status: 200, description: '批量认证成功' })
+  @Types('system:brands:batchAuth', { name: '批量认证品牌' })
+  async batchAuth(
+    @Body() body: { ids: number[]; isAuth: number },
+    @Request() req: AuthenticatedRequest,
+  ): Promise<BrandResponse> {
+    await this.brandsService.batchUpdateAuth(
+      body.ids,
+      !!body.isAuth,
+      req.user,
+    );
+    return {
+      code: 200,
+      message: '批量认证成功',
+      data: null,
+    };
+  }
+
+  @Get('statistics')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '获取品牌统计信息' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  @Types('system:brands:statistics', { name: '查看品牌统计' })
+  async getStatistics(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<BrandResponse> {
+    const statistics = (await this.brandsService.getStatistics(req.user)) as unknown;
+    return {
+      code: 200,
+      message: '查询成功',
+      data: statistics,
     };
   }
 }

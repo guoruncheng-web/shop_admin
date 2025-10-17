@@ -70,4 +70,23 @@ export class QueryBrandDto {
   @IsOptional()
   @IsString()
   label?: string;
+
+  @ApiProperty({
+    description: '商户ID',
+    example: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Transform(({ value }) => parseInt(value as string, 10))
+  merchantId?: number;
+
+  @ApiProperty({
+    description: '创建者用户名搜索',
+    example: 'admin',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  creator?: string;
 }

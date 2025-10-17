@@ -34,7 +34,13 @@ export class Admin {
   @Column({ type: 'varchar', length: 255, comment: '密码' })
   password: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true, comment: '真实姓名' })
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+    name: 'real_name',
+    comment: '真实姓名',
+  })
   realName: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true, comment: '邮箱' })

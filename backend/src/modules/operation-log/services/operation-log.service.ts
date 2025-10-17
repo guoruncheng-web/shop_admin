@@ -64,6 +64,43 @@ export class OperationLogService {
     }
   }
 
+  // added: compatibility helper for service-layer logging
+  async logOperation(
+    currentUser: { userId: number; merchantId: number; username: string },
+    module: string,
+    businessId: number | string | null,
+    operation: string,
+    description: string,
+    manager?: { save: (entity: unknown) => Promise<unknown> },
+  ): Promise<void> {
+    const payload: CreateOperationLogDto = {
+      userId: currentUser.userId,
+      username: currentUser.username,
+      module,
+      operation,
+      description,
+      method: 'SERVICE',
+      path: 'brands.service',
+      params: businessId ? JSON.stringify({ businessId }) : undefined,
+      response: undefined,
+      ip: '127.0.0.1',
+      location: undefined,
+      userAgent: 'internal',
+      statusCode: 200,
+      executionTime: 0,
+      status: 'success',
+      errorMessage: undefined,
+      businessId: businessId ? String(businessId) : undefined,
+      merchantId: currentUser.merchantId,
+    };
+
+    if (manager) {
+      const entity = this.operationLogRepository.create(payload);
+      await manager.save(entity);
+    } else {
+      await this.create(payload);
+    }
+  }
   async findAll(query: QueryOperationLogDto) {
     const {
       page = 1,

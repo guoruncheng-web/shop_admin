@@ -1,65 +1,49 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  ManyToOne,
-  JoinColumn,
-  Index,
-} from 'typeorm';
-import { Merchant } from '../../merchants/entities/merchant.entity';
-import { Admin } from '../../admin/entities/admin.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('brands')
-@Index(['merchantId', 'name'], { unique: true })
-@Index(['merchantId'])
-@Index(['status'])
-@Index(['isAuth'])
-@Index(['isHot'])
 export class Brand {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'merchant_id' })
-  @Index()
-  merchantId: number;
-
-  @ManyToOne(() => Merchant, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'merchant_id' })
-  merchant: Merchant;
-
-  @Column()
-  @Index({ unique: true })
+  @Column({ length: 100, comment: '品牌名称' })
   name: string;
 
-  @Column({ name: 'icon_url' })
+  @Column({ type: 'text', nullable: true, comment: '品牌描述' })
+  description: string;
+
+  @Column({ name: 'merchant_id', type: 'int', comment: '商户ID' })
+  merchantId: number;
+
+  @Column({ name: 'icon_url', type: 'varchar', length: 255, comment: '品牌icon 必填' })
   iconUrl: string;
 
-  @Column({ name: 'creator_id', nullable: true })
-  creatorId?: number;
+  @Column({ name: 'logo', type: 'varchar', length: 255, nullable: true, comment: '品牌logo' })
+  logo: string;
 
-  @ManyToOne(() => Admin, { nullable: true })
-  @JoinColumn({ name: 'creator_id' })
-  creator?: Admin;
+  @Column({ type: 'tinyint', default: 1, comment: '状态 0禁用 1启用' })
+  status: boolean;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ type: 'tinyint', default: 0, comment: '0 未认证 1 已认证' })
+  isAuth: boolean;
+
+  @Column({ type: 'tinyint', default: 0, comment: '0 不是热门 1 热门' })
+  isHot: boolean;
+
+  @Column({ type: 'json', nullable: true, comment: '品牌标签数组' })
   label: string[];
 
-  @Column({ name: 'create_time', type: 'datetime' })
-  @CreateDateColumn()
+  @Column({ length: 100, nullable: true, comment: '品牌的创建者' })
+  creator: string;
+
+  @Column({ name: 'create_time', type: 'datetime', nullable: true, comment: '品牌的创建时间' })
   createTime: Date;
 
-  @Column({ name: 'update_time', type: 'datetime' })
-  @UpdateDateColumn()
+  @Column({ name: 'update_time', type: 'datetime', nullable: true, comment: '品牌的更新时间' })
   updateTime: Date;
 
-  @Column({ type: 'tinyint', default: 1 })
-  status: number; // 0: 禁用, 1: 启用
+  @CreateDateColumn({ name: 'created_at', type: 'datetime', comment: '创建时间' })
+  createdAt: Date;
 
-  @Column({ name: 'is_auth', type: 'tinyint', default: 0 })
-  isAuth: number; // 0: 未认证, 1: 已认证
-
-  @Column({ name: 'is_hot', type: 'tinyint', default: 0 })
-  isHot: number; // 0: 不是热门, 1: 热门
+  @UpdateDateColumn({ name: 'updated_at', type: 'datetime', comment: '更新时间' })
+  updatedAt: Date;
 }
