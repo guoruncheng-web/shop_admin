@@ -94,7 +94,7 @@ export class BrandsController {
   @ApiParam({ name: 'id', description: '品牌ID' })
   @ApiResponse({ status: 200, description: '查询成功' })
   @ApiResponse({ status: 404, description: '品牌不存在' })
-  @Types('system:brands:view', { name: '查询品牌详情' })
+  @Types('system:brands:details', { name: '查询品牌详情' })
   async findOne(
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,

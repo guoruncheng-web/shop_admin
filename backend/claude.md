@@ -75,3 +75,4 @@ findAll() {
 1.3 /brands/:id put 修改品牌 权限标识 system:brands:edit
 1.4 /brands/:id delete 删除品牌 权限标识 system:brands:delete
 1.5 /brands/all get 查询品牌 权限标识 system:brands:viewAll 查询登录商户全部品牌
+1.6 /brands/:id get 查询详情 权限标识 system:brands:details 查询品牌详情

@@ -1,4 +1,10 @@
-import { MigrationInterface, QueryRunner, Table, TableIndex } from 'typeorm';
+import {
+  MigrationInterface,
+  QueryRunner,
+  Table,
+  TableForeignKey,
+  TableIndex,
+} from 'typeorm';
 
 export class CreateBrandsTable1726625600000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
@@ -126,12 +132,16 @@ export class CreateBrandsTable1726625600000 implements MigrationInterface {
     );
 
     // 添加外键约束
-    await queryRunner.createForeignKey('brands', 'FK_BRANDS_MERCHANT_ID', {
-      columnNames: ['merchantId'],
-      referencedTableName: 'merchants',
-      referencedColumnNames: ['id'],
-      onDelete: 'CASCADE',
-    });
+    await queryRunner.createForeignKey(
+      'brands',
+      new TableForeignKey({
+        name: 'FK_BRANDS_MERCHANT_ID',
+        columnNames: ['merchantId'],
+        referencedTableName: 'merchants',
+        referencedColumnNames: ['id'],
+        onDelete: 'CASCADE',
+      }),
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
