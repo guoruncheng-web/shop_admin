@@ -25,7 +25,10 @@ export class BrandsService {
   /**
    * 创建品牌
    */
-  async create(createBrandDto: CreateBrandDto, currentUser: any): Promise<Brand> {
+  async create(
+    createBrandDto: CreateBrandDto,
+    currentUser: any,
+  ): Promise<Brand> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     try {
@@ -47,14 +50,12 @@ export class BrandsService {
       // 创建品牌实体
       const brand = new Brand();
       brand.name = createBrandDto.name;
-      brand.description = createBrandDto.description;
-      brand.logo = createBrandDto.logo;
       brand.iconUrl = createBrandDto.iconUrl;
       brand.status = createBrandDto.status ?? true;
       brand.merchantId = currentUser.merchantId;
       brand.isAuth = createBrandDto.isAuth ?? false;
       brand.isHot = createBrandDto.isHot ?? false;
-      brand.creator = currentUser.username;
+      brand.creator = currentUser.userId;
       brand.createTime = new Date();
       brand.updateTime = new Date();
 
@@ -310,14 +311,10 @@ export class BrandsService {
       }
 
       // 批量更新状态
-      await queryRunner.manager.update(
-        Brand,
-        ids,
-        {
-          status,
-          updateTime: new Date(),
-        },
-      );
+      await queryRunner.manager.update(Brand, ids, {
+        status,
+        updateTime: new Date(),
+      });
 
       // 记录操作日志
       await this.operationLogService.logOperation(
@@ -365,14 +362,10 @@ export class BrandsService {
       }
 
       // 批量更新认证状态
-      await queryRunner.manager.update(
-        Brand,
-        ids,
-        {
-          isAuth,
-          updateTime: new Date(),
-        },
-      );
+      await queryRunner.manager.update(Brand, ids, {
+        isAuth,
+        updateTime: new Date(),
+      });
 
       // 记录操作日志
       await this.operationLogService.logOperation(

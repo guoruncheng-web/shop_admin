@@ -208,11 +208,7 @@ export class BrandsController {
     @Body() body: { ids: number[]; isAuth: number },
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    await this.brandsService.batchUpdateAuth(
-      body.ids,
-      !!body.isAuth,
-      req.user,
-    );
+    await this.brandsService.batchUpdateAuth(body.ids, !!body.isAuth, req.user);
     return {
       code: 200,
       message: '批量认证成功',
@@ -228,7 +224,9 @@ export class BrandsController {
   async getStatistics(
     @Request() req: AuthenticatedRequest,
   ): Promise<BrandResponse> {
-    const statistics = (await this.brandsService.getStatistics(req.user)) as unknown;
+    const statistics = (await this.brandsService.getStatistics(
+      req.user,
+    )) as unknown;
     return {
       code: 200,
       message: '查询成功',

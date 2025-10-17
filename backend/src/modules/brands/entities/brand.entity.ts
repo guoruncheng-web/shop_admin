@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('brands')
 export class Brand {
@@ -8,17 +8,11 @@ export class Brand {
   @Column({ length: 100, comment: '品牌名称' })
   name: string;
 
-  @Column({ type: 'text', nullable: true, comment: '品牌描述' })
-  description: string;
-
-  @Column({ name: 'merchant_id', type: 'int', comment: '商户ID' })
+  @Column({ type: 'int', comment: '商户ID' })
   merchantId: number;
 
-  @Column({ name: 'icon_url', type: 'varchar', length: 255, comment: '品牌icon 必填' })
+  @Column({ type: 'varchar', length: 255, comment: '品牌icon 必填' })
   iconUrl: string;
-
-  @Column({ name: 'logo', type: 'varchar', length: 255, nullable: true, comment: '品牌logo' })
-  logo: string;
 
   @Column({ type: 'tinyint', default: 1, comment: '状态 0禁用 1启用' })
   status: boolean;
@@ -32,18 +26,12 @@ export class Brand {
   @Column({ type: 'json', nullable: true, comment: '品牌标签数组' })
   label: string[];
 
-  @Column({ length: 100, nullable: true, comment: '品牌的创建者' })
-  creator: string;
+  @Column({ type: 'bigint', nullable: true, comment: '品牌的创建者' })
+  creator: number;
 
-  @Column({ name: 'create_time', type: 'datetime', nullable: true, comment: '品牌的创建时间' })
+  @Column({ type: 'timestamp', nullable: true, comment: '品牌的创建时间' })
   createTime: Date;
 
-  @Column({ name: 'update_time', type: 'datetime', nullable: true, comment: '品牌的更新时间' })
+  @Column({ type: 'timestamp', nullable: true, comment: '品牌的更新时间' })
   updateTime: Date;
-
-  @CreateDateColumn({ name: 'created_at', type: 'datetime', comment: '创建时间' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'datetime', comment: '更新时间' })
-  updatedAt: Date;
 }
