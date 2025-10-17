@@ -216,10 +216,9 @@ export class RolesController {
     const menuTree = await this.menusService.getMenuTree();
 
     // 转换为前端需要的标准树形结构
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const formatTreeForFrontend = (menus: any[]): any[] => {
       return menus.map((menu) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedMenu = {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           id: menu.id,
@@ -245,7 +244,7 @@ export class RolesController {
           orderNum: menu.orderNum || menu.sort || 0, // 排序
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
           parentId: menu.parentId, // 父级ID
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
           children:
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             menu.children && menu.children.length > 0

@@ -67,18 +67,17 @@ export class RolePermissionTreeController {
     },
   })
   async getMenuTreeForPermissionAssign(@CurrentUser() user: any) {
-    console.log("getMenuTreeForPermissionAssign")
+    console.log('getMenuTreeForPermissionAssign');
     const menuTree = await this.menusService.getMenuTree({}, user);
 
     // 专门为权限分配格式化的函数
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     const formatForPermissionTree = (menus: any[]): any[] => {
       return (
         menus
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           .filter((menu) => menu.status === 1) // 只返回启用的菜单
           .map((menu) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const node: any = {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
               id: menu.id,
@@ -115,7 +114,7 @@ export class RolePermissionTreeController {
     };
 
     const formattedTree = formatForPermissionTree(menuTree);
-    console.log("formattedTree",formattedTree)
+    console.log('formattedTree', formattedTree);
     return {
       code: 200,
       data: formattedTree,

@@ -13,7 +13,10 @@ import { ResourceMenuController } from './controllers/menu-init.controller';
 import { Menu } from '../menus/entities/menu.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ResourceCategory, Resource, Menu]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([ResourceCategory, Resource, Menu]),
+    AuthModule,
+  ],
   controllers: [
     ResourceCategoryController,
     ResourceController,

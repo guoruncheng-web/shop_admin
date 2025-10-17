@@ -37,13 +37,16 @@ export class UserLoginLogService {
       userId,
       username,
       merchantId,
+      ip,
       startDate,
       endDate,
+      startTime,
+      endTime,
     } = query;
 
-    const queryBuilder =
-      this.userLoginLogRepository.createQueryBuilder('loginLog')
-        .leftJoinAndSelect('loginLog.merchant', 'merchant');
+    const queryBuilder = this.userLoginLogRepository
+      .createQueryBuilder('loginLog')
+      .leftJoinAndSelect('loginLog.merchant', 'merchant');
 
     if (
       status &&
@@ -58,20 +61,33 @@ export class UserLoginLogService {
     }
 
     if (merchantId) {
-      queryBuilder.andWhere('loginLog.merchantId = :merchantId', { merchantId });
+      queryBuilder.andWhere('loginLog.merchantId = :merchantId', {
+        merchantId,
+      });
     }
 
     if (username) {
       queryBuilder.andWhere('loginLog.username LIKE :username', {
-        username: `%${username}%`
+        username: `%${username}%`,
       });
     }
 
-    if (startDate) {
+    if (ip) {
+      queryBuilder.andWhere('loginLog.ip LIKE :ip', {
+        ip: `%${ip}%`,
+      });
+    }
+
+    // 优先使用startTime/endTime，如果没有则使用startDate/endDate
+    if (startTime) {
+      queryBuilder.andWhere('loginLog.createdAt >= :startTime', { startTime });
+    } else if (startDate) {
       queryBuilder.andWhere('loginLog.createdAt >= :startDate', { startDate });
     }
 
-    if (endDate) {
+    if (endTime) {
+      queryBuilder.andWhere('loginLog.createdAt <= :endTime', { endTime });
+    } else if (endDate) {
       queryBuilder.andWhere('loginLog.createdAt <= :endDate', { endDate });
     }
 
@@ -158,10 +174,59 @@ export class UserLoginLogService {
     };
   }
 
-  async findOne(id: number): Promise<UserLoginLog> {
-    return await this.userLoginLogRepository.findOne({
+  async findOne(id: number) {
+    const log = await this.userLoginLogRepository.findOne({
       where: { id },
+      relations: ['merchant'],
     });
+
+    if (!log) {
+      return null;
+    }
+
+    // 获取用户信息
+    const user = await this.adminRepository.findOne({
+      where: { id: log.userId },
+      relations: ['merchant'],
+    });
+
+    return {
+      id: log.id,
+      userId: log.userId,
+      username: user?.username || `用户${log.userId}`,
+      loginType: 'password',
+      ip: log.ip,
+      location: log.location || '-',
+      userAgent: log.userAgent || '',
+      status: log.status,
+      failReason: log.failReason,
+      loginTime: log.createdAt.toISOString(),
+      logoutTime: null,
+      sessionId: null,
+      merchant: log.merchant || user?.merchant || null,
+      merchantId: log.merchantId,
+      user: user
+        ? {
+            id: user.id,
+            username: user.username,
+            realName: user.realName || null,
+            email: user.email || null,
+            phone: user.phone || null,
+            avatar: user.avatar || null,
+            status: user.status,
+            merchant: user.merchant || null,
+          }
+        : {
+            id: log.userId,
+            username: `用户${log.userId}`,
+            realName: '【用户不存在】',
+            email: null,
+            phone: null,
+            avatar: null,
+            status: 0,
+            merchant: null,
+          },
+    };
   }
 
   async remove(id: number): Promise<void> {

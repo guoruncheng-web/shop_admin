@@ -1130,9 +1130,11 @@ export class MigrationController {
       // 使用环境变量或默认值创建管理员用户
       const defaultUsername = process.env.DEFAULT_ADMIN_USERNAME || 'admin';
       const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || '123456';
-      const defaultEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
+      const defaultEmail =
+        process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com';
       const defaultPhone = process.env.DEFAULT_ADMIN_PHONE || '13800138000';
-      const defaultRealName = process.env.DEFAULT_ADMIN_REALNAME || '系统管理员';
+      const defaultRealName =
+        process.env.DEFAULT_ADMIN_REALNAME || '系统管理员';
 
       // 密码加密
       const saltRounds = 10;
@@ -1591,7 +1593,9 @@ export class MigrationController {
         DESCRIBE merchants
       `);
 
-      const hasDescription = tableInfo.some((col) => col.Field === 'description');
+      const hasDescription = tableInfo.some(
+        (col) => col.Field === 'description',
+      );
       const hasCreatedAt = tableInfo.some((col) => col.Field === 'created_at');
       const hasUpdatedAt = tableInfo.some((col) => col.Field === 'updated_at');
 

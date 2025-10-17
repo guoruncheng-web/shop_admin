@@ -209,16 +209,19 @@ export class MenusService {
   }
 
   // 获取菜单树
-  async getMenuTree(query: QueryMenuDto = {}, currentUser?: any): Promise<Menu[]> {
-    console.log("getMenuTree")
+  async getMenuTree(
+    query: QueryMenuDto = {},
+    currentUser?: any,
+  ): Promise<Menu[]> {
+    console.log('getMenuTree');
     const { name, type, status } = query;
 
     const queryBuilder = this.menuRepository.createQueryBuilder('menu');
-    console.log("merchantId",currentUser)
+    console.log('merchantId', currentUser);
     // 添加商户过滤条件
     if (currentUser && currentUser.merchantId) {
       queryBuilder.andWhere('menu.merchantId = :merchantId', {
-        merchantId: currentUser.merchantId
+        merchantId: currentUser.merchantId,
       });
     }
 
@@ -238,13 +241,13 @@ export class MenusService {
 
     // 获取所有符合条件的菜单（包括按钮）
     const menus = await queryBuilder.getMany();
-    console.log("@@@@@@@",menus)
+    console.log('@@@@@@@', menus);
     // 为每个菜单添加对应的按钮权限（无论是否有类型过滤）
     const menusWithButtons = await this.addButtonsToMenus(menus);
 
     // 手动构建树形结构
     const tree = this.buildMenuTree(menus);
-    
+
     // 对外输出前统一规范 status/children
     return tree.map((n) => this.normalizeStatusForOutput(n));
   }
@@ -340,7 +343,9 @@ export class MenusService {
 
     // 添加商户过滤条件
     if (currentUser && currentUser.merchantId) {
-      queryBuilder.andWhere('menu.merchantId = :merchantId', { merchantId: currentUser.merchantId });
+      queryBuilder.andWhere('menu.merchantId = :merchantId', {
+        merchantId: currentUser.merchantId,
+      });
     }
 
     if (name) {
@@ -729,21 +734,23 @@ export class MenusService {
     const menus = await this.getUserMenusByUserId(userId);
 
     // 组装商户信息
-    const merchant = user.merchant ? {
-      id: user.merchant.id,
-      merchantCode: user.merchant.merchantCode,
-      merchantName: user.merchant.merchantName,
-      merchantType: user.merchant.merchantType,
-      status: user.merchant.status,
-      logo: user.merchant.logo,
-      description: user.merchant.description,
-      certificationStatus: user.merchant.certificationStatus,
-      maxProducts: user.merchant.maxProducts,
-      maxAdmins: user.merchant.maxAdmins,
-      maxStorage: user.merchant.maxStorage,
-      createdAt: user.merchant.createdAt,
-      updatedAt: user.merchant.updatedAt,
-    } : null;
+    const merchant = user.merchant
+      ? {
+          id: user.merchant.id,
+          merchantCode: user.merchant.merchantCode,
+          merchantName: user.merchant.merchantName,
+          merchantType: user.merchant.merchantType,
+          status: user.merchant.status,
+          logo: user.merchant.logo,
+          description: user.merchant.description,
+          certificationStatus: user.merchant.certificationStatus,
+          maxProducts: user.merchant.maxProducts,
+          maxAdmins: user.merchant.maxAdmins,
+          maxStorage: user.merchant.maxStorage,
+          createdAt: user.merchant.createdAt,
+          updatedAt: user.merchant.updatedAt,
+        }
+      : null;
 
     // 返回完整用户档案
     return {

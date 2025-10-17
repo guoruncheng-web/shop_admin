@@ -14,7 +14,7 @@ export class SeedController {
     name: '查看登录日志',
     module: 'login-log',
     operation: 'view',
-    includeParams: false
+    includeParams: false,
   })
   @Public()
   @ApiOperation({ summary: '初始化用户登录日志测试数据' })

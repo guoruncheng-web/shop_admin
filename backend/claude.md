@@ -52,3 +52,26 @@ findAll() {
 # 当用户所属的商户被禁用的商户,改商户所有数据都不返回,包括用户 登录的时候如果用户所属的商户被禁用了,直接返回500,错误信息返回该用户所属的商户被禁用了
 
 # 每次改动的文件都要检查有没有eslint错误和ts报错
+
+# 品牌管理
+1. 每个商品有且有一个品牌,一个品牌可以有多个商品
+2. 每个商户可以建立多个品牌
+3. 品牌创建完成后需要认证完成后才能在客户端上架显示
+4. 品牌数据库表(brand)
+- id id 是唯一自增
+- merchantId 商户id
+- name 品牌名称 唯一不能重复
+- iconUrl 品牌icon 必填
+- creatar 品牌的创建者 读取 req.user 对象
+- createTime 品牌的创建时间
+- updateTime 品牌的更新时间(更新完成后需要重新认证)
+- status 0 禁用 1 启用
+- isAuth 0 未认证 1 已认证
+- isHot 0 不是热门 1 热门
+- Label 是一个字符串数组 [] (类型可选: news 新品牌) 支持配置扩展
+5. 接口
+1.1 /brands Get 分页查询数据 权限标识 system:brands:view 分页查询登录商户的品牌 支持品牌名称 创建者等条件搜索
+1.2 /brands post 新增品牌 权限标识 system:brands:add
+1.3 /brands/:id put 修改品牌 权限标识 system:brands:edit
+1.4 /brands/:id delete 删除品牌 权限标识 system:brands:delete
+1.5 /brands/all get 查询品牌 权限标识 system:brands:viewAll 查询登录商户全部品牌

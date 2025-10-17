@@ -223,7 +223,6 @@ export class OperationLogInterceptor implements NestInterceptor {
     request: Request,
     businessIdField?: string,
   ): string {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const urlParams = request.params;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const bodyParams = request.body;

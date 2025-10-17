@@ -110,13 +110,13 @@ export class UsersController {
     // 获取当前用户的商户ID
     const currentUser = req.user;
     const merchantId = currentUser?.merchantId;
-    
+
     // 将商户ID添加到查询条件中
     const queryWithMerchant = {
       ...queryDto,
       merchantId,
     };
-    
+
     const result = await this.usersService.findAll(queryWithMerchant);
     return {
       code: 200,

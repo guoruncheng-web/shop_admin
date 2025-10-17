@@ -30,10 +30,10 @@ export class ResourceCategoryController {
   @ApiOperation({ summary: '创建资源分类' })
   @ApiResponse({ status: 201, description: '创建成功', type: ResourceCategory })
   @Types('system:medialCategory:add', {
-      name: '创建资源分类',
-      module: 'medialCategory',
-      operation: 'add',
-      includeParams: false
+    name: '创建资源分类',
+    module: 'medialCategory',
+    operation: 'add',
+    includeParams: false,
   })
   async create(
     @Body() createDto: CreateResourceCategoryDto,
@@ -44,10 +44,10 @@ export class ResourceCategoryController {
   @Get('tree')
   @ApiOperation({ summary: '获取分类树结构' })
   @Types('system:medialCategory:view', {
-      name: '查看资源分类',
-      module: 'medialCategory',
-      operation: 'view',
-      includeParams: false
+    name: '查看资源分类',
+    module: 'medialCategory',
+    operation: 'view',
+    includeParams: false,
   })
   @ApiResponse({
     status: 200,
@@ -66,10 +66,10 @@ export class ResourceCategoryController {
     type: [ResourceCategory],
   })
   @Types('system:medialCategory:view', {
-      name: '查看二级分类列表',
-      module: 'medialCategory',
-      operation: 'view',
-      includeParams: false
+    name: '查看二级分类列表',
+    module: 'medialCategory',
+    operation: 'view',
+    includeParams: false,
   })
   async getSecondLevelCategories(): Promise<ResourceCategory[]> {
     return await this.categoryService.getSecondLevelCategories();
@@ -79,10 +79,10 @@ export class ResourceCategoryController {
   @ApiOperation({ summary: '更新资源分类' })
   @ApiResponse({ status: 200, description: '更新成功', type: ResourceCategory })
   @Types('system:medialCategory:edit', {
-      name: '更新资源分类',
-      module: 'medialCategory',
-      operation: 'edit',
-      includeParams: false
+    name: '更新资源分类',
+    module: 'medialCategory',
+    operation: 'edit',
+    includeParams: false,
   })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -95,10 +95,10 @@ export class ResourceCategoryController {
   @ApiOperation({ summary: '删除资源分类' })
   @ApiResponse({ status: 200, description: '删除成功' })
   @Types('system:medialCategory:delete', {
-      name: '删除资源分类',
-      module: 'medialCategory',
-      operation: 'delete',
-      includeParams: false
+    name: '删除资源分类',
+    module: 'medialCategory',
+    operation: 'delete',
+    includeParams: false,
   })
   async delete(
     @Param('id', ParseIntPipe) id: number,

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const COS = require('cos-nodejs-sdk-v5');
 import * as fs from 'fs';
 import * as path from 'path';
@@ -16,14 +16,13 @@ export interface UploadResult {
 
 @Injectable()
 export class UploadService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cos: any;
   private bucket: string;
   private region: string;
 
   constructor(private configService: ConfigService) {
     // 初始化腾讯云COS配置
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     this.cos = new COS({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretId: this.configService.get('cos.secretId'),
@@ -105,7 +104,7 @@ export class UploadService {
       const key = `${folder}/${new Date().getFullYear()}/${(new Date().getMonth() + 1).toString().padStart(2, '0')}/${fileName}`;
 
       // 上传到腾讯云COS
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       await this.cos.putObject({
         Bucket: this.bucket,
         Region: this.region,

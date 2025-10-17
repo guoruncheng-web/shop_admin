@@ -22,6 +22,7 @@ import { MenusModule } from './modules/menus/menus.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
+import { BrandsModule } from './modules/brands/brands.module';
 import { FixAdminsController } from './database/fix-admins.controller';
 import { InitLogMerchantController } from './database/init-log-merchant.controller';
 import { AddMerchantToUsersController } from './database/add-merchant-to-users';
@@ -109,6 +110,7 @@ import { OperationLogInterceptor } from './common/interceptors/operation-log.int
     UsersModule,
     RolesModule,
     PermissionsModule,
+    BrandsModule,
     ResourceModule,
     LoginLogModule,
     OperationLogModule,

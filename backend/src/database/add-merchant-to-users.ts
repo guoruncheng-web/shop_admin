@@ -12,7 +12,7 @@ export class AddMerchantToUsersController {
   async addMerchantToUsers() {
     try {
       console.log('🔄 开始为用户表添加商户ID字段...');
-      
+
       // 1. 为admins表添加merchant_id字段（如果不存在）
       try {
         await this.dataSource.query(`
@@ -20,7 +20,7 @@ export class AddMerchantToUsersController {
           ADD COLUMN merchant_id BIGINT DEFAULT 1 COMMENT '所属商户ID'
         `);
         console.log('✅ admins表添加merchant_id字段成功');
-        
+
         // 添加索引
         await this.dataSource.query(`
           CREATE INDEX idx_admins_merchant_id ON admins(merchant_id)
@@ -33,16 +33,19 @@ export class AddMerchantToUsersController {
           throw error;
         }
       }
-      
+
       // 2. 初始化admins表的商户ID
       const updateAdmins = await this.dataSource.query(`
         UPDATE admins 
         SET merchant_id = 1 
         WHERE merchant_id IS NULL
       `);
-      
-      console.log('✅ admins表商户ID初始化完成，影响行数:', updateAdmins.affectedRows);
-      
+
+      console.log(
+        '✅ admins表商户ID初始化完成，影响行数:',
+        updateAdmins.affectedRows,
+      );
+
       // 3. 检查结果
       const [adminStats] = await this.dataSource.query(`
         SELECT 
@@ -51,22 +54,22 @@ export class AddMerchantToUsersController {
           COUNT(*) - COUNT(merchant_id) as without_merchant
         FROM admins
       `);
-      
+
       console.log('📊 admins表统计:', adminStats);
-      
+
       return {
         success: true,
         message: '用户表商户ID字段添加完成',
         data: {
-          admins: adminStats
-        }
+          admins: adminStats,
+        },
       };
     } catch (error) {
       console.error('❌ 添加商户ID字段失败:', error.message);
       return {
         success: false,
         message: '添加商户ID字段失败',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -80,7 +83,7 @@ export class AddMerchantToUsersController {
       const [adminColumns] = await this.dataSource.query(`
         SHOW COLUMNS FROM admins LIKE 'merchant_id'
       `);
-      
+
       // 检查数据统计
       const [adminStats] = await this.dataSource.query(`
         SELECT 
@@ -89,23 +92,23 @@ export class AddMerchantToUsersController {
           COUNT(*) - COUNT(merchant_id) as without_merchant
         FROM admins
       `);
-      
+
       return {
         success: true,
         message: '检查完成',
         data: {
           admins: {
             hasColumn: adminColumns.length > 0,
-            ...adminStats
-          }
-        }
+            ...adminStats,
+          },
+        },
       };
     } catch (error) {
       console.error('❌ 检查失败:', error.message);
       return {
         success: false,
         message: '检查失败',
-        error: error.message
+        error: error.message,
       };
     }
   }

@@ -370,7 +370,7 @@ export class OperationLogService {
         failedOperations,
         successRate:
           totalOperations > 0 ? (successOperations / totalOperations) * 100 : 0,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
         avgExecutionTime: parseFloat(avgExecutionTimeResult?.avgTime || '0'),
         moduleStats: moduleStats.map((item) => ({
@@ -404,7 +404,7 @@ export class OperationLogService {
       .orderBy('log.module', 'ASC')
       .getRawMany();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return modules.map((item) => item.module);
   }
 
@@ -422,7 +422,7 @@ export class OperationLogService {
       .orderBy('log.operation', 'ASC')
       .getRawMany();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return operations.map((item) => item.operation);
   }
 }

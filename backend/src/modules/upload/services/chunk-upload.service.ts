@@ -9,7 +9,7 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 const COS = require('cos-nodejs-sdk-v5');
 
 interface ChunkUploadInfo {
@@ -27,7 +27,6 @@ interface ChunkUploadInfo {
 
 @Injectable()
 export class ChunkUploadService {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private cos: any;
   private bucket: string;
   private region: string;
@@ -36,7 +35,7 @@ export class ChunkUploadService {
 
   constructor(private configService: ConfigService) {
     // 初始化腾讯云COS配置
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
     this.cos = new COS({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       SecretId: this.configService.get('cos.secretId'),
@@ -243,7 +242,7 @@ export class ChunkUploadService {
       parts.sort((a, b) => a.PartNumber - b.PartNumber);
 
       // 完成COS分片上传
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
       await this.cos.multipartComplete({
         Bucket: this.bucket,
         Region: this.region,

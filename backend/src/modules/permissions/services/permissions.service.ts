@@ -54,7 +54,7 @@ export class PermissionsService {
     }));
 
     // 合并权限和菜单数据
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
     const allPermissions = [...permissions, ...menuPermissions] as any[];
 
     // 如果有数据，构建树形结构

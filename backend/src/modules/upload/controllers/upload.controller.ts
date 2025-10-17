@@ -426,19 +426,19 @@ export class UploadController {
 
     try {
       // 读取分片数据
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
       const chunkBuffer = fs.readFileSync(chunk.path);
 
       const result = await this.chunkUploadService.uploadChunk(
         uploadId,
         parseInt(chunkIndex),
         chunkMD5,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         chunkBuffer,
       );
 
       // 删除临时文件
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
       fs.unlinkSync(chunk.path);
 
       return {
@@ -448,9 +448,8 @@ export class UploadController {
       };
     } catch (error) {
       // 确保删除临时文件
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
       if (fs.existsSync(chunk.path)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         fs.unlinkSync(chunk.path);
       }
       throw error;
