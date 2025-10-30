@@ -176,3 +176,4 @@ storybook-static
 # Sensitive local router config
 backend/.claude-code-router/
 
+.claude/
