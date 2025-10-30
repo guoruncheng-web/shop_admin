@@ -12,6 +12,24 @@ import { UpdateBrandDto } from '../dto/update-brand.dto';
 // edited: use QueryBrandDto instead of BrandQueryDto
 import { QueryBrandDto } from '../dto/query-brand.dto';
 import { OperationLogService } from '../../operation-log/services/operation-log.service';
+import { CurrentUser } from '../interfaces/brand.interface';
+
+interface BrandRawResult {
+  brand_id: number;
+  brand_name: string;
+  brand_iconUrl: string;
+  brand_status: number;
+  brand_isAuth: number;
+  brand_isHot: number;
+  brand_label: string[];
+  brand_creator: number;
+  brand_createTime: Date;
+  brand_updateTime: Date;
+  merchantId: number;
+  merchantName: string;
+  merchantStatus: number;
+  creatorName: string;
+}
 
 @Injectable()
 export class BrandsService {
@@ -27,7 +45,7 @@ export class BrandsService {
    */
   async create(
     createBrandDto: CreateBrandDto,
-    currentUser: any,
+    currentUser: CurrentUser,
   ): Promise<Brand> {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -97,18 +115,47 @@ export class BrandsService {
    */
   async findAll(
     query: QueryBrandDto,
-    currentUser: any,
-  ): Promise<{ items: Brand[]; total: number; page: number; limit: number }> {
-    const { page = 1, limit = 10, name, status, isAuth, isHot } = query;
+    currentUser: CurrentUser,
+  ): Promise<{ items: any[]; total: number; page: number; limit: number }> {
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      status,
+      isAuth,
+      isHot,
+      merchantId,
+      creator,
+      label,
+    } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.brandRepository
       .createQueryBuilder('brand')
-      .where('brand.merchantId = :merchantId', {
+      .leftJoinAndSelect(
+        'merchants',
+        'merchant',
+        'brand.merchantId = merchant.id',
+      )
+      .leftJoinAndSelect('admins', 'admin', 'brand.creator = admin.id');
+
+    // 超级商户查询所有品牌,普通商户只查询自己的品牌
+    // 假设平台超级商户的merchantId为1
+    if (currentUser.merchantId !== 1) {
+      queryBuilder.where('brand.merchantId = :merchantId', {
         merchantId: currentUser.merchantId,
       });
+    }
 
     // 添加搜索条件
+    if (merchantId !== undefined) {
+      if (currentUser.merchantId === 1) {
+        queryBuilder.andWhere('brand.merchantId = :searchMerchantId', {
+          searchMerchantId: merchantId,
+        });
+      }
+    }
+
     if (name) {
       queryBuilder.andWhere('brand.name LIKE :name', {
         name: `%${name}%`,
@@ -127,15 +174,65 @@ export class BrandsService {
       queryBuilder.andWhere('brand.isHot = :isHot', { isHot });
     }
 
+    if (creator) {
+      queryBuilder.andWhere('admin.username LIKE :creator', {
+        creator: `%${creator}%`,
+      });
+    }
+
+    if (label) {
+      queryBuilder.andWhere('JSON_CONTAINS(brand.label, :label)', {
+        label: JSON.stringify(label),
+      });
+    }
+
     // 获取总数
     const total = await queryBuilder.getCount();
 
     // 获取分页数据
-    const items = await queryBuilder
+    const results: BrandRawResult[] = await queryBuilder
+      .select([
+        'brand.id as brand_id',
+        'brand.name as brand_name',
+        'brand.iconUrl as brand_iconUrl',
+        'brand.status as brand_status',
+        'brand.isAuth as brand_isAuth',
+        'brand.isHot as brand_isHot',
+        'brand.label as brand_label',
+        'brand.creator as brand_creator',
+        'brand.createTime as brand_createTime',
+        'brand.updateTime as brand_updateTime',
+        'merchant.id as merchantId',
+        'merchant.merchantName as merchantName',
+        'merchant.status as merchantStatus',
+        'admin.username as creatorName',
+      ])
       .orderBy('brand.createTime', 'DESC')
-      .skip(skip)
-      .take(limit)
-      .getMany();
+      .offset(skip)
+      .limit(limit)
+      .getRawMany();
+
+    // 格式化返回数据,包含商户信息
+    const items = results.map((row: BrandRawResult) => ({
+      id: row.brand_id,
+      name: row.brand_name,
+      iconUrl: row.brand_iconUrl,
+      status: row.brand_status,
+      isAuth: row.brand_isAuth,
+      isHot: row.brand_isHot,
+      label: row.brand_label,
+      creator: row.brand_creator,
+      createTime: row.brand_createTime,
+      updateTime: row.brand_updateTime,
+      merchant: {
+        id: row.merchantId,
+        name: row.merchantName,
+        status: row.merchantStatus,
+      },
+      creatorInfo: {
+        username: row.creatorName,
+      },
+    }));
 
     return {
       items,
@@ -148,7 +245,7 @@ export class BrandsService {
   /**
    * 根据ID查找品牌
    */
-  async findOne(id: number, currentUser: any): Promise<Brand> {
+  async findOne(id: number, currentUser: CurrentUser): Promise<Brand> {
     const brand = await this.brandRepository.findOne({
       where: {
         id,
@@ -169,7 +266,7 @@ export class BrandsService {
   async update(
     id: number,
     updateBrandDto: UpdateBrandDto,
-    currentUser: any,
+    currentUser: CurrentUser,
   ): Promise<Brand> {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -245,7 +342,7 @@ export class BrandsService {
   /**
    * 删除品牌
    */
-  async remove(id: number, currentUser: any): Promise<void> {
+  async remove(id: number, currentUser: CurrentUser): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
 
     try {
@@ -261,6 +358,18 @@ export class BrandsService {
 
       if (!brand) {
         throw new NotFoundException(`品牌ID ${id} 不存在`);
+      }
+
+      // 检查是否有商品关联该品牌
+      const productCount = await queryRunner.manager.query(
+        'SELECT COUNT(*) as count FROM products WHERE brand_id = ?',
+        [id],
+      );
+
+      if (productCount[0].count > 0) {
+        throw new BadRequestException(
+          `该品牌下还有 ${productCount[0].count} 个商品，无法删除。请先删除或转移这些商品。`,
+        );
       }
 
       await queryRunner.manager.remove(brand);
@@ -290,7 +399,7 @@ export class BrandsService {
   async batchUpdateStatus(
     ids: number[],
     status: boolean,
-    currentUser: any,
+    currentUser: CurrentUser,
   ): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -341,7 +450,7 @@ export class BrandsService {
   async batchUpdateAuth(
     ids: number[],
     isAuth: boolean,
-    currentUser: any,
+    currentUser: CurrentUser,
   ): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -389,7 +498,7 @@ export class BrandsService {
   /**
    * 获取品牌统计信息
    */
-  async getStatistics(currentUser: any): Promise<any> {
+  async getStatistics(currentUser: CurrentUser): Promise<any> {
     const queryBuilder = this.brandRepository
       .createQueryBuilder('brand')
       .where('brand.merchantId = :merchantId', {
@@ -421,7 +530,7 @@ export class BrandsService {
   /**
    * 获取所有品牌（不分页，用于下拉选择等场景）
    */
-  async findAllActive(currentUser: any): Promise<Brand[]> {
+  async findAllActive(currentUser: CurrentUser): Promise<Brand[]> {
     return this.brandRepository.find({
       where: {
         merchantId: currentUser.merchantId,

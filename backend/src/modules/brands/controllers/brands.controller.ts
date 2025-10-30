@@ -58,28 +58,6 @@ interface PaginatedBrandResponse {
 export class BrandsController {
   constructor(private readonly brandsService: BrandsService) {}
 
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '分页查询品牌列表' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  @Types('system:brands:view', { name: '查询品牌列表' })
-  async findAll(
-    @Query() query: QueryBrandDto,
-    @Request() req: AuthenticatedRequest,
-  ): Promise<PaginatedBrandResponse> {
-    const result = await this.brandsService.findAll(query, req.user);
-    return {
-      code: 200,
-      message: '查询成功',
-      data: {
-        list: result.items,
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-      },
-    };
-  }
-
   @Get('all')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '查询所有品牌（不分页）' })
@@ -94,6 +72,24 @@ export class BrandsController {
       code: 200,
       message: '查询成功',
       data: brands,
+    };
+  }
+
+  @Get('statistics')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '获取品牌统计信息' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  @Types('system:brands:statistics', { name: '查看品牌统计' })
+  async getStatistics(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<BrandResponse> {
+    const statistics = (await this.brandsService.getStatistics(
+      req.user,
+    )) as unknown;
+    return {
+      code: 200,
+      message: '查询成功',
+      data: statistics,
     };
   }
 
@@ -113,6 +109,28 @@ export class BrandsController {
       code: 200,
       message: '查询成功',
       data: brand,
+    };
+  }
+
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '分页查询品牌列表' })
+  @ApiResponse({ status: 200, description: '查询成功' })
+  @Types('system:brands:view', { name: '查询品牌列表' })
+  async findAll(
+    @Query() query: QueryBrandDto,
+    @Request() req: AuthenticatedRequest,
+  ): Promise<PaginatedBrandResponse> {
+    const result = await this.brandsService.findAll(query, req.user);
+    return {
+      code: 200,
+      message: '查询成功',
+      data: {
+        list: result.items,
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+      },
     };
   }
 
@@ -213,24 +231,6 @@ export class BrandsController {
       code: 200,
       message: '批量认证成功',
       data: null,
-    };
-  }
-
-  @Get('statistics')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '获取品牌统计信息' })
-  @ApiResponse({ status: 200, description: '查询成功' })
-  @Types('system:brands:statistics', { name: '查看品牌统计' })
-  async getStatistics(
-    @Request() req: AuthenticatedRequest,
-  ): Promise<BrandResponse> {
-    const statistics = (await this.brandsService.getStatistics(
-      req.user,
-    )) as unknown;
-    return {
-      code: 200,
-      message: '查询成功',
-      data: statistics,
     };
   }
 }

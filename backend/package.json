@@ -23,7 +23,9 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "env:dev": "./scripts/start-dev.sh",
     "env:test": "./scripts/start-test.sh",
-    "env:prod": "./scripts/start-prod.sh"
+    "env:prod": "./scripts/start-prod.sh",
+    "script:assign-menus": "ts-node -r tsconfig-paths/register scripts/assign-all-menus-to-role-simple.ts",
+    "script:setup-sku": "ts-node -r tsconfig-paths/register scripts/setup-sku-tables.ts"
   },
   "dependencies": {
     "@nestjs/cache-manager": "^3.0.1",

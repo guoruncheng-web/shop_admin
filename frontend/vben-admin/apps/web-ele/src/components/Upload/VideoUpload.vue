@@ -53,8 +53,8 @@
 import { ref, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { VideoPlay, Delete } from '@element-plus/icons-vue';
-import { uploadVideo, deleteFile } from '#/api/upload';
-import { useUserStore } from '#/store';
+import { useAccessStore } from '@vben/stores';
+import { deleteFile } from '#/api/upload';
 
 interface Props {
   modelValue?: string;
@@ -73,7 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const userStore = useUserStore();
+const accessStore = useAccessStore();
 const uploadRef = ref();
 const videoUrl = ref(props.modelValue);
 const uploading = ref(false);
@@ -83,7 +83,7 @@ const videoInfo = ref<any>(null);
 
 const uploadAction = computed(() => '/api/upload/video');
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.accessToken}`,
+  Authorization: `Bearer ${accessStore.accessToken}`,
 }));
 
 // 格式化文件大小

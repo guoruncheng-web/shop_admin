@@ -20,6 +20,15 @@ export interface Brand {
   creator?: number;
   createTime?: string;
   updateTime?: string;
+  // 关联信息
+  merchant?: {
+    id: number;
+    name: string;
+    status: number;
+  };
+  creatorInfo?: {
+    username: string;
+  };
 }
 
 // 分页查询参数

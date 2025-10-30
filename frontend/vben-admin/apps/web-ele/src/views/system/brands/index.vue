@@ -11,6 +11,22 @@
       <ElCard class="search-card">
         <div class="search-form">
           <ElForm :model="searchForm" inline class="search-form-inline">
+            <ElFormItem label="商户">
+              <ElSelect
+                v-model="searchForm.merchantId"
+                placeholder="请选择商户"
+                clearable
+                filterable
+                style="width: 200px"
+              >
+                <ElOption
+                  v-for="merchant in merchantList"
+                  :key="merchant.id"
+                  :label="merchant.merchantName"
+                  :value="merchant.id"
+                />
+              </ElSelect>
+            </ElFormItem>
             <ElFormItem label="品牌名称">
               <ElInput
                 v-model="searchForm.name"
@@ -55,10 +71,10 @@
             </ElFormItem>
             <ElFormItem>
               <ElButton type="primary" @click="handleSearch" :loading="loading">
-                搜索
+                🔍 搜索
               </ElButton>
               <ElButton @click="handleReset">
-                重置
+                🔄 重置
               </ElButton>
             </ElFormItem>
           </ElForm>
@@ -100,7 +116,6 @@
     <div class="table-section">
       <ElCard class="table-card">
         <ElTable
-          v-if="brandList && brandList.length >= 0"
           v-loading="loading"
           :data="brandList"
           stripe
@@ -112,32 +127,55 @@
           <ElTableColumn prop="id" label="品牌ID" width="80" align="center" />
 
           <ElTableColumn label="品牌名称" min-width="150">
-            <template #default="{ row }">
-              <div class="brand-info-cell">
+            <template #default="scope">
+              <div v-if="scope && scope.row" class="brand-info-cell">
                 <ElImage
-                  v-if="row.iconUrl"
-                  :src="row.iconUrl"
+                  v-if="scope.row.iconUrl"
+                  :src="scope.row.iconUrl"
                   style="width: 40px; height: 40px; border-radius: 4px; margin-right: 10px;"
                   fit="cover"
                 />
-                <span class="brand-name">{{ row.name }}</span>
+                <span class="brand-name">{{ scope.row.name }}</span>
               </div>
             </template>
           </ElTableColumn>
 
+          <ElTableColumn label="所属商户" width="150">
+            <template #default="scope">
+              <div v-if="scope && scope.row && scope.row.merchant">
+                <div>{{ scope.row.merchant.name }}</div>
+                <div class="text-gray-400 text-xs">ID: {{ scope.row.merchant.id }}</div>
+              </div>
+              <span v-else class="text-gray-400">-</span>
+            </template>
+          </ElTableColumn>
+
           <ElTableColumn label="是否热门" width="100" align="center">
-            <template #default="{ row }">
-              <ElTag :type="row.isHot ? 'danger' : 'info'" size="small">
-                {{ row.isHot ? '热门' : '普通' }}
+            <template #default="scope">
+              <ElTag v-if="scope && scope.row" :type="scope.row.isHot ? 'danger' : 'info'" size="small">
+                {{ scope.row.isHot ? '热门' : '普通' }}
               </ElTag>
             </template>
           </ElTableColumn>
 
+          <ElTableColumn label="品牌图标" width="100" align="center">
+            <template #default="scope">
+              <ElImage
+                v-if="scope && scope.row && scope.row.iconUrl"
+                :src="scope.row.iconUrl"
+                style="width: 50px; height: 50px; border-radius: 4px;"
+                fit="cover"
+                :preview-src-list="[scope.row.iconUrl]"
+              />
+              <span v-else class="text-gray-400">-</span>
+            </template>
+          </ElTableColumn>
+
           <ElTableColumn label="品牌标签" min-width="150">
-            <template #default="{ row }">
-              <div v-if="row.label && row.label.length > 0" class="label-tags">
+            <template #default="scope">
+              <div v-if="scope && scope.row && scope.row.label && scope.row.label.length > 0" class="label-tags">
                 <ElTag
-                  v-for="(tag, index) in row.label"
+                  v-for="(tag, index) in scope.row.label"
                   :key="index"
                   size="small"
                   style="margin-right: 5px;"
@@ -149,55 +187,65 @@
             </template>
           </ElTableColumn>
 
+          <ElTableColumn label="创建者" width="120">
+            <template #default="scope">
+              <span v-if="scope && scope.row && scope.row.creatorInfo">{{ scope.row.creatorInfo.username }}</span>
+              <span v-else class="text-gray-400">-</span>
+            </template>
+          </ElTableColumn>
+
           <ElTableColumn label="状态" width="100" align="center">
-            <template #default="{ row }">
+            <template #default="scope">
               <ElSwitch
-                v-model="row.status"
+                v-if="scope && scope.row"
+                v-model="scope.row.status"
                 :active-value="1"
                 :inactive-value="0"
-                @change="handleStatusChange(row)"
+                @change="handleStatusChange(scope.row)"
               />
             </template>
           </ElTableColumn>
 
           <ElTableColumn label="认证状态" width="100" align="center">
-            <template #default="{ row }">
-              <ElTag :type="row.isAuth ? 'success' : 'warning'" size="small">
-                {{ row.isAuth ? '已认证' : '未认证' }}
+            <template #default="scope">
+              <ElTag v-if="scope && scope.row" :type="scope.row.isAuth ? 'success' : 'warning'" size="small">
+                {{ scope.row.isAuth ? '已认证' : '未认证' }}
               </ElTag>
             </template>
           </ElTableColumn>
 
           <ElTableColumn label="创建时间" width="180">
-            <template #default="{ row }">
-              {{ formatDateTime(row.createTime) }}
+            <template #default="scope">
+              <span v-if="scope && scope.row">{{ formatDateTime(scope.row.createTime) }}</span>
             </template>
           </ElTableColumn>
 
           <ElTableColumn label="更新时间" width="180">
-            <template #default="{ row }">
-              {{ formatDateTime(row.updateTime) }}
+            <template #default="scope">
+              <span v-if="scope && scope.row">{{ formatDateTime(scope.row.updateTime) }}</span>
             </template>
           </ElTableColumn>
 
           <ElTableColumn label="操作" width="180" align="center" fixed="right">
-            <template #default="{ row }">
-              <ElButton
-                type="primary"
-                size="small"
-                link
-                @click="handleEdit(row)"
-              >
-                编辑
-              </ElButton>
-              <ElButton
-                type="danger"
-                size="small"
-                link
-                @click="handleDelete(row)"
-              >
-                删除
-              </ElButton>
+            <template #default="scope">
+              <div v-if="scope && scope.row">
+                <ElButton
+                  type="primary"
+                  size="small"
+                  link
+                  @click="handleEdit(scope.row)"
+                >
+                  编辑
+                </ElButton>
+                <ElButton
+                  type="danger"
+                  size="small"
+                  link
+                  @click="handleDelete(scope.row)"
+                >
+                  删除
+                </ElButton>
+              </div>
             </template>
           </ElTableColumn>
         </ElTable>
@@ -239,17 +287,22 @@
         </ElFormItem>
 
         <ElFormItem label="品牌图标" prop="iconUrl">
-          <ElInput
-            v-model="formData.iconUrl"
-            placeholder="请输入品牌图标URL"
-            clearable
-          />
-          <div v-if="formData.iconUrl" class="icon-preview">
-            <ElImage
-              :src="formData.iconUrl"
-              style="width: 100px; height: 100px; border-radius: 4px; margin-top: 10px;"
-              fit="cover"
-            />
+          <ElUpload
+            class="icon-uploader"
+            action="#"
+            :show-file-list="false"
+            :http-request="handleIconUpload"
+            :before-upload="beforeIconUpload"
+            accept="image/*"
+          >
+            <img v-if="formData.iconUrl" :src="formData.iconUrl" class="icon-image" />
+            <div v-else class="icon-uploader-placeholder">
+              <span style="font-size: 28px">+</span>
+              <div class="icon-uploader-text">上传图标</div>
+            </div>
+          </ElUpload>
+          <div class="form-tip">
+            支持 JPG、PNG 格式，建议尺寸 200x200，最大 2MB
           </div>
         </ElFormItem>
 
@@ -293,7 +346,31 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus';
+import {
+  ElCard,
+  ElForm,
+  ElFormItem,
+  ElInput,
+  ElSelect,
+  ElOption,
+  ElButton,
+  ElTable,
+  ElTableColumn,
+  ElTag,
+  ElPagination,
+  ElMessage,
+  ElMessageBox,
+  ElDialog,
+  ElRadioGroup,
+  ElRadio,
+  ElSwitch,
+  ElImage,
+  ElUpload,
+  type FormInstance,
+  type FormRules,
+  type UploadRequestOptions,
+} from 'element-plus';
+import { uploadImageApi } from '#/api/common/upload';
 import {
   getBrandList,
   createBrand,
@@ -305,11 +382,14 @@ import {
   type CreateBrandParams,
   type UpdateBrandParams,
 } from '#/api/system/brands';
+import { getAllMerchantsForSelectApi, type Merchant } from '#/api/system/merchant';
 
 // 响应式数据
 const loading = ref(false);
 const submitLoading = ref(false);
+const uploadLoading = ref(false);
 const brandList = ref<Brand[]>([]);
+const merchantList = ref<Merchant[]>([]);
 const selectedIds = ref<number[]>([]);
 const dialogVisible = ref(false);
 const dialogTitle = ref('新增品牌');
@@ -321,6 +401,7 @@ const searchForm = reactive<BrandQueryParams>({
   page: 1,
   limit: 10,
   name: '',
+  merchantId: undefined,
   status: undefined,
   isAuth: undefined,
   isHot: undefined,
@@ -373,6 +454,19 @@ const formatDateTime = (dateTime: string | undefined) => {
   return new Date(dateTime).toLocaleString('zh-CN');
 };
 
+// 加载商户列表
+const loadMerchantList = async () => {
+  try {
+    const response = await getAllMerchantsForSelectApi();
+    if (response && response.code === 200) {
+      merchantList.value = response.data || [];
+    }
+  } catch (error: any) {
+    console.error('加载商户列表错误:', error);
+    ElMessage.error(error.message || '加载商户列表失败');
+  }
+};
+
 // 加载品牌列表
 const loadBrandList = async () => {
   loading.value = true;
@@ -412,6 +506,7 @@ const handleSearch = () => {
 const handleReset = () => {
   Object.assign(searchForm, {
     name: '',
+    merchantId: undefined,
     status: undefined,
     isAuth: undefined,
     isHot: undefined,
@@ -601,8 +696,41 @@ const handleDialogClose = () => {
   formRef.value?.resetFields();
 };
 
+// 图标上传前验证
+const beforeIconUpload = (file: File) => {
+  const isImage = file.type.startsWith('image/');
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isImage) {
+    ElMessage.error('只能上传图片文件！');
+    return false;
+  }
+  if (!isLt2M) {
+    ElMessage.error('图片大小不能超过 2MB！');
+    return false;
+  }
+  return true;
+};
+
+// 图标上传处理
+const handleIconUpload = async (options: UploadRequestOptions) => {
+  const { file } = options;
+
+  try {
+    uploadLoading.value = true;
+    const result = await uploadImageApi(file as File);
+    formData.iconUrl = result.url;
+    ElMessage.success('图标上传成功');
+  } catch (error: any) {
+    ElMessage.error(error.message || '图标上传失败');
+  } finally {
+    uploadLoading.value = false;
+  }
+};
+
 // 组件挂载时加载数据
 onMounted(() => {
+  loadMerchantList();
   loadBrandList();
 });
 </script>
@@ -638,6 +766,7 @@ onMounted(() => {
 
       .action-buttons {
         display: flex;
+        flex-wrap: wrap;
         gap: 10px;
       }
     }
@@ -666,8 +795,50 @@ onMounted(() => {
     }
   }
 
-  .icon-preview {
-    margin-top: 10px;
+  .icon-uploader {
+    :deep(.el-upload) {
+      border: 1px dashed #d9d9d9;
+      border-radius: 6px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+
+      &:hover {
+        border-color: #409eff;
+      }
+    }
+
+    .icon-image {
+      width: 148px;
+      height: 148px;
+      display: block;
+      object-fit: cover;
+    }
+
+    .icon-uploader-placeholder {
+      width: 148px;
+      height: 148px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #8c939d;
+      font-size: 28px;
+      background-color: #fafafa;
+    }
+
+    .icon-uploader-text {
+      font-size: 14px;
+      margin-top: 8px;
+    }
+  }
+
+  .form-tip {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 8px;
+    line-height: 1.5;
   }
 }
 </style>

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { RoleMenu } from '../../../database/entities/role-menu.entity';
 import { Role } from '../../../database/entities/role.entity';
 import { Menu } from '../entities/menu.entity';
@@ -28,8 +28,18 @@ export class RoleMenuService {
       throw new NotFoundException('角色不存在');
     }
 
-    // 验证菜单是否存在，只保存数据库中实际存在的菜单
-    const menus = await this.menuRepository.findByIds(menuIds);
+    // 如果menuIds为空，直接清空权限
+    if (!menuIds || menuIds.length === 0) {
+      await this.roleMenuRepository.delete({ roleId });
+      console.log(`已清空角色 ${roleId} 的所有菜单权限`);
+      return;
+    }
+
+    // 验证菜单是否存在，只保存数据库中实际存在的菜单（使用 In 操作符）
+    const menus = await this.menuRepository.find({
+      where: { id: In(menuIds) },
+      select: ['id'],
+    });
     const existingMenuIds = menus.map((menu) => menu.id);
 
     // 如果没有找到任何有效的菜单ID，记录警告但不抛出错误
@@ -59,6 +69,7 @@ export class RoleMenuService {
 
     if (roleMenus.length > 0) {
       await this.roleMenuRepository.save(roleMenus);
+      console.log(`成功为角色 ${roleId} 分配 ${roleMenus.length} 个菜单权限`);
     }
   }
 
@@ -134,13 +145,19 @@ export class RoleMenuService {
     menuIds: number[],
   ): Promise<void> {
     // 验证角色是否存在
-    const roles = await this.roleRepository.findByIds(roleIds);
+    const roles = await this.roleRepository.find({
+      where: { id: In(roleIds) },
+      select: ['id'],
+    });
     if (roles.length !== roleIds.length) {
       throw new NotFoundException('部分角色不存在');
     }
 
     // 验证菜单是否存在
-    const menus = await this.menuRepository.findByIds(menuIds);
+    const menus = await this.menuRepository.find({
+      where: { id: In(menuIds) },
+      select: ['id'],
+    });
     if (menus.length !== menuIds.length) {
       throw new NotFoundException('部分菜单不存在');
     }

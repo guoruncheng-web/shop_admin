@@ -1,5 +1,5 @@
 export interface CurrentUser {
-  id: number;
+  userId: number;
   username: string;
   merchantId: number;
   realName?: string;

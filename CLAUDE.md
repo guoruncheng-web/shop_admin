@@ -323,3 +323,133 @@ findAll() {
 - 页面搜索表单 商户id(select下拉组件,数据来源于/merchants/all) 品牌名称(输入框) 是否热门(select下拉)
 - 表格数据(header 品牌id 品牌名称 所属商户 是否热门,品牌icon 品牌标签 创建者 状态 是否认证 操作(修改 删除))
 - 新增 修改表单(品牌名称(必填),是否热门,品牌标签,品牌icon(必填))
+
+# 商品SKU管理
+## 概述
+商品SKU采用三级规格设计，支持灵活的规格组合，适用于服装、鞋类、家居等各类电商商品。
+
+## 数据库设计
+- **详细设计文档**: `/Users/mac/test/cursor1/cursor_shop/docs/商品SKU数据库设计.md`
+- **字段设计文档**: `/Users/mac/test/cursor1/cursor_shop/docs/商品SKU数据库字段设计.md` ⭐
+- **数据库脚本**: `/Users/mac/test/cursor1/cursor_shop/database/migrations/create_product_sku_tables.sql`
+
+### 核心表结构
+1. **products** - 商品基础信息表
+   - 存储商品公共属性（名称、分类、品牌、主图、价格区间等）
+   - has_sku 字段标识是否有SKU规格
+
+2. **sku_spec_names** - SKU规格名称表
+   - 存储规格名称及层级关系（一级、二级、三级）
+   - 支持父子关联，构建规格树
+
+3. **sku_spec_values** - SKU规格值表
+   - 存储每个规格名称下的具体值
+   - 支持规格图片（如颜色预览图）
+
+4. **product_skus** - 商品SKU表
+   - 存储具体SKU组合及价格、库存
+   - 三个字段分别存储一级、二级、三级规格值ID
+   - 唯一约束防止重复规格组合
+
+5. **categories** - 商品分类表
+   - 支持多级分类
+   - 树形结构设计
+
+### 三级规格示例
+```
+商品: 经典款T恤
+├─ 一级规格: 颜色 (黑色、白色、红色)
+├─ 二级规格: 尺寸 (S、M、L、XL)
+└─ 三级规格: 材质 (纯棉、棉麻)
+
+最终生成SKU: 3颜色 × 4尺寸 × 2材质 = 24个SKU
+示例: 黑色-M-纯棉、白色-L-棉麻 等
+```
+
+## 业务规则
+1. 每个商品可以有1-3级规格，也可以是单规格商品
+2. SKU规格值的组合必须唯一（通过唯一索引保证）
+3. 商品总库存 = 所有SKU库存之和
+4. 商品显示价格 = 最低SKU价格
+5. SKU编号规则: `SKU-{商品编号}-{序号}`
+6. 规格文本自动生成: "一级值-二级值-三级值"
+7. SKU规格要和商户id 绑定上
+## 查询场景
+### 1. 查询商品的所有规格选项
+```sql
+SELECT sn.spec_name, sn.spec_level, sv.spec_value, sv.image
+FROM sku_spec_names sn
+JOIN sku_spec_values sv ON sn.id = sv.spec_name_id
+WHERE sn.product_id = ?
+ORDER BY sn.spec_level, sn.sort, sv.sort;
+```
+
+### 2. 查询商品的所有SKU
+```sql
+SELECT ps.*,
+  sv1.spec_value as level1_value,
+  sv2.spec_value as level2_value,
+  sv3.spec_value as level3_value
+FROM product_skus ps
+LEFT JOIN sku_spec_values sv1 ON ps.spec_value_id_1 = sv1.id
+LEFT JOIN sku_spec_values sv2 ON ps.spec_value_id_2 = sv2.id
+LEFT JOIN sku_spec_values sv3 ON ps.spec_value_id_3 = sv3.id
+WHERE ps.product_id = ?;
+```
+
+### 3. 查询特定规格组合的SKU
+```sql
+SELECT * FROM product_skus
+WHERE product_id = ?
+  AND spec_value_id_1 = ?  -- 颜色
+  AND spec_value_id_2 = ?  -- 尺寸
+  AND spec_value_id_3 = ?; -- 材质
+```
+
+## 最佳实践
+1. **库存同步**: SKU库存变化时同步更新商品总库存
+2. **价格显示**: 列表页显示最低价，详情页显示价格区间
+3. **规格选择**: 前端实现级联选择，根据上级选择动态加载下级选项
+4. **性能优化**: 对常用查询字段建立复合索引
+5. **缓存策略**: 商品规格选项缓存1小时，SKU库存缓存5分钟
+6. **事务处理**: 创建商品和SKU需在同一事务中完成
+7. **数据一致性**: 通过外键约束保证规格值必须属于对应商品
+
+## 扩展性
+- 支持扩展到4级、5级规格（添加 spec_value_id_4/5 字段）
+- 支持SKU属性（非规格维度的属性，如保质期、产地等）
+- 支持SKU图片集（多张图片）
+- 支持预售、定制等特殊类型SKU
+
+## ✅ SKU数据库搭建状态
+
+**搭建完成时间**: 2025-10-31
+
+### 已创建的表
+1. ✅ **products** - 商品表（已更新所有SKU相关字段）
+2. ✅ **categories** - 商品分类表（支持多级分类）
+3. ✅ **sku_spec_names** - SKU规格名称表（三级规格）
+4. ✅ **sku_spec_values** - SKU规格值表（规格值详情）
+5. ✅ **product_skus** - 商品SKU表（完整版）
+
+### 外键约束
+- ✅ 所有表都正确关联 merchant_id（多租户支持）
+- ✅ 级联删除已正确设置（删除商品自动删除SKU）
+- ✅ 10个外键约束全部验证通过
+
+### 搭建脚本
+```bash
+# 自动化搭建SKU数据库表
+npm run script:setup-sku
+```
+
+### 相关文档
+- 完成报告：`/backend/SKU_SETUP_COMPLETE.md`
+- 脚本说明：`/backend/scripts/README.md`
+- 设计文档：`/docs/商品SKU数据库设计.md`
+- 字段说明：`/docs/商品SKU数据库字段设计.md`
+- SQL脚本：`/database/migrations/create_product_sku_tables.sql`
+
+---
+
+# 每次完成接口的开发,需要到对应接口模块的下面编写接口编写的技术方案以及完成了多少内容(按步骤编写)

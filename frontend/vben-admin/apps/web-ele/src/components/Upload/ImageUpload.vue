@@ -18,7 +18,7 @@
         <div class="upload-text">点击上传图片</div>
       </div>
       <div v-else class="image-preview">
-        <img :src="imageUrl" alt="预览图" class="preview-image" />
+        <img :src="imageUrl" alt="" class="preview-image" />
         <div class="image-overlay">
           <el-icon class="preview-icon" @click.stop="previewImage">
             <ZoomIn />
@@ -32,7 +32,7 @@
 
     <!-- 图片预览对话框 -->
     <el-dialog v-model="previewVisible" title="图片预览" width="50%">
-      <img :src="imageUrl" alt="预览图" style="width: 100%" />
+      <img :src="imageUrl" alt="" style="width: 100%" />
     </el-dialog>
 
     <!-- 上传进度 -->
@@ -46,11 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, ZoomIn, Delete } from 'lucide-vue-next';
-import { uploadImage, deleteFile } from '#/api/upload';
-import { useUserStore } from '#/store';
+import { useAccessStore } from '@vben/stores';
+import { deleteFile } from '#/api/upload';
 
 interface Props {
   modelValue?: string;
@@ -69,7 +69,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const userStore = useUserStore();
+const accessStore = useAccessStore();
 const uploadRef = ref();
 const imageUrl = ref(props.modelValue);
 const uploading = ref(false);
@@ -79,7 +79,7 @@ const currentFileKey = ref('');
 
 const uploadAction = computed(() => '/api/upload/image');
 const uploadHeaders = computed(() => ({
-  Authorization: `Bearer ${userStore.accessToken}`,
+  Authorization: `Bearer ${accessStore.accessToken}`,
 }));
 
 // 上传前检查
@@ -210,6 +210,8 @@ watch(() => props.modelValue, (newVal) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  background-color: #f5f7fa;
 }
 
 .image-overlay {
