@@ -31,6 +31,11 @@ import { ResourceModule } from './modules/resource/resource.module';
 import { LoginLogModule } from './modules/login-log/login-log.module';
 import { OperationLogModule } from './modules/operation-log/operation-log.module';
 import { MerchantsModule } from './modules/merchants/merchants.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ProductsModule } from './modules/products/products.module';
+import { SkuSpecNamesModule } from './modules/sku-spec-names/sku-spec-names.module';
+import { SkuSpecValuesModule } from './modules/sku-spec-values/sku-spec-values.module';
+import { ProductSkusModule } from './modules/product-skus/product-skus.module';
 import { MigrationController } from './database/migration.controller';
 import { Permission } from './database/entities/permission.entity';
 import { Menu } from './modules/menus/entities/menu.entity';
@@ -115,6 +120,11 @@ import { OperationLogInterceptor } from './common/interceptors/operation-log.int
     LoginLogModule,
     OperationLogModule,
     MerchantsModule,
+    CategoriesModule,
+    ProductsModule,
+    SkuSpecNamesModule,
+    SkuSpecValuesModule,
+    ProductSkusModule,
 
     // 为迁移控制器添加TypeORM实体
     TypeOrmModule.forFeature([Permission, Menu, Role, Admin]),
