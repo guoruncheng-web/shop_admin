@@ -1,0 +1,6 @@
+tree c6e51ed6ffe49de9624e92e72a33e42bcf6dc7d9
+parent d51b2a01fdc82ed63e13e22fde21f100ee7e8cd4
+author 无木 <netfan@foxmail.com> 1629092000 +0800
+committer 无木 <netfan@foxmail.com> 1629092000 +0800
+
+chore: downgrade `vue-json-pretty` to 1.8.1
